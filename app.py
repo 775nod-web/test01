@@ -1,6 +1,10 @@
 # Databricks Apps（Gradio）用
 # モバイルゲーム KPI ダッシュボード
 #
+# 依存ライブラリのインストール（初回起動時のみ実行される）
+%pip install gradio plotly --quiet
+
+#
 # タブ①：KPI ダッシュボード（経営層向け）
 #   - title_id でフィルタリング
 #   - DAU 日別推移（折れ線グラフ）
