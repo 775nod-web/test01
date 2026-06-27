@@ -5,7 +5,6 @@ ECサイト サンプルデータ生成スクリプト
 - ユーザーマスター：100件
 """
 
-from pyspark.sql import SparkSession
 from pyspark.sql import Row
 from pyspark.sql.types import (
     StructType, StructField, StringType, IntegerType, DoubleType, DateType
@@ -13,10 +12,8 @@ from pyspark.sql.types import (
 import random
 from datetime import date, timedelta
 
-# SparkSession の初期化
-spark = SparkSession.builder \
-    .appName("EcommerceSampleDataGenerator") \
-    .getOrCreate()
+# Databricks ノートブックでは spark はクラスターから自動注入されるため
+# SparkSession.builder は呼ばない（呼ぶと INVALID_CONNECT_URL エラーになる）
 
 # 再現性のためのシード固定
 random.seed(42)
