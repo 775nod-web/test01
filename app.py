@@ -271,10 +271,20 @@ with gr.Blocks(title="モバイルゲーム KPI ダッシュボード") as app:
 
 # ──────────────────────────────────────────────
 # アプリの起動
-# Databricks Apps では app オブジェクトを返すだけでよい
-# ローカルデバッグ時は launch() を呼び出す
+#
+# 【Databricks Apps】
+#   app オブジェクトをモジュールレベルで定義するだけでよい。
+#   launch() は不要（Databricks Apps が自動でサーブする）。
+#
+# 【Databricks ノートブックで動作確認する場合】
+#   share=True を指定すると ngrok 経由の公開 URL が発行され、
+#   ブラウザからアクセスできる。
+#   ※ カーネル再起動後に下記セルを実行すること。
+#      dbutils.library.restartPython()
 # ──────────────────────────────────────────────
 
-if __name__ == "__main__":
-    # ローカル確認用（Databricks Apps 上では不要）
-    app.launch()
+# Databricks ノートブックでの動作確認用（Databricks Apps では不要）
+app.launch(
+    share=True,          # ngrok 経由の公開 URL を発行（"Running on public URL: https://..." と表示される）
+    server_name="0.0.0.0",  # クラスター外からのアクセスを許可
+)
