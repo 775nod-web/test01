@@ -260,4 +260,6 @@ print("例: spark.sql('SELECT * FROM orders LIMIT 10').show()")
 # print(f"データを保存しました: {OUTPUT_DIR}")
 
 print("\n=== 全データ生成完了 ===")
-spark.stop()
+# spark.stop() はここで呼ばない
+# Databricks ノートブックでは SparkSession はクラスター側が管理するため、
+# stop() を呼ぶと後続セルで NO_ACTIVE_SESSION エラーが発生する
