@@ -228,22 +228,36 @@ df_orders.filter(~F.col("product_id").isin(valid_product_ids)).show(truncate=Fal
 
 
 # ──────────────────────────────────────────────
-# 5. 各 DataFrame を Parquet 形式で保存（任意）
+# 5. Spark テンポラリビューとして登録（Databricks / ローカル共通）
+#    ※ パブリック DBFS ルートが無効な Databricks 環境では
+#      /tmp への Parquet 書き込みが禁止されるため、
+#      テンポラリビューを使用してセッション内で SQL 参照できるようにする
 # ──────────────────────────────────────────────
 
-OUTPUT_DIR = "/tmp/ecommerce_sample"
+# テンポラリビューとして登録（同一 SparkSession 内で SQL クエリ可能）
+df_products.createOrReplaceTempView("products")
+df_users.createOrReplaceTempView("users")
+df_orders.createOrReplaceTempView("orders")
 
-# 商品マスターを Parquet 保存（上書きモード）
-df_products.write.mode("overwrite").parquet(f"{OUTPUT_DIR}/products")
-print(f"商品マスターを保存: {OUTPUT_DIR}/products")
+print("テンポラリビューを登録しました: products / users / orders")
+print("例: spark.sql('SELECT * FROM orders LIMIT 10').show()")
 
-# ユーザーマスターを Parquet 保存
-df_users.write.mode("overwrite").parquet(f"{OUTPUT_DIR}/users")
-print(f"ユーザーマスターを保存: {OUTPUT_DIR}/users")
+# ──────────────────────────────────────────────
+# 6. Parquet 保存（Unity Catalog Volume を使う場合のみ有効化）
+#    Databricks: Unity Catalog が有効な環境では以下のパスを使用
+#    例） /Volumes/<catalog>/<schema>/<volume>/ecommerce_sample
+#
+#    ローカル Spark の場合は OUTPUT_DIR を任意のローカルパスに変更する
+# ──────────────────────────────────────────────
 
-# 売上トランザクションを Parquet 保存
-df_orders.write.mode("overwrite").parquet(f"{OUTPUT_DIR}/orders")
-print(f"売上トランザクションを保存: {OUTPUT_DIR}/orders")
+# ▼ 保存する場合は OUTPUT_DIR を環境に合わせて変更し、コメントを外してください
+# OUTPUT_DIR = "/Volumes/your_catalog/your_schema/your_volume/ecommerce_sample"  # Databricks Unity Catalog
+# OUTPUT_DIR = "./ecommerce_sample"  # ローカル Spark
+
+# df_products.write.mode("overwrite").parquet(f"{OUTPUT_DIR}/products")
+# df_users.write.mode("overwrite").parquet(f"{OUTPUT_DIR}/users")
+# df_orders.write.mode("overwrite").parquet(f"{OUTPUT_DIR}/orders")
+# print(f"データを保存しました: {OUTPUT_DIR}")
 
 print("\n=== 全データ生成完了 ===")
 spark.stop()
