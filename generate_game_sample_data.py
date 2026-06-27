@@ -2,119 +2,100 @@
 # モバイルゲーム分析基盤 サンプルデータ生成スクリプト
 #
 # 生成するデータ：
-#   - df_gameplay_log  : ゲームプレイログ（リアルタイム取り込み想定）
-#   - df_purchase      : 課金データ（リアルタイム取り込み想定）
-#   - df_user_master   : ユーザーマスター（日次バッチ想定）
+#   - df_gameplay_log  : ゲームプレイログ（3,000件）
+#   - df_purchase      : 課金データ（800件）
+#   - df_user_master   : ユーザーマスター（120件）
 #
 # 意図的に含むデータ品質課題：
 #   1. プレイログの event_type に一部 Null
 #   2. タイトルをまたいで同一 user_id が使用される（名寄せ前提）
 #
-# 動作確認環境：Databricks Free Edition（Unity Catalog 不使用・Hive メタストア）
+# Free Edition 対応：spark.range() + Spark SQL 式で分散生成し
+# ドライバーへの大量データ集約を回避する
 
-from pyspark.sql import Row
-from pyspark.sql.types import (
-    StructType, StructField,
-    StringType, IntegerType, LongType, DoubleType, TimestampType
-)
-from datetime import datetime, timedelta
-import random
-
-random.seed(42)
+from pyspark.sql import functions as F
 
 # ──────────────────────────────────────────────
-# 定数定義
+# 共通設定
 # ──────────────────────────────────────────────
 
-TITLE_IDS   = ["title_001", "title_002", "title_003"]
-EVENT_TYPES = ["battle_start", "battle_end", "item_purchase", "level_up", "login", "logout"]
-COUNTRIES   = ["JP", "US", "KR", "TW", "SG"]
-DEVICES     = ["iOS", "Android"]
-
-# タイトルをまたいで同じ user_id が使われるケースを表現するため、
-# 全タイトル共通の user_id プールを用意する（名寄せ課題の再現）
-USER_POOL_SIZE = 200   # 全ユーザープール
-ACTIVE_USERS   = 120   # マスターに登録されているユーザー数
-
-BASE_TS = datetime(2025, 1, 1, 0, 0, 0)
+BASE_TS = "2025-01-01 00:00:00"   # データ開始日時
+RANGE_SECONDS = 90 * 86400        # 90日分の秒数
 
 
-def rand_ts(days_range: int = 90) -> datetime:
-    """BASE_TS から days_range 日以内のランダムなタイムスタンプを返す"""
-    return BASE_TS + timedelta(
-        seconds=random.randint(0, days_range * 86400)
+# ──────────────────────────────────────────────
+# 1. ユーザーマスター（120件）
+# ──────────────────────────────────────────────
+
+df_user_master = (
+    spark.range(1, 121)   # id: 1 ～ 120
+    .select(
+        F.format_string("u_%04d", F.col("id")).alias("user_id"),
+        F.date_sub(
+            F.to_date(F.lit(BASE_TS)),
+            (F.rand(seed=1) * 364 + 1).cast("int")
+        ).cast("string").alias("registration_dt"),
+        F.element_at(
+            F.array(F.lit("JP"), F.lit("US"), F.lit("KR"), F.lit("TW"), F.lit("SG")),
+            (F.rand(seed=2) * 5 + 1).cast("int")
+        ).alias("country"),
+        F.element_at(
+            F.array(F.lit("iOS"), F.lit("Android")),
+            (F.rand(seed=3) * 2 + 1).cast("int")
+        ).alias("device"),
     )
-
-
-# ──────────────────────────────────────────────
-# 1. ユーザーマスター生成（120件）
-#    ※ user_id は "u_0001" ～ "u_0120" の形式
-#    ※ 一部ユーザーは複数タイトルにまたがって存在する（下記プレイログ参照）
-# ──────────────────────────────────────────────
-
-user_master_rows = []
-for i in range(1, ACTIVE_USERS + 1):
-    user_master_rows.append(Row(
-        user_id         = f"u_{i:04d}",
-        registration_dt = (BASE_TS - timedelta(days=random.randint(1, 365))).date().isoformat(),
-        country         = random.choice(COUNTRIES),
-        device          = random.choice(DEVICES),
-    ))
-
-user_master_schema = StructType([
-    StructField("user_id",         StringType(),  nullable=False),
-    StructField("registration_dt", StringType(),  nullable=True),   # DATE を文字列で保持（Bronze 生データ）
-    StructField("country",         StringType(),  nullable=True),
-    StructField("device",          StringType(),  nullable=True),
-])
-
-df_user_master = spark.createDataFrame(user_master_rows, schema=user_master_schema)
+)
 
 print(f"df_user_master: {df_user_master.count():,} 件")
 df_user_master.show(5, truncate=False)
 
 
 # ──────────────────────────────────────────────
-# 2. ゲームプレイログ生成（3,000件）
+# 2. ゲームプレイログ（3,000件）
 #
-#    データ品質課題を意図的に混入：
+#    品質課題：
 #      A) event_type が Null のレコードを約5%混入
-#      B) user_id の範囲を u_0001 ～ u_0200 に広げ、
-#         マスター未登録ユーザー（u_0121 ～ u_0200）も含める
-#         → タイトルをまたいだ名寄せが必要なことを示す
+#      B) user_id を u_0001～u_0200 に広げ、
+#         マスター未登録ユーザーも含める（名寄せ課題）
 # ──────────────────────────────────────────────
 
-gameplay_log_rows = []
-for i in range(1, 3001):
-    # u_0001 ～ u_0200（マスター外ユーザーも含む → 名寄せ課題）
-    uid = f"u_{random.randint(1, USER_POOL_SIZE):04d}"
-    title = random.choice(TITLE_IDS)
-    ts = rand_ts(90)
-
-    # 約5%の確率で event_type を Null にする（データ品質課題 A）
-    event_type = None if random.random() < 0.05 else random.choice(EVENT_TYPES)
-
-    gameplay_log_rows.append(Row(
-        log_id       = f"log_{i:06d}",
-        user_id      = uid,
-        title_id     = title,
-        play_seconds = random.randint(30, 3600),
-        event_type   = event_type,              # Null が混入する可能性あり
-        event_ts     = ts,
-        ingest_ts    = ts + timedelta(seconds=random.randint(1, 30)),  # ストリーミング取り込み遅延
-    ))
-
-gameplay_log_schema = StructType([
-    StructField("log_id",       StringType(),   nullable=False),
-    StructField("user_id",      StringType(),   nullable=True),
-    StructField("title_id",     StringType(),   nullable=True),
-    StructField("play_seconds", IntegerType(),  nullable=True),
-    StructField("event_type",   StringType(),   nullable=True),   # Null 混入あり
-    StructField("event_ts",     TimestampType(),nullable=True),
-    StructField("ingest_ts",    TimestampType(),nullable=True),
-])
-
-df_gameplay_log = spark.createDataFrame(gameplay_log_rows, schema=gameplay_log_schema)
+df_gameplay_log = (
+    spark.range(1, 3001)
+    .select(
+        F.format_string("log_%06d", F.col("id")).alias("log_id"),
+        # user_id: u_0001 ～ u_0200（マスター外も含む）
+        F.format_string("u_%04d", (F.rand(seed=10) * 200 + 1).cast("int")).alias("user_id"),
+        F.element_at(
+            F.array(F.lit("title_001"), F.lit("title_002"), F.lit("title_003")),
+            (F.rand(seed=11) * 3 + 1).cast("int")
+        ).alias("title_id"),
+        (F.rand(seed=12) * (3600 - 30) + 30).cast("int").alias("play_seconds"),
+        # event_type: 約5%を Null にする（品質課題 A）
+        F.when(
+            F.rand(seed=13) < 0.05,
+            F.lit(None).cast("string")
+        ).otherwise(
+            F.element_at(
+                F.array(
+                    F.lit("battle_start"), F.lit("battle_end"),
+                    F.lit("item_purchase"), F.lit("level_up"),
+                    F.lit("login"), F.lit("logout")
+                ),
+                (F.rand(seed=14) * 6 + 1).cast("int")
+            )
+        ).alias("event_type"),
+        # event_ts: BASE_TS から 90日以内のランダムなタイムスタンプ
+        (
+            F.to_timestamp(F.lit(BASE_TS)).cast("long")
+            + (F.rand(seed=15) * RANGE_SECONDS).cast("long")
+        ).cast("timestamp").alias("event_ts"),
+    )
+    .withColumn(
+        "ingest_ts",
+        (F.col("event_ts").cast("long") + (F.rand(seed=16) * 30 + 1).cast("long"))
+        .cast("timestamp")
+    )
+)
 
 null_count = df_gameplay_log.filter("event_type IS NULL").count()
 print(f"df_gameplay_log: {df_gameplay_log.count():,} 件 （event_type Null: {null_count} 件）")
@@ -122,45 +103,41 @@ df_gameplay_log.show(5, truncate=False)
 
 
 # ──────────────────────────────────────────────
-# 3. 課金データ生成（800件）
-#
-#    ※ user_id の範囲はプレイログと同じ（u_0001 ～ u_0200）
-#    ※ 課金ユーザーはヘビーユーザー寄りに偏らせる（現実に近い分布）
+# 3. 課金データ（800件）
+#    ヘビー課金ユーザー（u_0001～u_0040）を80%の確率で選択
 # ──────────────────────────────────────────────
 
-# ヘビー課金ユーザー（上位20%が80%の売上）を再現するため
-# user_id に重みをつけてサンプリング
-heavy_users = [f"u_{i:04d}" for i in range(1, 41)]     # u_0001 ～ u_0040 をヘビー課金層とする
-light_users = [f"u_{i:04d}" for i in range(41, USER_POOL_SIZE + 1)]
+AMOUNT_LIST = F.array(
+    F.lit(120), F.lit(480), F.lit(960), F.lit(1920), F.lit(4800)
+)
 
-purchase_rows = []
-for i in range(1, 801):
-    # 80% の確率でヘビー課金ユーザーから選択（パレートの法則）
-    uid = random.choice(heavy_users) if random.random() < 0.80 else random.choice(light_users)
-    ts  = rand_ts(90)
-
-    # 課金金額：120円 / 480円 / 960円 / 1920円 / 4800円 の5段階
-    amount = random.choice([120, 480, 960, 1920, 4800])
-
-    purchase_rows.append(Row(
-        purchase_id = f"pch_{i:06d}",
-        user_id     = uid,
-        title_id    = random.choice(TITLE_IDS),
-        amount_jpy  = amount,
-        purchase_ts = ts,
-        ingest_ts   = ts + timedelta(seconds=random.randint(1, 60)),
-    ))
-
-purchase_schema = StructType([
-    StructField("purchase_id",  StringType(),    nullable=False),
-    StructField("user_id",      StringType(),    nullable=True),
-    StructField("title_id",     StringType(),    nullable=True),
-    StructField("amount_jpy",   IntegerType(),   nullable=True),
-    StructField("purchase_ts",  TimestampType(), nullable=True),
-    StructField("ingest_ts",    TimestampType(), nullable=True),
-])
-
-df_purchase = spark.createDataFrame(purchase_rows, schema=purchase_schema)
+df_purchase = (
+    spark.range(1, 801)
+    .select(
+        F.format_string("pch_%06d", F.col("id")).alias("purchase_id"),
+        # ヘビー課金層（u_0001～u_0040）を 80% の確率で選択
+        F.when(
+            F.rand(seed=20) < 0.80,
+            F.format_string("u_%04d", (F.rand(seed=21) * 40 + 1).cast("int"))
+        ).otherwise(
+            F.format_string("u_%04d", (F.rand(seed=22) * 160 + 41).cast("int"))
+        ).alias("user_id"),
+        F.element_at(
+            F.array(F.lit("title_001"), F.lit("title_002"), F.lit("title_003")),
+            (F.rand(seed=23) * 3 + 1).cast("int")
+        ).alias("title_id"),
+        F.element_at(AMOUNT_LIST, (F.rand(seed=24) * 5 + 1).cast("int")).alias("amount_jpy"),
+        (
+            F.to_timestamp(F.lit(BASE_TS)).cast("long")
+            + (F.rand(seed=25) * RANGE_SECONDS).cast("long")
+        ).cast("timestamp").alias("purchase_ts"),
+    )
+    .withColumn(
+        "ingest_ts",
+        (F.col("purchase_ts").cast("long") + (F.rand(seed=26) * 60 + 1).cast("long"))
+        .cast("timestamp")
+    )
+)
 
 print(f"df_purchase: {df_purchase.count():,} 件")
 df_purchase.show(5, truncate=False)
