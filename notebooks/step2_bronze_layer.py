@@ -7,10 +7,10 @@
 # MAGIC
 # MAGIC | Delta Table | 元DataFrame | ingestion_type |
 # MAGIC |---|---|---|
-# MAGIC | `interview_prep.bronze_pos`      | df_pos      | streaming |
-# MAGIC | `interview_prep.bronze_store`    | df_store    | batch     |
-# MAGIC | `interview_prep.bronze_product`  | df_product  | batch     |
-# MAGIC | `interview_prep.bronze_customer` | df_customer | batch     |
+# MAGIC | `interview_prep.bronze_pos_transactions` | df_pos      | streaming |
+# MAGIC | `interview_prep.bronze_store_master`     | df_store    | batch     |
+# MAGIC | `interview_prep.bronze_product_master`   | df_product  | batch     |
+# MAGIC | `interview_prep.bronze_customer_master`  | df_customer | batch     |
 
 # COMMAND ----------
 # MAGIC %md
@@ -38,10 +38,10 @@ def add_ingestion_metadata(df, source_name: str, ingestion_type: str):
 SCHEMA = "interview_prep"
 
 tables = [
-    {"df": df_pos,      "table": f"{SCHEMA}.bronze_pos",      "source_name": "pos_system",  "ingestion_type": "streaming"},
-    {"df": df_store,    "table": f"{SCHEMA}.bronze_store",    "source_name": "store_db",    "ingestion_type": "batch"},
-    {"df": df_product,  "table": f"{SCHEMA}.bronze_product",  "source_name": "product_db",  "ingestion_type": "batch"},
-    {"df": df_customer, "table": f"{SCHEMA}.bronze_customer", "source_name": "loyalty_db",  "ingestion_type": "batch"},
+    {"df": df_pos,      "table": f"{SCHEMA}.bronze_pos_transactions", "source_name": "pos_system", "ingestion_type": "streaming"},
+    {"df": df_store,    "table": f"{SCHEMA}.bronze_store_master",     "source_name": "store_db",   "ingestion_type": "batch"},
+    {"df": df_product,  "table": f"{SCHEMA}.bronze_product_master",   "source_name": "product_db", "ingestion_type": "batch"},
+    {"df": df_customer, "table": f"{SCHEMA}.bronze_customer_master",  "source_name": "loyalty_db", "ingestion_type": "batch"},
 ]
 
 for t in tables:
@@ -61,23 +61,23 @@ for t in tables:
 
 # COMMAND ----------
 
-print("【bronze_pos】")
-display(spark.table(f"{SCHEMA}.bronze_pos").orderBy("transaction_id", "transaction_ts"))
+print("【bronze_pos_transactions】")
+display(spark.table(f"{SCHEMA}.bronze_pos_transactions").orderBy("transaction_id", "transaction_ts"))
 
 # COMMAND ----------
 
-print("【bronze_store】")
-display(spark.table(f"{SCHEMA}.bronze_store").orderBy("store_id"))
+print("【bronze_store_master】")
+display(spark.table(f"{SCHEMA}.bronze_store_master").orderBy("store_id"))
 
 # COMMAND ----------
 
-print("【bronze_product】")
-display(spark.table(f"{SCHEMA}.bronze_product").orderBy("product_id"))
+print("【bronze_product_master】")
+display(spark.table(f"{SCHEMA}.bronze_product_master").orderBy("product_id"))
 
 # COMMAND ----------
 
-print("【bronze_customer】")
-display(spark.table(f"{SCHEMA}.bronze_customer").orderBy("user_id"))
+print("【bronze_customer_master】")
+display(spark.table(f"{SCHEMA}.bronze_customer_master").orderBy("user_id"))
 
 # COMMAND ----------
 # MAGIC %md
@@ -89,8 +89,12 @@ from pyspark.sql import Row
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
 summary_rows = [
-    Row(table_name=t["table"], source_name=t["source_name"], ingestion_type=t["ingestion_type"],
-        row_count=spark.table(t["table"]).count())
+    Row(
+        table_name=t["table"],
+        source_name=t["source_name"],
+        ingestion_type=t["ingestion_type"],
+        row_count=spark.table(t["table"]).count()
+    )
     for t in tables
 ]
 
