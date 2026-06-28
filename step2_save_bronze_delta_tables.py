@@ -59,6 +59,21 @@ def add_bronze_metadata(df, source_name: str, ingestion_type: str):
         .withColumn("ingested_at",    F.current_timestamp())
     )
 
+def bronze_writer(df, table_name: str):
+    """
+    Delta Table への書き込み共通処理。
+    overwriteSchema=true により、既存テーブルのスキーマ（nullable 定義含む）と
+    書き込みデータのスキーマが競合した場合でも上書きできるようにする。
+    """
+    (
+        df
+        .write
+        .format("delta")
+        .mode("overwrite")
+        .option("overwriteSchema", "true")
+        .saveAsTable(table_name)
+    )
+
 # COMMAND ----------
 
 # MAGIC %md
@@ -72,15 +87,7 @@ def add_bronze_metadata(df, source_name: str, ingestion_type: str):
 # COMMAND ----------
 
 bronze_pos = add_bronze_metadata(df_pos, "pos_system", "streaming")
-
-(
-    bronze_pos
-    .write
-    .format("delta")
-    .mode("overwrite")
-    .saveAsTable("interview_prep.bronze_pos_transactions")
-)
-
+bronze_writer(bronze_pos, "interview_prep.bronze_pos_transactions")
 print("✓ interview_prep.bronze_pos_transactions を保存しました")
 
 # COMMAND ----------
@@ -91,15 +98,7 @@ print("✓ interview_prep.bronze_pos_transactions を保存しました")
 # COMMAND ----------
 
 bronze_product = add_bronze_metadata(df_product, "product_master_system", "batch")
-
-(
-    bronze_product
-    .write
-    .format("delta")
-    .mode("overwrite")
-    .saveAsTable("interview_prep.bronze_product_master")
-)
-
+bronze_writer(bronze_product, "interview_prep.bronze_product_master")
 print("✓ interview_prep.bronze_product_master を保存しました")
 
 # COMMAND ----------
@@ -110,15 +109,7 @@ print("✓ interview_prep.bronze_product_master を保存しました")
 # COMMAND ----------
 
 bronze_store = add_bronze_metadata(df_store, "store_master_system", "batch")
-
-(
-    bronze_store
-    .write
-    .format("delta")
-    .mode("overwrite")
-    .saveAsTable("interview_prep.bronze_store_master")
-)
-
+bronze_writer(bronze_store, "interview_prep.bronze_store_master")
 print("✓ interview_prep.bronze_store_master を保存しました")
 
 # COMMAND ----------
@@ -129,15 +120,7 @@ print("✓ interview_prep.bronze_store_master を保存しました")
 # COMMAND ----------
 
 bronze_customer = add_bronze_metadata(df_customer, "loyalty_system", "batch")
-
-(
-    bronze_customer
-    .write
-    .format("delta")
-    .mode("overwrite")
-    .saveAsTable("interview_prep.bronze_customer_loyalty")
-)
-
+bronze_writer(bronze_customer, "interview_prep.bronze_customer_loyalty")
 print("✓ interview_prep.bronze_customer_loyalty を保存しました")
 
 # COMMAND ----------
