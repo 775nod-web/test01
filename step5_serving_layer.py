@@ -245,33 +245,29 @@ spark.sql("""
 CREATE OR REPLACE VIEW serving.v_plan_health
 COMMENT 'プラン別健全性スコアボード — 解約リスク・決済失敗率をプラン単位で集計'
 AS
-WITH plan_stats AS (
-    SELECT
-        plan_type,
-        COUNT(DISTINCT user_id)                                         AS total_paid_users,
-        SUM(CASE WHEN churn_risk_flag = TRUE THEN 1 ELSE 0 END)         AS churn_risk_count,
-        AVG(total_failed_count)                                         AS avg_failed_count,
-        SUM(total_failed_count)                                         AS total_failed_count,
-        SUM(CASE WHEN has_recent_cancel_click = TRUE THEN 1 ELSE 0 END) AS cancel_click_users
-    FROM gold.failed_payment_user
-    GROUP BY plan_type
-)
 SELECT
     plan_type,
-    total_paid_users,
-    churn_risk_count,
-    ROUND(churn_risk_count * 100.0 / NULLIF(total_paid_users, 0), 2)   AS churn_risk_rate_pct,
-    cancel_click_users,
-    ROUND(cancel_click_users * 100.0 / NULLIF(total_paid_users, 0), 2) AS cancel_click_rate_pct,
-    ROUND(avg_failed_count, 2)                                         AS avg_failed_payment_count,
-    total_failed_count,
+    COUNT(DISTINCT user_id)                                                                    AS total_paid_users,
+    SUM(CASE WHEN churn_risk_flag = TRUE THEN 1 ELSE 0 END)                                    AS churn_risk_count,
+    ROUND(
+        SUM(CASE WHEN churn_risk_flag = TRUE THEN 1 ELSE 0 END) * 100.0
+        / NULLIF(COUNT(DISTINCT user_id), 0), 2)                                               AS churn_risk_rate_pct,
+    SUM(CASE WHEN has_recent_cancel_click = TRUE THEN 1 ELSE 0 END)                            AS cancel_click_users,
+    ROUND(
+        SUM(CASE WHEN has_recent_cancel_click = TRUE THEN 1 ELSE 0 END) * 100.0
+        / NULLIF(COUNT(DISTINCT user_id), 0), 2)                                               AS cancel_click_rate_pct,
+    ROUND(AVG(total_failed_count), 2)                                                          AS avg_failed_payment_count,
+    SUM(total_failed_count)                                                                    AS total_failed_count,
     -- 健全性判定 (Databricks SQL Dashboard のカラー表示に対応)
     CASE
-        WHEN churn_risk_count * 100.0 / NULLIF(total_paid_users, 0) >= 20 THEN '🔴 Critical'
-        WHEN churn_risk_count * 100.0 / NULLIF(total_paid_users, 0) >= 10 THEN '🟡 Warning'
+        WHEN SUM(CASE WHEN churn_risk_flag = TRUE THEN 1 ELSE 0 END) * 100.0
+             / NULLIF(COUNT(DISTINCT user_id), 0) >= 20 THEN '🔴 Critical'
+        WHEN SUM(CASE WHEN churn_risk_flag = TRUE THEN 1 ELSE 0 END) * 100.0
+             / NULLIF(COUNT(DISTINCT user_id), 0) >= 10 THEN '🟡 Warning'
         ELSE '🟢 Healthy'
-    END                                                                AS health_status
-FROM plan_stats
+    END                                                                                        AS health_status
+FROM gold.failed_payment_user
+GROUP BY plan_type
 ORDER BY churn_risk_rate_pct DESC
 """)
 print("✅ v_plan_health 作成完了")
