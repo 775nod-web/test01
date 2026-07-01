@@ -118,21 +118,26 @@ COMMENT '経営層向け全社KPIサマリー — Databricks SQL Dashboard用'
 AS
 SELECT
     kpi_date,
-    total_users,
-    paid_users,
-    free_users,
+    dau,
+    total_paid_users,
+    total_free_users,
+    (total_paid_users + total_free_users)                                            AS total_users,
+    new_signup_count,
     -- 有料転換率 (Free→Paid の状況把握)
-    ROUND(paid_users * 100.0 / NULLIF(total_users, 0), 2)      AS paid_ratio_pct,
+    ROUND(total_paid_users * 100.0 / NULLIF(total_paid_users + total_free_users, 0), 2) AS paid_ratio_pct,
+    free_to_paid_rate,
     -- 収益指標
     daily_revenue,
-    ROUND(daily_revenue / NULLIF(paid_users, 0), 2)             AS revenue_per_paid_user,
-    -- 解約シグナル
+    ROUND(daily_revenue / NULLIF(total_paid_users, 0), 2)                            AS revenue_per_paid_user,
+    -- 解約・アップグレードシグナル
+    upgrade_click_count,
     cancel_click_count,
-    failed_payment_count,
+    new_paid_conversion_count,
+    churn_count,
     -- 前日比 Net 有料ユーザー増減 (成長鈍化の早期検知)
-    paid_users - LAG(paid_users) OVER (ORDER BY kpi_date)       AS net_paid_user_change,
+    total_paid_users - LAG(total_paid_users) OVER (ORDER BY kpi_date)                AS net_paid_user_change,
     -- 前日比収益増減
-    daily_revenue - LAG(daily_revenue) OVER (ORDER BY kpi_date) AS net_revenue_change
+    daily_revenue - LAG(daily_revenue) OVER (ORDER BY kpi_date)                      AS net_revenue_change
 FROM gold.daily_kpi
 ORDER BY kpi_date DESC
 """)
@@ -154,16 +159,22 @@ COMMENT 'プラン別月次売上トレンド — MoM成長率で売上鈍化の
 AS
 SELECT
     sales_month,
-    month_end_date,
     plan_type,
     total_revenue,
-    active_subscribers,
+    transaction_count,
+    success_count,
+    failed_count,
+    avg_transaction_amount,
+    new_subscriber_count,
+    churned_subscriber_count,
+    active_subscriber_count,
+    failed_payment_rate,
     -- 加入者あたり収益 (プラン価値の指標)
-    ROUND(total_revenue / NULLIF(active_subscribers, 0), 2)   AS revenue_per_active_sub,
+    ROUND(total_revenue / NULLIF(active_subscriber_count, 0), 2)   AS revenue_per_active_sub,
     -- MoM売上成長率 (成長鈍化の原因プランを特定)
     LAG(total_revenue) OVER (
         PARTITION BY plan_type ORDER BY sales_month
-    )                                                          AS prev_month_revenue,
+    )                                                               AS prev_month_revenue,
     ROUND(
         (total_revenue - LAG(total_revenue) OVER (
             PARTITION BY plan_type ORDER BY sales_month
@@ -172,11 +183,11 @@ SELECT
             PARTITION BY plan_type ORDER BY sales_month
         ), 0),
         2
-    )                                                          AS mom_revenue_growth_pct,
+    )                                                               AS mom_revenue_growth_pct,
     -- MoM加入者増減
-    active_subscribers - LAG(active_subscribers) OVER (
+    active_subscriber_count - LAG(active_subscriber_count) OVER (
         PARTITION BY plan_type ORDER BY sales_month
-    )                                                          AS mom_subscriber_change
+    )                                                               AS mom_subscriber_change
 FROM gold.sales_per_plan
 ORDER BY sales_month DESC, plan_type
 """)
@@ -194,22 +205,27 @@ print("✅ v_revenue_trend 作成完了")
 
 spark.sql("""
 CREATE OR REPLACE VIEW serving.v_conversion_funnel
-COMMENT 'Free→有料転換ファネル — 月次転換率・解約クリック率の推移'
+COMMENT 'Free→有料転換ファネル — 日次転換率・解約クリック率・チャーン数の推移'
 AS
 SELECT
-    kpi_date                                                                          AS funnel_date,
-    DATE_TRUNC('MM', kpi_date)                                                        AS funnel_month,
-    total_users,
-    paid_users,
-    free_users,
+    kpi_date                                                                                  AS funnel_date,
+    DATE_TRUNC('MM', kpi_date)                                                                AS funnel_month,
+    dau,
+    total_paid_users,
+    total_free_users,
+    (total_paid_users + total_free_users)                                                     AS total_users,
+    new_signup_count,
+    new_paid_conversion_count,
+    upgrade_click_count,
     cancel_click_count,
-    failed_payment_count,
-    -- 転換率: 全ユーザーに占める有料ユーザー比率
-    ROUND(paid_users * 100.0 / NULLIF(total_users, 0), 2)                             AS signup_to_paid_rate_pct,
+    churn_count,
+    free_to_paid_rate,
+    -- 有料ユーザー比率
+    ROUND(total_paid_users * 100.0 / NULLIF(total_paid_users + total_free_users, 0), 2)      AS paid_ratio_pct,
     -- 解約クリック率: 有料ユーザーに占める解約クリック比率
-    ROUND(cancel_click_count * 100.0 / NULLIF(paid_users, 0), 2)                      AS cancel_click_rate_pct,
-    -- 決済失敗率: 有料ユーザーに占める決済失敗比率
-    ROUND(failed_payment_count * 100.0 / NULLIF(paid_users, 0), 2)                    AS failed_payment_rate_pct
+    ROUND(cancel_click_count * 100.0 / NULLIF(total_paid_users, 0), 2)                       AS cancel_click_rate_pct,
+    -- チャーン率: 有料ユーザーに占めるチャーン数比率
+    ROUND(churn_count * 100.0 / NULLIF(total_paid_users, 0), 2)                              AS churn_rate_pct
 FROM gold.daily_kpi
 ORDER BY kpi_date DESC
 """)
@@ -232,10 +248,10 @@ AS
 WITH plan_stats AS (
     SELECT
         plan_type,
-        COUNT(DISTINCT user_id)                                        AS total_paid_users,
-        SUM(CASE WHEN churn_risk_flag = TRUE THEN 1 ELSE 0 END)        AS churn_risk_count,
-        AVG(total_failed_payments)                                     AS avg_failed_payments,
-        SUM(total_failed_payments)                                     AS total_failed_payments,
+        COUNT(DISTINCT user_id)                                         AS total_paid_users,
+        SUM(CASE WHEN churn_risk_flag = TRUE THEN 1 ELSE 0 END)         AS churn_risk_count,
+        AVG(total_failed_count)                                         AS avg_failed_count,
+        SUM(total_failed_count)                                         AS total_failed_count,
         SUM(CASE WHEN has_recent_cancel_click = TRUE THEN 1 ELSE 0 END) AS cancel_click_users
     FROM gold.failed_payment_user
     GROUP BY plan_type
@@ -247,8 +263,8 @@ SELECT
     ROUND(churn_risk_count * 100.0 / NULLIF(total_paid_users, 0), 2)   AS churn_risk_rate_pct,
     cancel_click_users,
     ROUND(cancel_click_users * 100.0 / NULLIF(total_paid_users, 0), 2) AS cancel_click_rate_pct,
-    ROUND(avg_failed_payments, 2)                                      AS avg_failed_payment_count,
-    total_failed_payments,
+    ROUND(avg_failed_count, 2)                                         AS avg_failed_payment_count,
+    total_failed_count,
     -- 健全性判定 (Databricks SQL Dashboard のカラー表示に対応)
     CASE
         WHEN churn_risk_count * 100.0 / NULLIF(total_paid_users, 0) >= 20 THEN '🔴 Critical'
@@ -278,9 +294,14 @@ AS
 SELECT
     user_id,
     plan_type,
-    total_failed_payments,
+    country_code,
+    user_segment,
+    is_active,
+    total_failed_count,
+    total_success_count,
     latest_payment_status,
     latest_payment_date,
+    latest_amount,
     has_recent_cancel_click,
     churn_risk_flag,
     -- アクション優先度 (CSチームがトリアージに使用)
@@ -295,9 +316,9 @@ SELECT
     END                                AS action_priority,
     -- 決済失敗パターン (CSのアプローチ判断に使用)
     CASE
-        WHEN total_failed_payments >= 3 THEN '繰り返し失敗 (カード情報更新を促す)'
-        WHEN total_failed_payments = 2  THEN '複数回失敗 (支払い方法変更を提案)'
-        WHEN total_failed_payments = 1  THEN '初回失敗 (一時的エラーの可能性)'
+        WHEN total_failed_count >= 3 THEN '繰り返し失敗 (カード情報更新を促す)'
+        WHEN total_failed_count = 2  THEN '複数回失敗 (支払い方法変更を提案)'
+        WHEN total_failed_count = 1  THEN '初回失敗 (一時的エラーの可能性)'
         ELSE '決済失敗なし'
     END                                AS failure_pattern,
     -- CSノート用: 最終決済からの経過日数
@@ -306,7 +327,7 @@ FROM gold.failed_payment_user
 ORDER BY
     churn_risk_flag DESC,
     has_recent_cancel_click DESC,
-    total_failed_payments DESC
+    total_failed_count DESC
 """)
 print("✅ v_churn_risk_action_list 作成完了")
 
@@ -327,23 +348,24 @@ AS
 SELECT
     run_date,
     source_table,
-    check_name,
+    dq_check_name,
     total_records,
     issue_count,
-    ROUND(issue_rate_pct, 2)                                    AS issue_rate_pct,
+    description,
+    ROUND(issue_rate * 100.0, 2)                                AS issue_rate_pct,
     -- 品質ステータス (Databricks SQL のカラー条件付き書式に対応)
     CASE
-        WHEN issue_rate_pct >= 10 THEN '🔴 Major   — 即時調査が必要'
-        WHEN issue_rate_pct >= 3  THEN '⚠️  Warning — 要監視'
+        WHEN issue_rate * 100.0 >= 10 THEN '🔴 Major   — 即時調査が必要'
+        WHEN issue_rate * 100.0 >= 3  THEN '⚠️  Warning — 要監視'
         ELSE '✅ Normal  — 正常範囲内'
     END                                                         AS quality_status,
     -- Silver Layer 昇格可否 (issue_rate >= 10% は昇格ブロック推奨)
     CASE
-        WHEN issue_rate_pct >= 10 THEN '🚫 昇格ブロック推奨'
+        WHEN issue_rate * 100.0 >= 10 THEN '🚫 昇格ブロック推奨'
         ELSE '✅ 昇格可'
     END                                                         AS silver_promotion_gate
 FROM gold.data_quality_summary
-ORDER BY run_date DESC, issue_rate_pct DESC
+ORDER BY run_date DESC, issue_rate DESC
 """)
 print("✅ v_data_quality_monitor 作成完了")
 
@@ -388,7 +410,7 @@ WHERE churn_risk_flag = TRUE
 -- 通知先: データエンジニア Email
 SELECT COUNT(*) AS critical_dq_count
 FROM serving.v_data_quality_monitor
-WHERE issue_rate_pct >= 10
+WHERE issue_rate_pct >= 10.0
   AND run_date = CURRENT_DATE()
 """
     },
