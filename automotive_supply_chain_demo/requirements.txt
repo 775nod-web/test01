@@ -1,0 +1,19 @@
+# Web アプリケーション
+streamlit>=1.38.0
+
+# データ処理
+pandas>=2.1.0
+tabulate>=0.9.0
+
+# 可視化
+plotly>=5.22.0
+
+# Databricks 連携
+databricks-sql-connector>=3.4.0
+databricks-sdk>=0.30.0
+
+# Databricks FMAPI 呼び出し（OpenAI 互換クライアント）
+openai>=1.40.0
+
+# data_setup.py をローカルで検証する場合（Databricksクラスター上では不要、pyspark はランタイムに同梱）
+pyspark>=3.5.0
