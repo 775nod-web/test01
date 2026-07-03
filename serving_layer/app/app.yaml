@@ -3,15 +3,21 @@
 #
 # このアプリは FastAPI (backend) が React ビルド成果物 (frontend/dist) を
 # 静的配信する単一プロセス構成。Gold layer (gold.*) への読み取りは
-# Databricks SQL Serverless Warehouse を "sql_warehouse" リソースとして
-# 参照し、アプリのサービスプリンシパルに gold スキーマへの SELECT 権限のみを
-# Unity Catalog 側で付与しておくこと。
+# Databricks SQL Serverless Warehouse を使い、アプリ側 (backend/db.py) が
+# databricks.sdk.WorkspaceClient で接続先(ホスト名/HTTP Path)を都度解決する。
 #
-# 注意: Databricks Apps は DATABRICKS_HOST とアプリ自身のOAuth資格情報は
-# 自動注入するが、SQL Warehouse のホスト名・HTTP Path は注入しない。
-# resources で宣言したウェアハウスの ID を env の valueFrom で
-# DATABRICKS_WAREHOUSE_ID として受け取り、アプリ側 (backend/db.py) で
-# databricks.sdk.WorkspaceClient を使って接続先を都度解決する。
+# 注意: app.yaml の `resources:` ブロック + `env: valueFrom` によるリソース
+# バインディングは、UI側でリソースをアプリに明示的に紐付けていないと
+# 環境変数が注入されず KeyError で起動に失敗する（本プロジェクトでも実際に
+# 発生した）。挙動が確実な「ID を直接 value として渡す」方式に倒している。
+# ウェアハウスを変更する場合は、下の DATABRICKS_WAREHOUSE_ID の値を
+# 書き換えてから再デプロイすること。
+#
+# 別途、Databricks UI 上で以下の権限付与が必要:
+#   1. SQL Warehouses > 対象のウェアハウス > Permissions で、
+#      このアプリのサービスプリンシパルに "Can use" を付与する。
+#   2. Catalog Explorer > gold スキーマ > Permissions で、
+#      同サービスプリンシパルに SELECT のみを付与する。
 
 command:
   - "uvicorn"
@@ -27,10 +33,4 @@ env:
   - name: "DATABRICKS_GOLD_SCHEMA"
     value: "gold"
   - name: "DATABRICKS_WAREHOUSE_ID"
-    valueFrom: "gold-sql-warehouse"
-
-resources:
-  - name: "gold-sql-warehouse"
-    sql_warehouse:
-      id: "7474648880209788" # デプロイ時に Free Edition のサーバーレスSQLウェアハウスIDに置き換える
-      permission: "CAN_USE"
+    value: "7474648880209788" # SQL Warehouse ID。変更時はここを書き換える

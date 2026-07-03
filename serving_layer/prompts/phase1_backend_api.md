@@ -9,7 +9,7 @@ Gold layer の4テーブル（`gold.daily_kpi`, `gold.sales_per_plan`, `gold.fai
 ## 要件
 
 1. `db.py`
-   - `databricks-sql-connector` を使う。**Databricks Apps は SQL Warehouse のホスト名・HTTP Path を環境変数として自動注入しない**ため、`app.yaml` の `resources` + `env: - valueFrom` で受け取った `DATABRICKS_WAREHOUSE_ID` を使い、`databricks.sdk.WorkspaceClient().warehouses.get(id)` から `odbc_params.hostname` / `.path` を都度解決してコネクションを作ること。認証自体は `WorkspaceClient` のデフォルト認証（Unified Authentication）に任せ、`DATABRICKS_SERVER_HOSTNAME` / `DATABRICKS_HTTP_PATH` のような固定env変数がある前提でコードを書かないこと。
+   - `databricks-sql-connector` を使う。**Databricks Apps は SQL Warehouse のホスト名・HTTP Path を環境変数として自動注入しない**ため、`app.yaml` の `env` に直接値で渡した `DATABRICKS_WAREHOUSE_ID` を使い、`databricks.sdk.WorkspaceClient().warehouses.get(id)` から `odbc_params.hostname` / `.path` を都度解決してコネクションを作ること。認証自体は `WorkspaceClient` のデフォルト認証（Unified Authentication）に任せ、`DATABRICKS_SERVER_HOSTNAME` / `DATABRICKS_HTTP_PATH` のような固定env変数がある前提でコードを書かないこと。
    - `run_query(sql: str, params: dict | None = None) -> list[dict]` を提供し、SQLインジェクションを避けるためプレースホルダを使うこと。
    - 接続はリクエスト毎に使い捨てず、コネクションプール（もしくは軽量なシングルトン）で使い回すこと。
 2. `routers/kpi.py` — `GET /api/v1/daily-kpi?start=YYYY-MM-DD&end=YYYY-MM-DD`

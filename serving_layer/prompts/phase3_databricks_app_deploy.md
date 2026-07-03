@@ -6,8 +6,8 @@ Phase 1（backend）・Phase 2（frontend）の成果物を前提に、Databrick
 
 1. `serving_layer/app/app.yaml` を作成し、Databricks Apps がアプリを起動できるようにする。
    - `command`: `uvicorn backend.main:app --host 0.0.0.0 --port $DATABRICKS_APP_PORT` 相当。
-   - `env`: SQL Warehouse の HTTP Path などをリソース参照で渡す。
-   - `resources`: 利用する SQL Warehouse（Serverless）をリソースとして宣言し、`gold` スキーマへの `SELECT` 権限のみを付与する前提を明記する。
+   - `env`: `DATABRICKS_WAREHOUSE_ID` に SQL Warehouse の ID を**直接値として**渡す。`resources:` ブロック + `env: valueFrom` によるリソースバインディングは、UI側で明示的にリソースを紐付けないと環境変数が注入されず `KeyError` で起動に失敗することを実機で確認済みのため使わない。
+   - コメントで、SQL Warehouse には `Can use`、`gold` スキーマには `SELECT` を、アプリのサービスプリンシパルにUI上で個別に付与する必要があることを明記する（app.yaml内の記述だけでは権限は付与されない）。
 2. `serving_layer/app/requirements.txt` に `fastapi`, `uvicorn`, `databricks-sql-connector`, `databricks-sdk` 等、バックエンドに必要な依存を列挙する。
 3. フロントエンドのビルド成果物（`frontend/dist`）を `backend/main.py` から `StaticFiles` で配信するようにし、単一の Databricks App として動作する構成にする。
 4. `serving_layer/scripts/deploy.sh` に、以下の手順を **コメント付きで** 記述する（実行はユーザー確認の上で行うこと。無許可で実行しない）:

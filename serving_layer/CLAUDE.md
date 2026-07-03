@@ -36,7 +36,7 @@
 
 - **なぜ Databricks SQL Serverless Warehouse か**: 4つの Gold テーブルはいずれも集計済みで行数が小さい（daily_kpiは日次1行、sales_per_planは月次×プラン数行など）。BIクエリ主体の読み取りに対してサーバーレスSQLウェアハウスは起動が速く、Free Edition の無料枠と相性が良い。OLTP的な更新は発生しないため Lakebase（Postgres）は不要と判断。
 - **なぜ Databricks Apps か**: フロントエンド（React）とバックエンド（FastAPI）を1つのマネージドWebアプリとしてホストでき、Unity Catalog への認証をアプリのサービスプリンシパル経由で完結できるため、認証まわりの実装コストが最小になる。
-- **認証**: Databricks Apps はアプリのサービスプリンシパル用の `DATABRICKS_HOST` / OAuth資格情報を自動注入するが、SQL Warehouse のホスト名・HTTP Path そのものは注入しない。`app.yaml` の `resources` で宣言した SQL Warehouse の **ID** を `env: - valueFrom` 経由で `DATABRICKS_WAREHOUSE_ID` として受け取り、`backend/db.py` が `databricks.sdk.WorkspaceClient().warehouses.get(id)` で接続先（`odbc_params.hostname` / `.path`）を都度解決し、`databricks-sql-connector` に渡す。個々のエンドユーザー認証は行わず、アプリの実行権限に対して Unity Catalog 側で `gold` スキーマへの `SELECT` のみを許可する。
+- **認証**: Databricks Apps はアプリのサービスプリンシパル用の `DATABRICKS_HOST` / OAuth資格情報を自動注入するが、SQL Warehouse のホスト名・HTTP Path そのものは注入しない。`app.yaml` の `env` に SQL Warehouse の **ID** を `DATABRICKS_WAREHOUSE_ID` として直接値で持たせ（`resources:` ブロック + `valueFrom` によるリソースバインディングは、UI側で明示的に紐付けないと注入されず実機で `KeyError` を確認したため不採用）、`backend/db.py` が `databricks.sdk.WorkspaceClient().warehouses.get(id)` で接続先（`odbc_params.hostname` / `.path`）を都度解決し、`databricks-sql-connector` に渡す。個々のエンドユーザー認証は行わず、アプリの実行権限に対して Unity Catalog 側で `gold` スキーマへの `SELECT` のみ、SQL Warehouse には `Can use` のみを許可する。
 - **書き込みは行わない**: Serving layer は読み取り専用。CSアクションの「対応済みにする」等のワークフローは将来の別チケットとし、今回は実装しない（=禁止されている他ステップの範囲を広げない）。
 
 ## ディレクトリ構成

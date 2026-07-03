@@ -81,7 +81,7 @@ export DATABRICKS_GOLD_SCHEMA=gold
 uvicorn backend.main:app --port 8000
 ```
 
-> **Databricks Apps 実行時の注意**: Databricks Apps は `DATABRICKS_HOST` とアプリのサービスプリンシパル用OAuth資格情報を自動注入するが、SQL Warehouse のホスト名・HTTP Path 自体は注入しない。そのため `backend/db.py` では `WorkspaceClient().warehouses.get(warehouse_id)` を使って接続先を都度解決している。`DATABRICKS_WAREHOUSE_ID` は `app.yaml` の `resources` で宣言したウェアハウスIDを `env: - valueFrom` 経由で受け取る。
+> **Databricks Apps 実行時の注意**: Databricks Apps は `DATABRICKS_HOST` とアプリのサービスプリンシパル用OAuth資格情報を自動注入するが、SQL Warehouse のホスト名・HTTP Path 自体は注入しない。そのため `backend/db.py` では `WorkspaceClient().warehouses.get(warehouse_id)` を使って接続先を都度解決している。`DATABRICKS_WAREHOUSE_ID` は `app.yaml` に**直接値として**書く（`resources:` ブロックによるリソースバインディングは、UI側で明示的に紐付けないと環境変数が注入されず `KeyError` で起動に失敗することを実機で確認したため採用していない）。
 
 ## Databricks Apps へのデプロイ
 
@@ -91,9 +91,12 @@ uvicorn backend.main:app --port 8000
 2. `databricks apps list` で既存アプリ数を確認
    - **Free Edition の上限に達している場合**: 作成日時が最も古いアプリを特定し、**必ずユーザーに削除の確認を取ってから** `databricks apps delete` する（無断で他人のアプリを削除しない）
 3. `databricks apps create gold-serving-layer`（初回のみ）
-4. `databricks sync app /Workspace/Users/<user>/gold-serving-layer`
-5. `databricks apps deploy gold-serving-layer --source-code-path /Workspace/Users/<user>/gold-serving-layer`
-6. Unity Catalog 側で、アプリのサービスプリンシパルに `gold` スキーマへの `SELECT` 権限のみを付与する
+4. `app.yaml` の `DATABRICKS_WAREHOUSE_ID` を実際のSQL Warehouse IDに書き換える
+5. `databricks sync app /Workspace/Users/<user>/gold-serving-layer`
+6. `databricks apps deploy gold-serving-layer --source-code-path /Workspace/Users/<user>/gold-serving-layer`
+7. **権限付与（この2つを忘れるとアプリはクラッシュ、またはクエリが失敗する）**
+   - SQL Warehouses > 対象のウェアハウス > Permissions で、アプリのサービスプリンシパルに **Can use** を付与する
+   - Catalog Explorer > `gold` スキーマ > Permissions で、同サービスプリンシパルに **SELECT** のみを付与する
 
 ## UI デザイン
 
