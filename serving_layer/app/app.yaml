@@ -33,4 +33,4 @@ env:
   - name: "DATABRICKS_GOLD_SCHEMA"
     value: "gold"
   - name: "DATABRICKS_WAREHOUSE_ID"
-    value: "7474648880209788" # SQL Warehouse ID。変更時はここを書き換える
+    value: "50153ad923fecd73" # SQL Warehouse ID (Serverless Starter Warehouse)。変更時はここを書き換える
