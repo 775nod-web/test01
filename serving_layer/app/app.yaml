@@ -6,6 +6,12 @@
 # Databricks SQL Serverless Warehouse を "sql_warehouse" リソースとして
 # 参照し、アプリのサービスプリンシパルに gold スキーマへの SELECT 権限のみを
 # Unity Catalog 側で付与しておくこと。
+#
+# 注意: Databricks Apps は DATABRICKS_HOST とアプリ自身のOAuth資格情報は
+# 自動注入するが、SQL Warehouse のホスト名・HTTP Path は注入しない。
+# resources で宣言したウェアハウスの ID を env の valueFrom で
+# DATABRICKS_WAREHOUSE_ID として受け取り、アプリ側 (backend/db.py) で
+# databricks.sdk.WorkspaceClient を使って接続先を都度解決する。
 
 command:
   - "uvicorn"
@@ -20,8 +26,8 @@ env:
     value: "workspace"
   - name: "DATABRICKS_GOLD_SCHEMA"
     value: "gold"
-  # SQL Warehouse の接続情報は resources 経由で自動注入される
-  # (DATABRICKS_SERVER_HOSTNAME / DATABRICKS_HTTP_PATH / OAuth 認証情報)。
+  - name: "DATABRICKS_WAREHOUSE_ID"
+    valueFrom: "gold-sql-warehouse"
 
 resources:
   - name: "gold-sql-warehouse"

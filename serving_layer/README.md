@@ -69,16 +69,19 @@ npm run dev
 
 `npm run build` で TypeScript の型検査とプロダクションビルドが通ることを確認済みです。4画面（経営KPI／プラン別売上／要フォローアップ顧客／データ品質）をブラウザで開き、レイアウト崩れがないことを Playwright のスクリーンショットで確認しています（`docs/screenshots/` 参照）。
 
-実際の Gold テーブルに接続する場合は、以下の環境変数を設定して `backend.main:app` を起動してください。
+実際の Gold テーブルに接続する場合は、以下の環境変数を設定して `backend.main:app` を起動してください。認証は `databricks.sdk.WorkspaceClient` のデフォルト認証（Unified Authentication）に任せているため、`databricks auth login` 済みのプロファイルがあれば追加の環境変数なしで動作します。
 
 ```bash
-export DATABRICKS_SERVER_HOSTNAME=<workspace-hostname>
-export DATABRICKS_HTTP_PATH=<sql-warehouse-http-path>
-export DATABRICKS_TOKEN=<personal-access-token>   # ローカル開発時のみ
+export DATABRICKS_WAREHOUSE_ID=<sql-warehouse-id>
 export DATABRICKS_CATALOG=workspace
 export DATABRICKS_GOLD_SCHEMA=gold
+# databricks auth login 済みでなければ、PAT ベースの認証情報も指定する
+# export DATABRICKS_HOST=<workspace-hostname>
+# export DATABRICKS_TOKEN=<personal-access-token>
 uvicorn backend.main:app --port 8000
 ```
+
+> **Databricks Apps 実行時の注意**: Databricks Apps は `DATABRICKS_HOST` とアプリのサービスプリンシパル用OAuth資格情報を自動注入するが、SQL Warehouse のホスト名・HTTP Path 自体は注入しない。そのため `backend/db.py` では `WorkspaceClient().warehouses.get(warehouse_id)` を使って接続先を都度解決している。`DATABRICKS_WAREHOUSE_ID` は `app.yaml` の `resources` で宣言したウェアハウスIDを `env: - valueFrom` 経由で受け取る。
 
 ## Databricks Apps へのデプロイ
 

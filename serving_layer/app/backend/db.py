@@ -2,33 +2,35 @@
 
 Gold layer (`<catalog>.<schema>.*`) に対する SELECT のみを行う。
 コネクションはプロセス内で使い回し、リクエスト毎に張り直さない。
+
+認証は `databricks.sdk.WorkspaceClient` に任せる。Databricks Apps 実行時は
+アプリのサービスプリンシパル資格情報（`DATABRICKS_HOST` /
+`DATABRICKS_CLIENT_ID` / `DATABRICKS_CLIENT_SECRET`）が自動注入されており、
+WorkspaceClient がそれを自動検出する。SQL Warehouse のホスト名・HTTP Path
+は固定の環境変数としては注入されないため、ウェアハウスID
+(`DATABRICKS_WAREHOUSE_ID`) から都度APIで解決する。
 """
 
 import threading
 from typing import Any
 
 from databricks import sql as dbsql
+from databricks.sdk import WorkspaceClient
 
 from .config import get_settings
 
 _settings = get_settings()
 _local = threading.local()
+_workspace_client = WorkspaceClient()
 
 
 def _connect():
-    kwargs: dict[str, Any] = {
-        "server_hostname": _settings.server_hostname,
-        "http_path": _settings.http_path,
-    }
-    if _settings.access_token:
-        # ローカル開発 (Personal Access Token)
-        kwargs["access_token"] = _settings.access_token
-    else:
-        # Databricks Apps 実行時: アプリのサービスプリンシパルによる OAuth (M2M)
-        kwargs["auth_type"] = "databricks-oauth"
-        kwargs["client_id"] = _settings.client_id
-        kwargs["client_secret"] = _settings.client_secret
-    return dbsql.connect(**kwargs)
+    warehouse = _workspace_client.warehouses.get(_settings.warehouse_id)
+    return dbsql.connect(
+        server_hostname=warehouse.odbc_params.hostname,
+        http_path=warehouse.odbc_params.path,
+        credentials_provider=lambda: _workspace_client.config.authenticate,
+    )
 
 
 def _get_connection():
