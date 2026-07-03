@@ -107,6 +107,6 @@ uvicorn backend.main:app --port 8000
 ## 既知の制約・スコープ外事項
 
 - **書き込み機能なし**: Serving layer は読み取り専用です。CS が「対応済みにする」等のワークフローは今回のスコープ外です。
-- **`data_quality_summary` のカラム定義**: 本タスクで渡された Gold layer 設計メモには grain（`run_date` × `source_table` × `dq_check_name`）のみが明記され、指標カラムの定義がなかったため、目的（品質課題の日次集計）から `failed_record_count` / `checked_record_count` / `failed_rate` を妥当な指標として推測して実装しています。実際の Gold テーブルのカラム名と異なる場合は `backend/models.py` と `routers/data_quality.py` を実テーブル定義に合わせて調整してください。
-- **認証**: エンドユーザー単位の認可は行わず、アプリのサービスプリンシパルに対する Unity Catalog 権限（`gold` スキーマの `SELECT` のみ）で制御する前提です。個人ごとのアクセス制御が必要な場合は別途設計が必要です。
-- **実ワークスペースでの動作確認**: この開発環境には Databricks ワークスペースへの接続情報がないため、実際の SQL Warehouse に対するクエリ疎通確認は行えていません。デプロイ後、`/healthz` と各 `/api/v1/*` エンドポイントの疎通を確認してください。
+- **`data_quality_summary` のカラム定義**: 本タスクで渡された Gold layer 設計メモには grain（`run_date` × `source_table` × `dq_check_name`）のみが明記され、指標カラムの定義がなかったため、当初は `failed_record_count` / `checked_record_count` / `failed_rate` と推測していたが、実機の `DESCRIBE TABLE` で確認した結果、実際のカラムは `issue_count` / `total_records` / `description` / `issue_rate` だった。`backend/models.py` / `routers/data_quality.py` / フロントエンドの型定義は実テーブルに合わせて修正済み。
+- **認証**: エンドユーザー単位の認可は行わず、アプリのサービスプリンシパルに対する Unity Catalog 権限（`gold` スキーマの `SELECT` のみ）と SQL Warehouse の `Can use` 権限で制御する前提です。個人ごとのアクセス制御が必要な場合は別途設計が必要です。
+- **実ワークスペースでの動作確認**: Databricks Free Edition 上に実際にデプロイし、経営KPI／プラン別売上／要フォローアップ顧客／データ品質の4エンドポイントすべてで疎通・クエリ成功を確認済み。

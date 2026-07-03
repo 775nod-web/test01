@@ -142,16 +142,17 @@ def data_quality_summary(days: int = 14) -> list[DataQualitySummary]:
         d = date.today() - timedelta(days=i)
         for table in _TABLES:
             for check in _CHECKS:
-                checked = random.randint(500, 2000)
-                failed = int(checked * random.choice([0, 0, 0.005, 0.03, 0.12]))
+                total = random.randint(500, 2000)
+                issues = int(total * random.choice([0, 0, 0.005, 0.03, 0.12]))
                 rows.append(
                     DataQualitySummary(
                         run_date=d,
                         source_table=table,
                         dq_check_name=check,
-                        failed_record_count=failed,
-                        checked_record_count=checked,
-                        failed_rate=round(failed / checked, 4) if checked else None,
+                        issue_count=issues,
+                        total_records=total,
+                        description=f"{check} failed for {issues} rows" if issues else None,
+                        issue_rate=round(issues / total, 4) if total else None,
                     )
                 )
     return rows

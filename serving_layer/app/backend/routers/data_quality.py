@@ -15,10 +15,7 @@ def list_data_quality_summary(
     sql_text = f"""
         SELECT
             run_date, source_table, dq_check_name,
-            failed_record_count, checked_record_count,
-            CASE WHEN checked_record_count > 0
-                 THEN failed_record_count / checked_record_count
-                 ELSE NULL END AS failed_rate
+            issue_count, total_records, description, issue_rate
         FROM {qualified_table('data_quality_summary')}
         WHERE run_date >= date_sub(current_date(), %(days)s)
         ORDER BY run_date DESC, source_table, dq_check_name

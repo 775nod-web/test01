@@ -58,8 +58,7 @@ class DataQualitySummary(BaseModel):
     run_date: date
     source_table: str
     dq_check_name: str
-    # 集計粒度は run_date x source_table x dq_check_name の1行だが、
-    # 件数等の指標カラムは Gold 設計メモに準拠して失敗/対象件数を保持する。
-    failed_record_count: int
-    checked_record_count: int
-    failed_rate: float | None = None
+    issue_count: int
+    total_records: int
+    description: str | None = None
+    issue_rate: float | None = None

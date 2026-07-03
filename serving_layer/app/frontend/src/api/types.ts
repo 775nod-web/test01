@@ -48,7 +48,8 @@ export interface DataQualitySummary {
   run_date: string;
   source_table: string;
   dq_check_name: string;
-  failed_record_count: number;
-  checked_record_count: number;
-  failed_rate: number | null;
+  issue_count: number;
+  total_records: number;
+  description: string | null;
+  issue_rate: number | null;
 }
