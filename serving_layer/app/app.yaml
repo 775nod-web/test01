@@ -1,0 +1,30 @@
+# Databricks Apps 設定ファイル
+# ドキュメント: https://docs.databricks.com/en/dev-tools/databricks-apps/index.html
+#
+# このアプリは FastAPI (backend) が React ビルド成果物 (frontend/dist) を
+# 静的配信する単一プロセス構成。Gold layer (gold.*) への読み取りは
+# Databricks SQL Serverless Warehouse を "sql_warehouse" リソースとして
+# 参照し、アプリのサービスプリンシパルに gold スキーマへの SELECT 権限のみを
+# Unity Catalog 側で付与しておくこと。
+
+command:
+  - "uvicorn"
+  - "backend.main:app"
+  - "--host"
+  - "0.0.0.0"
+  - "--port"
+  - "$DATABRICKS_APP_PORT"
+
+env:
+  - name: "DATABRICKS_CATALOG"
+    value: "workspace"
+  - name: "DATABRICKS_GOLD_SCHEMA"
+    value: "gold"
+  # SQL Warehouse の接続情報は resources 経由で自動注入される
+  # (DATABRICKS_SERVER_HOSTNAME / DATABRICKS_HTTP_PATH / OAuth 認証情報)。
+
+resources:
+  - name: "gold-sql-warehouse"
+    sql_warehouse:
+      id: "<SQL_WAREHOUSE_ID>" # デプロイ時に Free Edition のサーバーレスSQLウェアハウスIDに置き換える
+      permission: "CAN_USE"
