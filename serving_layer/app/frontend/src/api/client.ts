@@ -18,8 +18,8 @@ async function getJson<T>(path: string, params?: Record<string, string | number 
 }
 
 export const api = {
-  getDailyKpi: (start?: string, end?: string) =>
-    getJson<DailyKpi[]>("/daily-kpi", { start, end }),
+  getDailyKpi: (days = 30) =>
+    getJson<DailyKpi[]>("/daily-kpi", { days }),
 
   getSalesPerPlan: (months = 12) =>
     getJson<SalesPerPlan[]>("/sales-per-plan", { months }),

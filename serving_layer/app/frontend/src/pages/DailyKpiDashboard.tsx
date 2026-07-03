@@ -34,13 +34,10 @@ function formatDateJp(iso: string): string {
 
 export function DailyKpiDashboard() {
   const [days, setDays] = useState(30);
-  const state = useAsyncData(() => {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(end.getDate() - days);
-    const toIso = (d: Date) => d.toISOString().slice(0, 10);
-    return api.getDailyKpi(toIso(start), toIso(end));
-  }, [days]);
+  // ブラウザの実際の日付ではなく、データ内の最新日を基準にバックエンドが
+  // 期間を決める。サンプルデータの期間が実際のカレンダー日付と無関係でも
+  // 正しく「直近N日」が表示されるようにするため。
+  const state = useAsyncData(() => api.getDailyKpi(days), [days]);
 
   return (
     <div>
