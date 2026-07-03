@@ -26,5 +26,5 @@ env:
 resources:
   - name: "gold-sql-warehouse"
     sql_warehouse:
-      id: "<SQL_WAREHOUSE_ID>" # デプロイ時に Free Edition のサーバーレスSQLウェアハウスIDに置き換える
+      id: "7474648880209788" # デプロイ時に Free Edition のサーバーレスSQLウェアハウスIDに置き換える
       permission: "CAN_USE"
