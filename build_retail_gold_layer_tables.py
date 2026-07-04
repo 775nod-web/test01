@@ -1,5 +1,5 @@
 """
-小売メダリオンアーキテクチャ Gold layer 構築スクリプト（Databricks Free Edition想定）
+小売メダリオンアーキテクチャ Gold layer 表定義スクリプト（Databricks Free Edition想定）
 ==================================================================
 
 ■ ビジネス目的
@@ -8,11 +8,10 @@
 ■ 想定利用者
     本社営業管理 / 店長 / 商品企画 / データサイエンスチーム
 
-■ 前提（Bronze/Sample layer）
-    sample.store_master / sample.product_master / sample.customer_master / sample.pos_sales
-    が Delta テーブルとして保存済みであること。
-    存在しない場合は本スクリプトが generate_retail_medallion_sample_data.py と
-    save_retail_sample_delta_tables.py を自動実行して補完する。
+■ 今回のスコープ
+    Gold layerの表定義（スキーマ）のみを確定し、データの入っていない空表として
+    `gold` スキーマに保存する。sample.pos_sales 等からのクレンジング・集計処理は
+    後続タスクで対応する。
 
 ■ 今回作成する Gold layer 表（Knowledge base記載の4表のみ）
     1. gold_daily_store_sales         … 日別店舗別売上
@@ -24,23 +23,7 @@ Databricks ノートブックでは spark はクラスターから自動注入�
 SparkSession.builder は呼ばない。
 """
 
-from pyspark.sql import functions as F
-from pyspark.sql.window import Window
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType
-
-
-# ──────────────────────────────────────────────
-# 0. 依存データ（sampleスキーマの4表）の存在確認・自動生成
-#    ※ Python変数ではなく永続化されたDeltaテーブルの有無で判定することで、
-#      ノートブック／セッションが分かれていても正しく動作するようにする
-# ──────────────────────────────────────────────
-
-if not spark.catalog.tableExists("sample.pos_sales"):
-    print("sampleスキーマのテーブルが存在しないため、サンプルデータの生成・保存を先に実行します。")
-    with open("generate_retail_medallion_sample_data.py", encoding="utf-8") as f:
-        exec(f.read(), globals())
-    with open("save_retail_sample_delta_tables.py", encoding="utf-8") as f:
-        exec(f.read(), globals())
+from pyspark.sql.types import StructType, StructField, StringType
 
 
 # ================================================================
@@ -126,256 +109,119 @@ df_gold_column_design.show(100, truncate=False)
 
 
 # ================================================================
-# Output 2: Gold layer 構築・保存コード
+# Output 2: Gold layer 表定義（空表）の保存
+#   ※ サンプルデータからの集計・クレンジングは行わず、設計通りの空表を保存するのみ
+#
+#   注：DataFrame（StructTypeでnullable=False指定）を saveAsTable() で保存する方式は
+#      NOT NULL制約がテーブル定義に反映されない（全列nullable=trueになる）ため、
+#      CREATE TABLE ... USING DELTA のDDLで直接テーブルを作成する方式を採用する。
 # ================================================================
 
 spark.sql("CREATE DATABASE IF NOT EXISTS gold")
 spark.sql("USE gold")
 print("データベース 'gold' を選択しました")
 
-df_sample_stores   = spark.table("sample.store_master")
-df_sample_products = spark.table("sample.product_master")
-df_sample_pos      = spark.table("sample.pos_sales")
 
 # ──────────────────────────────────────────────
-# 2-0. 共通クレンジング
-#      ・重複transactionの除去（transaction_id単位でdrop duplicates）
-#      ・store_id / product_id のマスター整合性フラグ付与
+# 1. gold_daily_store_sales（日別店舗別売上）
 # ──────────────────────────────────────────────
 
-df_pos_dedup = df_sample_pos.dropDuplicates(["transaction_id"])
-
-valid_store_ids = [r.store_id for r in df_sample_stores.select("store_id").collect()]
-valid_product_ids = [r.product_id for r in df_sample_products.select("product_id").collect()]
-
-df_pos_flagged = (
-    df_pos_dedup
-    .withColumn("is_store_registered", F.col("store_id").isin(valid_store_ids))
-    .withColumn("is_product_registered", F.col("product_id").isin(valid_product_ids))
-)
-
-# マスター整合済み（Gold集計3表の対象となる）取引データ
-df_pos_valid = df_pos_flagged.filter(
-    F.col("is_store_registered") & F.col("is_product_registered")
-)
-
-dedup_removed = df_sample_pos.count() - df_pos_dedup.count()
-master_mismatch_removed = df_pos_dedup.count() - df_pos_valid.count()
-print(f"重複transactionとして除去: {dedup_removed} 件")
-print(f"マスター未登録として集計対象外: {master_mismatch_removed} 件")
-print(f"Gold集計対象（クレンジング後）の有効取引数: {df_pos_valid.count()} 件")
+spark.sql("""
+    CREATE OR REPLACE TABLE gold.gold_daily_store_sales (
+        sales_date          DATE   NOT NULL,
+        store_id             STRING NOT NULL,
+        store_name           STRING NOT NULL,
+        region               STRING NOT NULL,
+        transaction_count    BIGINT NOT NULL,
+        total_quantity       BIGINT NOT NULL,
+        total_sales_amount   DOUBLE NOT NULL
+    )
+    USING DELTA
+""")
+print("gold_daily_store_sales（空表）を保存しました")
 
 
 # ──────────────────────────────────────────────
-# 2-1. transaction_datetime の複数フォーマット対応パース
-#      （時刻形式不一致の品質課題に対応。解析できない場合はnullとし、
-#        日別集計（gold_daily_store_sales）からのみ除外する）
+# 2. gold_category_sales（商品カテゴリ別売上）
 # ──────────────────────────────────────────────
 
-DATETIME_FORMATS = [
-    "yyyy-MM-dd HH:mm:ss",        # 標準フォーマット
-    "yyyy/MM/dd HH:mm",
-    "dd-MM-yyyy HH:mm:ss",
-    "yyyyMMddHHmmss",
-    "yyyy-MM-dd'T'HH:mm:ss'Z'",
-    "MMM d, yyyy hh:mm a",
-    "yyyy.MM.dd HH:mm",
-    "d/M/yyyy HH:mm",
-    "yyyy-MM-dd HH'時'mm'分'",
-    "yyyyMMdd",
+spark.sql("""
+    CREATE OR REPLACE TABLE gold.gold_category_sales (
+        category             STRING NOT NULL,
+        product_count        BIGINT NOT NULL,
+        transaction_count    BIGINT NOT NULL,
+        total_quantity       BIGINT NOT NULL,
+        total_sales_amount   DOUBLE NOT NULL
+    )
+    USING DELTA
+""")
+print("gold_category_sales（空表）を保存しました")
+
+
+# ──────────────────────────────────────────────
+# 3. gold_store_ranking（店舗ランキング）
+# ──────────────────────────────────────────────
+
+spark.sql("""
+    CREATE OR REPLACE TABLE gold.gold_store_ranking (
+        sales_rank           INT    NOT NULL,
+        store_id             STRING NOT NULL,
+        store_name           STRING NOT NULL,
+        region               STRING NOT NULL,
+        store_type           STRING NOT NULL,
+        total_sales_amount   DOUBLE NOT NULL,
+        total_quantity       BIGINT NOT NULL,
+        transaction_count    BIGINT NOT NULL
+    )
+    USING DELTA
+""")
+print("gold_store_ranking（空表）を保存しました")
+
+
+# ──────────────────────────────────────────────
+# 4. gold_unregistered_master_report（マスター未登録レポート）
+# ──────────────────────────────────────────────
+
+spark.sql("""
+    CREATE OR REPLACE TABLE gold.gold_unregistered_master_report (
+        transaction_id          STRING  NOT NULL,
+        issue_type              STRING  NOT NULL,
+        store_id                STRING,
+        is_store_registered     BOOLEAN NOT NULL,
+        product_id               STRING,
+        is_product_registered   BOOLEAN NOT NULL,
+        customer_id              STRING,
+        transaction_datetime     STRING,
+        quantity                 INT,
+        unit_price               DOUBLE,
+        discount_amount          DOUBLE,
+        sales_amount             DOUBLE
+    )
+    USING DELTA
+""")
+print("gold_unregistered_master_report（空表）を保存しました")
+
+
+# ================================================================
+# 保存結果を確認するためのコード
+# ================================================================
+
+GOLD_TABLES = [
+    "gold_daily_store_sales",
+    "gold_category_sales",
+    "gold_store_ranking",
+    "gold_unregistered_master_report",
 ]
 
-
-def parse_multi_format_timestamp(colname: str, formats: list):
-    """複数の日時フォーマットを順に試し、最初に解析できた結果を採用する
-
-    Databricksは既定でANSI SQLモードが有効なため、to_timestampはフォーマット
-    不一致時に例外を送出してしまう。try_to_timestampを使うことで、解析に
-    失敗した場合は例外にせずnullを返すようにする。
-    """
-    return F.coalesce(*[F.try_to_timestamp(F.col(colname), F.lit(fmt)) for fmt in formats])
-
-
-df_pos_valid = (
-    df_pos_valid
-    .withColumn("parsed_datetime", parse_multi_format_timestamp("transaction_datetime", DATETIME_FORMATS))
-    .withColumn("sales_date", F.to_date(F.col("parsed_datetime")))
-)
-
-unparseable_count = df_pos_valid.filter(F.col("sales_date").isNull()).count()
-print(f"時刻形式を解析できず日付を特定できなかった取引: {unparseable_count} 件（gold_daily_store_salesのみ対象外）")
-
-
-# ──────────────────────────────────────────────
-# 2-2. gold_daily_store_sales（日別店舗別売上）
-# ──────────────────────────────────────────────
-
-df_gold_daily_store_sales = (
-    df_pos_valid
-    .filter(F.col("sales_date").isNotNull())
-    .groupBy("sales_date", "store_id")
-    .agg(
-        F.count("transaction_id").alias("transaction_count"),
-        F.sum("quantity").alias("total_quantity"),
-        F.sum("sales_amount").alias("total_sales_amount"),
-    )
-    .join(df_sample_stores.select("store_id", "store_name", "region"), on="store_id", how="inner")
-    .select("sales_date", "store_id", "store_name", "region",
-            "transaction_count", "total_quantity", "total_sales_amount")
-)
-
-(
-    df_gold_daily_store_sales.write
-    .format("delta")
-    .mode("overwrite")
-    .option("overwriteSchema", "true")
-    .saveAsTable("gold.gold_daily_store_sales")
-)
-daily_store_sales_count = spark.table("gold.gold_daily_store_sales").count()
-print(f"gold_daily_store_sales 保存完了: {daily_store_sales_count:,} 件")
-
-
-# ──────────────────────────────────────────────
-# 2-3. gold_category_sales（商品カテゴリ別売上）
-# ──────────────────────────────────────────────
-
-df_product_count_by_category = (
-    df_sample_products.groupBy("category").agg(F.count("product_id").alias("product_count"))
-)
-
-df_gold_category_sales = (
-    df_pos_valid
-    .join(df_sample_products.select("product_id", "category"), on="product_id", how="inner")
-    .groupBy("category")
-    .agg(
-        F.count("transaction_id").alias("transaction_count"),
-        F.sum("quantity").alias("total_quantity"),
-        F.sum("sales_amount").alias("total_sales_amount"),
-    )
-    .join(df_product_count_by_category, on="category", how="inner")
-    .select("category", "product_count", "transaction_count", "total_quantity", "total_sales_amount")
-)
-
-(
-    df_gold_category_sales.write
-    .format("delta")
-    .mode("overwrite")
-    .option("overwriteSchema", "true")
-    .saveAsTable("gold.gold_category_sales")
-)
-category_sales_count = spark.table("gold.gold_category_sales").count()
-print(f"gold_category_sales 保存完了: {category_sales_count:,} 件")
-
-
-# ──────────────────────────────────────────────
-# 2-4. gold_store_ranking（店舗ランキング）
-# ──────────────────────────────────────────────
-
-df_store_agg = (
-    df_pos_valid
-    .groupBy("store_id")
-    .agg(
-        F.count("transaction_id").alias("transaction_count"),
-        F.sum("quantity").alias("total_quantity"),
-        F.sum("sales_amount").alias("total_sales_amount"),
-    )
-)
-
-ranking_window = Window.orderBy(F.col("total_sales_amount").desc())
-
-df_gold_store_ranking = (
-    df_store_agg
-    .withColumn("sales_rank", F.rank().over(ranking_window).cast("int"))
-    .join(
-        df_sample_stores.select("store_id", "store_name", "region", "store_type"),
-        on="store_id", how="inner",
-    )
-    .select("sales_rank", "store_id", "store_name", "region", "store_type",
-            "total_sales_amount", "total_quantity", "transaction_count")
-    .orderBy("sales_rank")
-)
-
-(
-    df_gold_store_ranking.write
-    .format("delta")
-    .mode("overwrite")
-    .option("overwriteSchema", "true")
-    .saveAsTable("gold.gold_store_ranking")
-)
-store_ranking_count = spark.table("gold.gold_store_ranking").count()
-print(f"gold_store_ranking 保存完了: {store_ranking_count:,} 件")
-
-
-# ──────────────────────────────────────────────
-# 2-5. gold_unregistered_master_report（マスター未登録レポート）
-#      ※ 重複transactionの除去のみ適用し、マスター整合性では絞り込まない
-#        （このテーブル自体がマスター未登録取引を可視化するためのもの）
-# ──────────────────────────────────────────────
-
-df_gold_unregistered_master_report = (
-    df_pos_flagged
-    .filter(~F.col("is_store_registered") | ~F.col("is_product_registered"))
-    .withColumn(
-        "issue_type",
-        F.when(~F.col("is_store_registered") & ~F.col("is_product_registered"),
-               F.lit("store_id未登録,product_id未登録"))
-         .when(~F.col("is_store_registered"), F.lit("store_id未登録"))
-         .otherwise(F.lit("product_id未登録"))
-    )
-    .select("transaction_id", "issue_type", "store_id", "is_store_registered",
-            "product_id", "is_product_registered", "customer_id",
-            "transaction_datetime", "quantity", "unit_price",
-            "discount_amount", "sales_amount")
-)
-
-(
-    df_gold_unregistered_master_report.write
-    .format("delta")
-    .mode("overwrite")
-    .option("overwriteSchema", "true")
-    .saveAsTable("gold.gold_unregistered_master_report")
-)
-unregistered_report_count = spark.table("gold.gold_unregistered_master_report").count()
-print(f"gold_unregistered_master_report 保存完了: {unregistered_report_count:,} 件")
-
-
-# ================================================================
-# Output 2: 保存結果を確認するためのコード
-# ================================================================
-
 print("\n" + "=" * 80)
-print("=== Gold layer 各表のサンプルデータ（先頭5件） ===")
+print("=== 保存結果の確認（スキーマ・件数） ===")
 print("=" * 80)
 
-print("\n--- gold.gold_daily_store_sales ---")
-spark.table("gold.gold_daily_store_sales").orderBy("sales_date", "store_id").show(5, truncate=False)
+for table_name in GOLD_TABLES:
+    full_name = f"gold.{table_name}"
+    print(f"\n--- {full_name} ---")
+    spark.table(full_name).printSchema()
+    row_count = spark.table(full_name).count()
+    print(f"件数: {row_count} 件（空表のため0件が正しい状態）")
 
-print("\n--- gold.gold_category_sales ---")
-spark.table("gold.gold_category_sales").orderBy(F.col("total_sales_amount").desc()).show(5, truncate=False)
-
-print("\n--- gold.gold_store_ranking ---")
-spark.table("gold.gold_store_ranking").orderBy("sales_rank").show(5, truncate=False)
-
-print("\n--- gold.gold_unregistered_master_report ---")
-spark.table("gold.gold_unregistered_master_report").show(5, truncate=False)
-
-
-print("\n" + "=" * 80)
-print("=== Gold layer 各表の件数サマリー ===")
-print("=" * 80)
-print(f"  gold_daily_store_sales          : {daily_store_sales_count:>4,} 件")
-print(f"  gold_category_sales             : {category_sales_count:>4,} 件")
-print(f"  gold_store_ranking              : {store_ranking_count:>4,} 件")
-print(f"  gold_unregistered_master_report : {unregistered_report_count:>4,} 件")
-
-
-print("\n" + "=" * 80)
-print("=== クレンジング内訳（sample.pos_sales → Gold集計対象） ===")
-print("=" * 80)
-print(f"  sample.pos_sales 全件           : {df_sample_pos.count():>4,} 件")
-print(f"  うち 重複transaction除去        : {dedup_removed:>4,} 件")
-print(f"  うち マスター未登録で集計対象外 : {master_mismatch_removed:>4,} 件（→ gold_unregistered_master_reportに計上）")
-print(f"  うち 時刻形式解析不可（日別集計のみ対象外） : {unparseable_count:>4,} 件")
-print(f"  Gold集計（カテゴリ別・店舗別）対象  : {df_pos_valid.count():>4,} 件")
-
-print("\n=== Gold layer 保存・検証完了 ===")
+print("\n=== Gold layer 表定義（空表）の保存完了 ===")
