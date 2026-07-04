@@ -1,0 +1,22 @@
+# Databricks Apps アプリケーション定義
+# デプロイ: databricks apps deploy <app-name> --source-code-path ./serving_app
+#
+# バックエンド（FastAPI）が単一プロセスとしてAPIとビルド済みフロントエンド
+# 静的ファイルの両方を配信する（Databricks Appsは1コマンド起動が前提のため）。
+
+command:
+  - "uvicorn"
+  - "backend.main:app"
+  - "--host"
+  - "0.0.0.0"
+  - "--port"
+  - "8000"
+
+env:
+  - name: "DATABRICKS_WAREHOUSE_ID"
+    value: "50153ad923fecd73"
+  # gold.<table> は2階層名（gold_layerノートブック群がcreate database/tableした
+  # スキーマ名）。Unity Catalogでカタログを明示する必要がある場合は
+  # GOLD_TABLE_PREFIX を "<catalog>.gold" のように上書きする。
+  - name: "GOLD_TABLE_PREFIX"
+    value: "gold"

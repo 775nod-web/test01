@@ -1,0 +1,97 @@
+/*
+  Google Slides風の「淡いが鮮やかな」パレット。
+  dataviz skillの6チェック(lightness band / chroma floor / CVD separation /
+  contrast)をlight・dark両モードでnode scripts/validate_palette.jsにより検証済み。
+  カテゴリ配色は固定順（store_id・categoryの出現順に slot 1→7 を割り当て、
+  循環させない）。
+*/
+
+:root {
+  --surface-1: #fcfcfb;
+  --page-plane: #f9f9f7;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --gridline: #e1e0d9;
+  --border: rgba(11, 11, 11, 0.10);
+
+  --series-1: #4a86c6; /* 青 */
+  --series-2: #cc4125; /* 赤 */
+  --series-3: #e8a317; /* 金/黄 */
+  --series-4: #6aa84f; /* 緑 */
+  --series-5: #8e7cc3; /* 紫 */
+  --series-6: #d5793b; /* 橙 */
+  --series-7: #1b9c9c; /* 青緑 */
+
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --font-sans: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-1: #1a1a19;
+    --page-plane: #0d0d0d;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --gridline: #2c2c2a;
+    --border: rgba(255, 255, 255, 0.10);
+
+    --series-1: #3d7dc9;
+    --series-2: #d9534f;
+    --series-3: #b8860b;
+    --series-4: #5e9e48;
+    --series-5: #7c68b8;
+    --series-6: #c96a2e;
+    --series-7: #0f9e9e;
+  }
+}
+
+:root[data-theme="light"] {
+  --surface-1: #fcfcfb;
+  --page-plane: #f9f9f7;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --gridline: #e1e0d9;
+  --border: rgba(11, 11, 11, 0.10);
+  --series-1: #4a86c6;
+  --series-2: #cc4125;
+  --series-3: #e8a317;
+  --series-4: #6aa84f;
+  --series-5: #8e7cc3;
+  --series-6: #d5793b;
+  --series-7: #1b9c9c;
+}
+
+:root[data-theme="dark"] {
+  --surface-1: #1a1a19;
+  --page-plane: #0d0d0d;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --gridline: #2c2c2a;
+  --border: rgba(255, 255, 255, 0.10);
+  --series-1: #3d7dc9;
+  --series-2: #d9534f;
+  --series-3: #b8860b;
+  --series-4: #5e9e48;
+  --series-5: #7c68b8;
+  --series-6: #c96a2e;
+  --series-7: #0f9e9e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--page-plane);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
