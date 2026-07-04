@@ -6,13 +6,26 @@
 #     行わず、あくまで「生成したサンプルデータをそのまま保存する」ことのみを目的とする。
 #     Bronze レイヤーとしての本実装は後続の別タスクで対応する。
 #
-# 前提：generate_retail_medallion_sample_data.py を同セッションで実行済みであること
+# 前提：generate_retail_medallion_sample_data.py と同じフォルダに配置されていること
 # 動作確認環境：Databricks Free Edition（Unity Catalog 不使用・Hive メタストア）
 
 from pyspark.sql import functions as F
 
 # ──────────────────────────────────────────────
-# 0. 保存先データベース（スキーマ）の作成
+# 0-1. 依存データ（サンプルDataFrame）の読み込み
+#      df_stores 等が未定義（本スクリプトを単独実行した場合）は、
+#      同じフォルダの generate_retail_medallion_sample_data.py を読み込んで実行し、
+#      サンプルデータの DataFrame を生成する。
+#      同一ノートブックで generate 側をすでに実行済みの場合は再生成しない。
+# ──────────────────────────────────────────────
+
+if "df_stores" not in dir():
+    with open("generate_retail_medallion_sample_data.py", encoding="utf-8") as f:
+        exec(f.read(), globals())
+
+
+# ──────────────────────────────────────────────
+# 0-2. 保存先データベース（スキーマ）の作成
 # ──────────────────────────────────────────────
 
 spark.sql("CREATE DATABASE IF NOT EXISTS sample")
