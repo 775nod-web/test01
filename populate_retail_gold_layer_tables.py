@@ -26,6 +26,15 @@
     4. gold_unregistered_master_report … store_idまたはproduct_idが未登録の
                                           取引をそのまま抽出（集計はしない）
 
+■ パフォーマンス最適化の方針
+    ・有効データ（store/product双方が登録済み）は1,2,3の集計すべてで再利用するため、
+      商品カテゴリのjoinまで済ませた状態で1回だけ作成しcache()する
+      （3回それぞれが個別にsilver_pos_salesを読み直す／filterし直すのを避ける）
+    ・store_master・product_masterのような小さいマスター表は broadcast() で
+      明示的にブロードキャスト結合し、事実表（silver_pos_sales由来）側の
+      シャッフルを発生させないようにする
+    ・使い終えたキャッシュは最後にunpersist()して明示的に解放する
+
 Databricks ノートブックでは spark はクラスターから自動注入されるため
 SparkSession.builder は呼ばない。
 """
@@ -59,14 +68,23 @@ df_silver_pos = spark.table("silver.silver_pos_sales")
 df_silver_stores = spark.table("silver.silver_store_master")
 df_silver_products = spark.table("silver.silver_product_master")
 
-# store/product双方がマスター登録済みの取引のみを集計対象とする
-df_valid_pos = df_silver_pos.filter(
-    F.col("is_store_registered") & F.col("is_product_registered")
+# store/product双方がマスター登録済みの取引のみを集計対象とする。
+# 1・2・3の集計すべてで使い回すため、商品カテゴリのjoinまでこの時点で済ませてcache()する
+# （集計ごとにsilver_pos_salesを読み直す／filterし直すコストを1回にまとめる）。
+# product_masterは極small（十数件程度）なのでbroadcastし、事実表側のシャッフルを避ける。
+df_valid_pos = (
+    df_silver_pos
+    .filter(F.col("is_store_registered") & F.col("is_product_registered"))
+    .join(
+        F.broadcast(df_silver_products.select("product_id", "category")),
+        on="product_id", how="inner",
+    )
+    .cache()
 )
-# マスター未登録の取引（gold_unregistered_master_report向け）
+# マスター未登録の取引（gold_unregistered_master_report向け）。こちらも件数確認で再利用するためcache()する
 df_invalid_pos = df_silver_pos.filter(
     ~F.col("is_store_registered") | ~F.col("is_product_registered")
-)
+).cache()
 
 
 # ──────────────────────────────────────────────
@@ -82,7 +100,10 @@ df_gold_daily_store_sales = (
         F.sum("quantity").alias("total_quantity"),
         F.sum("sales_amount").alias("total_sales_amount"),
     )
-    .join(df_silver_stores.select("store_id", "store_name", "region"), on="store_id", how="inner")
+    .join(
+        F.broadcast(df_silver_stores.select("store_id", "store_name", "region")),
+        on="store_id", how="inner",
+    )
     .select(
         F.col("transaction_date").alias("sales_date"),
         "store_id", "store_name", "region",
@@ -107,16 +128,16 @@ df_product_count_by_category = (
     df_silver_products.groupBy("category").agg(F.count("product_id").alias("product_count"))
 )
 
+# df_valid_posは既にproduct_masterとjoin済み（category列を保持）のため、再joinは不要
 df_gold_category_sales = (
     df_valid_pos
-    .join(df_silver_products.select("product_id", "category"), on="product_id", how="inner")
     .groupBy("category")
     .agg(
         F.count("transaction_id").alias("transaction_count"),
         F.sum("quantity").alias("total_quantity"),
         F.sum("sales_amount").alias("total_sales_amount"),
     )
-    .join(df_product_count_by_category, on="category", how="inner")
+    .join(F.broadcast(df_product_count_by_category), on="category", how="inner")
     .select("category", "product_count", "transaction_count", "total_quantity", "total_sales_amount")
 )
 
@@ -149,7 +170,7 @@ df_gold_store_ranking = (
     df_store_agg
     .withColumn("sales_rank", F.rank().over(ranking_window).cast("int"))
     .join(
-        df_silver_stores.select("store_id", "store_name", "region", "store_type"),
+        F.broadcast(df_silver_stores.select("store_id", "store_name", "region", "store_type")),
         on="store_id", how="inner",
     )
     .select("sales_rank", "store_id", "store_name", "region", "store_type",
@@ -296,5 +317,9 @@ print(f"[6] gold_unregistered_master_report件数 {df_gold_unregistered.count()}
 # [7] gold_unregistered_master_reportの内訳（issue_type別件数）
 print("\n[7] gold_unregistered_master_report issue_type別内訳:")
 df_gold_unregistered.groupBy("issue_type").count().show(truncate=False)
+
+# キャッシュした中間データを明示的に解放する
+df_valid_pos.unpersist()
+df_invalid_pos.unpersist()
 
 print("\n=== Gold layer 集計・保存・整合性チェック完了 ===")
