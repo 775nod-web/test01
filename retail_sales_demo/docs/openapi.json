@@ -1,0 +1,766 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "retail_sales_demo serving layer API",
+    "description": "Gold layer(workspace.gold)の集計データをReactフロントエンド向けにREST API化するServing layer。",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/kpi-summary": {
+      "get": {
+        "summary": "Kpi Summary",
+        "operationId": "kpi_summary_api_kpi_summary_get",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "カンマ区切りの店舗IDで絞り込み（例: S001,S002）。未指定なら全店舗。",
+              "title": "Store Id"
+            },
+            "description": "カンマ区切りの店舗IDで絞り込み（例: S001,S002）。未指定なら全店舗。"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "集計期間の開始日（含む、YYYY-MM-DD）",
+              "title": "Date From"
+            },
+            "description": "集計期間の開始日（含む、YYYY-MM-DD）"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "集計期間の終了日（含む、YYYY-MM-DD）",
+              "title": "Date To"
+            },
+            "description": "集計期間の終了日（含む、YYYY-MM-DD）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KpiSummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/daily-store-sales": {
+      "get": {
+        "summary": "Daily Store Sales",
+        "operationId": "daily_store_sales_api_daily_store_sales_get",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "カンマ区切りの店舗IDで絞り込み（例: S001,S002）。未指定なら全店舗。",
+              "title": "Store Id"
+            },
+            "description": "カンマ区切りの店舗IDで絞り込み（例: S001,S002）。未指定なら全店舗。"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "集計期間の開始日（含む、YYYY-MM-DD）",
+              "title": "Date From"
+            },
+            "description": "集計期間の開始日（含む、YYYY-MM-DD）"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "集計期間の終了日（含む、YYYY-MM-DD）",
+              "title": "Date To"
+            },
+            "description": "集計期間の終了日（含む、YYYY-MM-DD）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DailyStoreSalesPoint"
+                  },
+                  "title": "Response Daily Store Sales Api Daily Store Sales Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/category-sales": {
+      "get": {
+        "summary": "Category Sales",
+        "operationId": "category_sales_api_category_sales_get",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "カンマ区切りの店舗IDで絞り込み（例: S001,S002）。未指定なら全店舗。",
+              "title": "Store Id"
+            },
+            "description": "カンマ区切りの店舗IDで絞り込み（例: S001,S002）。未指定なら全店舗。"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "集計期間の開始日（含む、YYYY-MM-DD）",
+              "title": "Date From"
+            },
+            "description": "集計期間の開始日（含む、YYYY-MM-DD）"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "集計期間の終了日（含む、YYYY-MM-DD）",
+              "title": "Date To"
+            },
+            "description": "集計期間の終了日（含む、YYYY-MM-DD）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategorySalesPoint"
+                  },
+                  "title": "Response Category Sales Api Category Sales Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/store-ranking": {
+      "get": {
+        "summary": "Store Ranking",
+        "operationId": "store_ranking_api_store_ranking_get",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "カンマ区切りの店舗IDで絞り込み（例: S001,S002）。未指定なら全店舗。",
+              "title": "Store Id"
+            },
+            "description": "カンマ区切りの店舗IDで絞り込み（例: S001,S002）。未指定なら全店舗。"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "集計期間の開始日（含む、YYYY-MM-DD）",
+              "title": "Date From"
+            },
+            "description": "集計期間の開始日（含む、YYYY-MM-DD）"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "集計期間の終了日（含む、YYYY-MM-DD）",
+              "title": "Date To"
+            },
+            "description": "集計期間の終了日（含む、YYYY-MM-DD）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StoreRankingPoint"
+                  },
+                  "title": "Response Store Ranking Api Store Ranking Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/quarantine-report": {
+      "get": {
+        "summary": "Quarantine Report",
+        "operationId": "quarantine_report_api_quarantine_report_get",
+        "parameters": [
+          {
+            "name": "store_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "カンマ区切りの店舗IDで絞り込み（例: S001,S002）。未指定なら全店舗。",
+              "title": "Store Id"
+            },
+            "description": "カンマ区切りの店舗IDで絞り込み（例: S001,S002）。未指定なら全店舗。"
+          },
+          {
+            "name": "issue_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "カンマ区切りのissue_typeで絞り込み（例: UNKNOWN_PRODUCT,UNKNOWN_STORE）",
+              "title": "Issue Type"
+            },
+            "description": "カンマ区切りのissue_typeで絞り込み（例: UNKNOWN_PRODUCT,UNKNOWN_STORE）"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "集計期間の開始日（含む、YYYY-MM-DD）",
+              "title": "Date From"
+            },
+            "description": "集計期間の開始日（含む、YYYY-MM-DD）"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "集計期間の終了日（含む、YYYY-MM-DD）",
+              "title": "Date To"
+            },
+            "description": "集計期間の終了日（含む、YYYY-MM-DD）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuarantineReportItem"
+                  },
+                  "title": "Response Quarantine Report Api Quarantine Report Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CategorySalesPoint": {
+        "properties": {
+          "category_id": {
+            "type": "string",
+            "title": "Category Id"
+          },
+          "category_name": {
+            "type": "string",
+            "title": "Category Name"
+          },
+          "net_sales": {
+            "type": "number",
+            "title": "Net Sales"
+          },
+          "units_sold": {
+            "type": "integer",
+            "title": "Units Sold"
+          },
+          "share_of_net_sales": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share Of Net Sales"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category_id",
+          "category_name",
+          "net_sales",
+          "units_sold",
+          "share_of_net_sales"
+        ],
+        "title": "CategorySalesPoint"
+      },
+      "DailyStoreSalesPoint": {
+        "properties": {
+          "sales_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Sales Date"
+          },
+          "store_id": {
+            "type": "string",
+            "title": "Store Id"
+          },
+          "store_name": {
+            "type": "string",
+            "title": "Store Name"
+          },
+          "net_sales": {
+            "type": "number",
+            "title": "Net Sales"
+          },
+          "transaction_count": {
+            "type": "integer",
+            "title": "Transaction Count"
+          },
+          "units_sold": {
+            "type": "integer",
+            "title": "Units Sold"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sales_date",
+          "store_id",
+          "store_name",
+          "net_sales",
+          "transaction_count",
+          "units_sold"
+        ],
+        "title": "DailyStoreSalesPoint"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "KpiSummaryResponse": {
+        "properties": {
+          "net_sales": {
+            "type": "number",
+            "title": "Net Sales"
+          },
+          "gross_sales": {
+            "type": "number",
+            "title": "Gross Sales"
+          },
+          "gross_sales_is_estimated": {
+            "type": "boolean",
+            "title": "Gross Sales Is Estimated"
+          },
+          "gross_sales_note": {
+            "type": "string",
+            "title": "Gross Sales Note"
+          },
+          "transaction_count": {
+            "type": "integer",
+            "title": "Transaction Count"
+          },
+          "units_sold": {
+            "type": "integer",
+            "title": "Units Sold"
+          },
+          "average_basket_size": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Basket Size"
+          }
+        },
+        "type": "object",
+        "required": [
+          "net_sales",
+          "gross_sales",
+          "gross_sales_is_estimated",
+          "gross_sales_note",
+          "transaction_count",
+          "units_sold",
+          "average_basket_size"
+        ],
+        "title": "KpiSummaryResponse"
+      },
+      "QuarantineReportItem": {
+        "properties": {
+          "transaction_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Transaction Date"
+          },
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id"
+          },
+          "store_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Store Id"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "issue_type": {
+            "type": "string",
+            "title": "Issue Type"
+          },
+          "net_sales": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net Sales"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction_date",
+          "transaction_id",
+          "store_id",
+          "product_id",
+          "issue_type",
+          "net_sales",
+          "quantity"
+        ],
+        "title": "QuarantineReportItem"
+      },
+      "StoreRankingPoint": {
+        "properties": {
+          "ranking_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Ranking Date"
+          },
+          "store_id": {
+            "type": "string",
+            "title": "Store Id"
+          },
+          "store_name": {
+            "type": "string",
+            "title": "Store Name"
+          },
+          "net_sales": {
+            "type": "number",
+            "title": "Net Sales"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ranking_date",
+          "store_id",
+          "store_name",
+          "net_sales",
+          "rank"
+        ],
+        "title": "StoreRankingPoint"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

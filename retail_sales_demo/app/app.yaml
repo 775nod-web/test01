@@ -1,6 +1,4 @@
 # Databricks Apps deployment config for the retail_sales_demo serving layer.
-# `command` targets backend.main:app, which is created in Phase 1 — this file
-# is a Phase 0 scaffold only and is not deployable until that module exists.
 command: ["python", "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 env:
@@ -10,5 +8,9 @@ env:
     value: "gold"
   - name: "SILVER_SCHEMA"
     value: "silver"
-  - name: "SQL_WAREHOUSE_ID"
+  # In a real deployment this is bound to an attached SQL warehouse "resource"
+  # via the Databricks Apps UI/API rather than a static value; the value below
+  # is a local-dev fallback matching the Serverless Starter Warehouse from
+  # Phase 0.
+  - name: "DATABRICKS_WAREHOUSE_ID"
     value: "50153ad923fecd73"

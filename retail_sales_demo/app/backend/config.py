@@ -3,7 +3,11 @@ import os
 GOLD_CATALOG = os.environ.get("GOLD_CATALOG", "workspace")
 GOLD_SCHEMA = os.environ.get("GOLD_SCHEMA", "gold")
 SILVER_SCHEMA = os.environ.get("SILVER_SCHEMA", "silver")
-SQL_WAREHOUSE_ID = os.environ.get("SQL_WAREHOUSE_ID", "50153ad923fecd73")
+
+# Databricks Apps injects this when a SQL warehouse resource is attached to
+# the app; the literal default is only a local-dev fallback.
+DATABRICKS_WAREHOUSE_ID = os.environ.get("DATABRICKS_WAREHOUSE_ID", "50153ad923fecd73")
+DATABRICKS_HOST = os.environ.get("DATABRICKS_HOST", "")
 
 GOLD_TABLES = {
     "daily_store_sales": f"{GOLD_CATALOG}.{GOLD_SCHEMA}.gold_daily_store_sales",
