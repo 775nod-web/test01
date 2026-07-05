@@ -15,10 +15,15 @@ from typing import Any, Optional
 
 from . import config
 from .schema_assumptions import (
+    AppAuditLog,
     CategorySales,
     DailyStoreSales,
+    RequeueBatchRun,
     StoreRanking,
+    StoreSalesAlert,
     UnregisteredMasterReport,
+    UserRoleMapping,
+    UserStoreMapping,
 )
 
 
@@ -149,9 +154,106 @@ def build_quarantine_report_query(
             `{col.product_id}` AS product_id,
             `{col.issue_type}` AS issue_type,
             `{col.net_sales}` AS net_sales,
-            `{col.quantity}` AS quantity
+            `{col.quantity}` AS quantity,
+            `{col.customer_id}` AS customer_id
         FROM {table}
         WHERE 1 = 1{store_clause}{issue_clause}{date_clause}
         ORDER BY `{col.date}` DESC
     """
     return sql, {**store_params, **issue_params, **date_params}
+
+
+def build_user_store_mapping_query(user_email: str) -> tuple[str, dict[str, Any]]:
+    """Store IDs the given user is mapped to; row value "ALL" (handled by the caller) means every store."""
+    table = config.SILVER_TABLES["user_store_mapping"]
+    col = UserStoreMapping
+    sql = f"""
+        SELECT `{col.store_id}` AS store_id
+        FROM {table}
+        WHERE `{col.user_email}` = :user_email
+    """
+    return sql, {"user_email": user_email}
+
+
+def build_user_role_mapping_query(user_email: str) -> tuple[str, dict[str, Any]]:
+    table = config.SILVER_TABLES["user_role_mapping"]
+    col = UserRoleMapping
+    sql = f"""
+        SELECT `{col.role}` AS role
+        FROM {table}
+        WHERE `{col.user_email}` = :user_email
+    """
+    return sql, {"user_email": user_email}
+
+
+def build_audit_log_insert(
+    user_email: str, endpoint: str, store_id_filter: Optional[str], status_code: int
+) -> tuple[str, dict[str, Any]]:
+    table = config.SILVER_TABLES["app_audit_log"]
+    col = AppAuditLog
+    sql = f"""
+        INSERT INTO {table}
+            (`{col.logged_at}`, `{col.user_email}`, `{col.endpoint}`, `{col.store_id_filter}`, `{col.status_code}`)
+        VALUES (current_timestamp(), :user_email, :endpoint, :store_id_filter, :status_code)
+    """
+    return sql, {
+        "user_email": user_email,
+        "endpoint": endpoint,
+        "store_id_filter": store_id_filter,
+        "status_code": status_code,
+    }
+
+
+def build_audit_log_query(limit: int) -> tuple[str, dict[str, Any]]:
+    table = config.SILVER_TABLES["app_audit_log"]
+    col = AppAuditLog
+    sql = f"""
+        SELECT
+            `{col.logged_at}` AS logged_at,
+            `{col.user_email}` AS user_email,
+            `{col.endpoint}` AS endpoint,
+            `{col.store_id_filter}` AS store_id_filter,
+            `{col.status_code}` AS status_code
+        FROM {table}
+        ORDER BY `{col.logged_at}` DESC
+        LIMIT :limit
+    """
+    return sql, {"limit": limit}
+
+
+def build_alerts_query(store_ids: Optional[list[str]]) -> tuple[str, dict[str, Any]]:
+    table = config.GOLD_TABLES["store_sales_alerts"]
+    col = StoreSalesAlert
+    store_clause, store_params = _in_filter(f"`{col.store_id}`", store_ids, "store_id")
+    sql = f"""
+        SELECT
+            `{col.alert_date}` AS alert_date,
+            `{col.store_id}` AS store_id,
+            `{col.store_name}` AS store_name,
+            `{col.comparison_type}` AS comparison_type,
+            `{col.current_value}` AS current_value,
+            `{col.previous_value}` AS previous_value,
+            `{col.pct_change}` AS pct_change,
+            `{col.threshold_pct}` AS threshold_pct
+        FROM {table}
+        WHERE `{col.alert_date}` = (SELECT MAX(`{col.alert_date}`) FROM {table}){store_clause}
+        ORDER BY `{col.pct_change}` ASC
+    """
+    return sql, store_params
+
+
+def build_requeue_status_query() -> tuple[str, dict[str, Any]]:
+    table = config.GOLD_TABLES["requeue_batch_runs"]
+    col = RequeueBatchRun
+    sql = f"""
+        SELECT
+            `{col.run_id}` AS run_id,
+            `{col.started_at}` AS started_at,
+            `{col.status}` AS status,
+            `{col.records_checked}` AS records_checked,
+            `{col.reconciled_candidates_found}` AS reconciled_candidates_found
+        FROM {table}
+        ORDER BY `{col.started_at}` DESC
+        LIMIT 1
+    """
+    return sql, {}

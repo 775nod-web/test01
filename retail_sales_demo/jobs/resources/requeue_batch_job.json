@@ -1,0 +1,21 @@
+{
+  "_comment": "TEMPLATE — NOT DEPLOYED OR VALIDATED. Same caveat as alert_batch_job.json. No schedule: triggered on demand via POST /api/requeue-trigger (Jobs API run-now), which needs REQUEUE_JOB_ID (app/backend/config.py) set to the job_id returned when this is created.",
+  "name": "retail_sales_demo_requeue_batch",
+  "tasks": [
+    {
+      "task_key": "check_requeue_candidates",
+      "spark_python_task": {
+        "python_file": "/Workspace/retail_sales_demo/jobs/requeue_batch.py"
+      },
+      "environment_key": "default"
+    }
+  ],
+  "environments": [
+    {
+      "environment_key": "default",
+      "spec": {
+        "client": "1"
+      }
+    }
+  ]
+}

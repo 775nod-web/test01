@@ -1,17 +1,28 @@
 import { useState } from 'react';
+import { triggerRequeueJob } from '../api/client';
 import styles from './RequeueButton.module.css';
 
 /**
- * Dummy "re-match" trigger. Phase 3 is expected to wire this to a real job
- * trigger API (e.g. a Databricks Jobs run); until then, clicking it only
- * simulates a call so the UI flow can be demoed end-to-end.
+ * Phase 3-E: triggers jobs/requeue_batch.py via POST /api/requeue-trigger
+ * (Databricks Jobs API run-now). That job has not been deployed to a live
+ * workspace from this session, so the backend currently returns HTTP 501
+ * with a clear message rather than pretending to succeed — this component
+ * just surfaces whatever the backend says instead of hiding it.
  */
-export function RequeueButton() {
-  const [status, setStatus] = useState<'idle' | 'running' | 'done'>('idle');
+export function RequeueButton({ onTriggered }: { onTriggered?: () => void }) {
+  const [state, setState] = useState<{ status: 'idle' | 'running' | 'done' | 'error'; message?: string }>({
+    status: 'idle',
+  });
 
-  const handleClick = () => {
-    setStatus('running');
-    window.setTimeout(() => setStatus('done'), 800);
+  const handleClick = async () => {
+    setState({ status: 'running' });
+    try {
+      const result = await triggerRequeueJob();
+      setState({ status: 'done', message: `${result.message}（run_id: ${result.run_id}）` });
+      onTriggered?.();
+    } catch (err) {
+      setState({ status: 'error', message: err instanceof Error ? err.message : String(err) });
+    }
   };
 
   return (
@@ -20,16 +31,13 @@ export function RequeueButton() {
         type="button"
         className={styles.button}
         onClick={handleClick}
-        disabled={status === 'running'}
+        disabled={state.status === 'running'}
       >
         再照合を実行
       </button>
-      {status === 'running' && <span className={styles.status}>実行中（ダミー）...</span>}
-      {status === 'done' && (
-        <span className={styles.status}>
-          ダミー動作です。Phase 3のジョブトリガーAPIが未実装のため実際の再照合は行われていません。
-        </span>
-      )}
+      {state.status === 'running' && <span className={styles.status}>実行中...</span>}
+      {state.status === 'done' && <span className={styles.status}>{state.message}</span>}
+      {state.status === 'error' && <span className={styles.status}>{state.message}</span>}
     </div>
   );
 }

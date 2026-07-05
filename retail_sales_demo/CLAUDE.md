@@ -20,8 +20,9 @@ Databricks上に構築する小売POS売上分析デモ。Bronze/Silver/Gold の
 
 - SQL実行: Serverless SQL Warehouse（Warehouse ID: `50153ad923fecd73`, Serverless Starter Warehouse）
 - ホスティング: Databricks Apps
-- バックエンド設定: `app/backend/config.py`（`GOLD_CATALOG` / `GOLD_SCHEMA` / `SILVER_SCHEMA` / `SQL_WAREHOUSE_ID` を環境変数で上書き可能）
+- バックエンド設定: `app/backend/config.py`（`GOLD_CATALOG` / `GOLD_SCHEMA` / `SILVER_SCHEMA` / `DATABRICKS_WAREHOUSE_ID` を環境変数で上書き可能）
 - デプロイ設定: `app/app.yaml`
+- ガバナンス関連テーブル（Phase 3、DDL: `sql/`）: `workspace.silver.silver_user_store_mapping` / `silver_user_role_mapping` / `silver_app_audit_log`、`workspace.gold.gold_store_sales_alerts` / `gold_requeue_batch_runs`（バッチジョブ: `jobs/`）
 
 ## デザイントークン
 
@@ -48,6 +49,7 @@ KPIカードは「淡色背景（パステル）＋濃色テキスト（`--color
 1. **Phase 0 — 環境確認**（`docs/phase0_env_setup_check.md`）: UC権限・Warehouse・Databricks Apps上限・ユーザー/店舗マッピングの有無を確認する。コード実装は行わない。
 2. **Phase 1 — Serving layer API**（`docs/phase1_serving_layer_api.md`）: Phase 0の確認結果を踏まえてバックエンドAPIを実装する。
 3. **Phase 2 — フロントエンド**（`docs/phase2_frontend.md`）: TypeScript + React (Vite) で4画面のダッシュボードを実装する。Streamlitは使用しない。
+4. **Phase 3 — ガバナンス・アラート・自動再照合**（`docs/phase3_governance_and_ops.md`）: 店舗別アクセス制御・PIIマスキング・監査ログ（いずれもUCネイティブ機能が検証できずAPIレイヤーのフォールバックを採用）、売上急減アラートバッチ、quarantine再照合バッチを実装する。
 
 ## 制約
 

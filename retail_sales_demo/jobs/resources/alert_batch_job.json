@@ -1,0 +1,26 @@
+{
+  "_comment": "TEMPLATE — NOT DEPLOYED OR VALIDATED. This session has no Databricks workspace access, so this JSON was never submitted to the Jobs API. Validate the compute block (environment_key/serverless vs. new_cluster) against what this workspace's edition actually supports before running `databricks jobs create --json @alert_batch_job.json`, then update the notebook_path/python_file to wherever jobs/alert_batch.py is uploaded (a Databricks Repo path or a Workspace Files path).",
+  "name": "retail_sales_demo_alert_batch",
+  "schedule": {
+    "quartz_cron_expression": "0 0 6 * * ?",
+    "timezone_id": "Asia/Tokyo",
+    "pause_status": "PAUSED"
+  },
+  "tasks": [
+    {
+      "task_key": "compute_alerts",
+      "spark_python_task": {
+        "python_file": "/Workspace/retail_sales_demo/jobs/alert_batch.py"
+      },
+      "environment_key": "default"
+    }
+  ],
+  "environments": [
+    {
+      "environment_key": "default",
+      "spec": {
+        "client": "1"
+      }
+    }
+  ]
+}

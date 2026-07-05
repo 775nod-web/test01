@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { fetchDailyStoreSales, fetchKpiSummary } from '../api/client';
+import { AlertBanner } from '../components/AlertBanner';
 import { FilterBar } from '../components/FilterBar';
 import { KpiCard } from '../components/KpiCard';
-import { Phase3Placeholder } from '../components/Phase3Placeholder';
 import { DailyStoreSalesChart } from '../components/charts/DailyStoreSalesChart';
 import { useAsync } from '../hooks/useAsync';
 import { useStoreOptions } from '../hooks/useStoreOptions';
 import { formatCurrency, formatNumber, pctDelta, previousPeriod } from '../format';
 import styles from './HqDashboardView.module.css';
 
-/** 本社経営ダッシュボード: KPIサマリー、日別×店舗の売上推移、売上急減アラート（枠のみ）。 */
+/** 本社経営ダッシュボード: KPIサマリー、日別×店舗の売上推移、売上急減アラート。 */
 export function HqDashboardView() {
   const { options: storeOptions } = useStoreOptions();
   const [storeIds, setStoreIds] = useState<string[]>([]);
@@ -51,10 +51,7 @@ export function HqDashboardView() {
         onCompareEnabledChange={setCompareEnabled}
       />
 
-      <Phase3Placeholder
-        title="売上急減アラート"
-        description="店舗別の売上急減を検知するアラートAPI（Phase 3実装予定）に接続する枠です。現時点ではダミー表示です。"
-      />
+      <AlertBanner />
 
       {current.error && <p role="alert">KPIサマリーの取得に失敗しました: {current.error}</p>}
 

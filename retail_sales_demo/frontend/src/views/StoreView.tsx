@@ -1,55 +1,56 @@
-import { useEffect, useState } from 'react';
-import { fetchDailyStoreSales, fetchKpiSummary } from '../api/client';
+import { useState } from 'react';
+import { fetchDailyStoreSales, fetchKpiSummary, fetchMe } from '../api/client';
 import { FilterBar } from '../components/FilterBar';
 import { KpiCard } from '../components/KpiCard';
 import { DailyStoreSalesChart } from '../components/charts/DailyStoreSalesChart';
+import { DEMO_IDENTITIES } from '../demoIdentities';
 import { useAsync } from '../hooks/useAsync';
-import { useStoreOptions } from '../hooks/useStoreOptions';
 import { formatCurrency, formatNumber } from '../format';
 import styles from './StoreView.module.css';
 
 /**
  * 店舗ビュー: ログインした店長は自店舗のデータしか見えない想定の画面。
  *
- * Phase 3で店舗別アクセス制御（どのユーザーがどの店舗を担当するか）が実装されるまで、
- * このセッションはどの店舗のログインユーザーであるかをサーバー側で判定できない。そのため
- * 下の「ログインシミュレーション」セレクタで店舗を選ばせているが、これはデモ限定の代替UIであり、
- * 本番では店舗選択UIごと廃止し、ログインユーザーに紐づく store_id をサーバー側（API/Unity
- * Catalog側の行レベルセキュリティ）で強制する。フロントエンドは store_id をAPIパラメータとして
- * 渡す口だけを用意しておけばよく、その配線は既にここで完了している。
+ * Phase 3で店舗別アクセス制御を実装したが、実在のログイン/SSOがこのセッションには無いため、
+ * 下の「ログインシミュレーション」セレクタで X-Forwarded-Email ヘッダーを切り替えている
+ * （本番のDatabricks Appsが行うはずのユーザー転送を模した、デモ限定の代替UI — 詳細は
+ * demoIdentities.ts と docs/phase3_governance_and_ops.md を参照）。
+ *
+ * 重要: ここでは store_id をクエリパラメータとして渡していない。サーバー側
+ * （app/backend/access_control.py）がこのヘッダーの user_email から許可店舗を解決し、
+ * 何も指定しなければ許可された店舗だけが返る。つまり実店舗の絞り込みはサーバー側で
+ * 強制されており、フロントエンドが信頼されているわけではない。
  */
 export function StoreView() {
-  const { options: storeOptions } = useStoreOptions();
-  const [simulatedStoreId, setSimulatedStoreId] = useState<string>('');
+  const [asUser, setAsUser] = useState(DEMO_IDENTITIES[2].email); // default: store1 manager
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  useEffect(() => {
-    if (!simulatedStoreId && storeOptions.length > 0) {
-      setSimulatedStoreId(storeOptions[0].storeId);
-    }
-  }, [storeOptions, simulatedStoreId]);
+  const me = useAsync(() => fetchMe(asUser), [asUser]);
 
-  const filters = {
-    storeId: simulatedStoreId || undefined,
-    dateFrom: dateFrom || undefined,
-    dateTo: dateTo || undefined,
-  };
-  const kpiState = useAsync(() => fetchKpiSummary(filters), [simulatedStoreId, dateFrom, dateTo]);
-  const dailyState = useAsync(() => fetchDailyStoreSales(filters), [simulatedStoreId, dateFrom, dateTo]);
+  const filters = { asUser, dateFrom: dateFrom || undefined, dateTo: dateTo || undefined };
+  const kpiState = useAsync(() => fetchKpiSummary(filters), [asUser, dateFrom, dateTo]);
+  const dailyState = useAsync(() => fetchDailyStoreSales(filters), [asUser, dateFrom, dateTo]);
   const kpi = kpiState.data;
 
   return (
     <div>
       <div className={styles.loginSim}>
-        ログインシミュレーション（デモ用。本番ではPhase 3のアクセス制御でサーバー側から自動決定）:
-        <select value={simulatedStoreId} onChange={(e) => setSimulatedStoreId(e.target.value)}>
-          {storeOptions.map((s) => (
-            <option key={s.storeId} value={s.storeId}>
-              {s.storeName}
+        ログインシミュレーション（デモ用。本番ではSSOでサーバー側から自動決定）:
+        <select value={asUser} onChange={(e) => setAsUser(e.target.value)}>
+          {DEMO_IDENTITIES.map((id) => (
+            <option key={id.email} value={id.email}>
+              {id.label}
             </option>
           ))}
         </select>
+        {me.data && (
+          <span>
+            {' '}
+            → 許可店舗:{' '}
+            {me.data.allowed_store_ids === null ? '全店舗' : me.data.allowed_store_ids.join(', ') || 'なし'}
+          </span>
+        )}
       </div>
 
       <FilterBar

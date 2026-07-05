@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { fetchQuarantineReport } from '../api/client';
+import { fetchQuarantineReport, fetchRequeueStatus } from '../api/client';
+import { AuditLogPanel } from '../components/AuditLogPanel';
 import { FilterBar } from '../components/FilterBar';
 import { Phase3Placeholder } from '../components/Phase3Placeholder';
 import { RequeueButton } from '../components/RequeueButton';
+import { DEMO_IDENTITIES } from '../demoIdentities';
 import { useAsync } from '../hooks/useAsync';
 import { useIssueTypeOptions } from '../hooks/useIssueTypeOptions';
 import { useStoreOptions } from '../hooks/useStoreOptions';
 import styles from './DataQualityView.module.css';
 
-/** データ品質ビュー: マスター未登録レポート、quarantine率推移（枠のみ）、再照合トリガー（ダミー）。 */
+/** データ品質ビュー: マスター未登録レポート(PIIマスキング付き)、再照合トリガー、監査ログ。 */
 export function DataQualityView() {
   const { options: storeOptions } = useStoreOptions();
   const issueTypeOptions = useIssueTypeOptions();
@@ -16,6 +18,8 @@ export function DataQualityView() {
   const [issueType, setIssueType] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [asUser, setAsUser] = useState(DEMO_IDENTITIES[1].email); // default: dq-demo (PII_VIEWER + AUDIT_VIEWER)
+  const [requeueRefreshKey, setRequeueRefreshKey] = useState(0);
 
   const storeId = storeIds.join(',') || undefined;
   const report = useAsync(
@@ -25,12 +29,25 @@ export function DataQualityView() {
         issueType: issueType || undefined,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
+        asUser,
       }),
-    [storeId, issueType, dateFrom, dateTo],
+    [storeId, issueType, dateFrom, dateTo, asUser],
   );
+  const requeueStatus = useAsync(() => fetchRequeueStatus(), [requeueRefreshKey]);
 
   return (
     <div>
+      <label className={styles.issueFilter}>
+        実行ユーザー（デモ用、PIIマスキング・監査ログ閲覧権限のロールが変わります）
+        <select value={asUser} onChange={(e) => setAsUser(e.target.value)}>
+          {DEMO_IDENTITIES.map((id) => (
+            <option key={id.email} value={id.email}>
+              {id.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
       <FilterBar
         storeOptions={storeOptions}
         selectedStoreIds={storeIds}
@@ -55,12 +72,21 @@ export function DataQualityView() {
 
       <Phase3Placeholder
         title="quarantine率推移"
-        description="マスター未登録取引の発生率の時系列推移（Phase 3実装予定）。現時点ではダミー表示です。"
+        description="発生率の時系列推移はまだ実装していません。再照合バッチ(jobs/requeue_batch.py)は直近実行のスナップショット（件数）のみを記録します。"
       />
 
       <div className={styles.actions}>
-        <RequeueButton />
+        <RequeueButton onTriggered={() => setRequeueRefreshKey((k) => k + 1)} />
       </div>
+
+      {requeueStatus.data?.run_id == null ? (
+        <p className={styles.issueFilter}>再照合バッチはまだ一度も実行されていません。</p>
+      ) : (
+        <p className={styles.issueFilter}>
+          直近の再照合実行: {requeueStatus.data.started_at} / ステータス: {requeueStatus.data.status} /
+          チェック件数: {requeueStatus.data.records_checked} / 再照合候補: {requeueStatus.data.reconciled_candidates_found}
+        </p>
+      )}
 
       <div className={styles.card}>
         <h3>マスター未登録レポート</h3>
@@ -73,6 +99,7 @@ export function DataQualityView() {
                 <th>取引ID</th>
                 <th>店舗ID</th>
                 <th>商品ID</th>
+                <th>顧客ID</th>
                 <th>issue_type</th>
                 <th>金額</th>
                 <th>数量</th>
@@ -86,6 +113,14 @@ export function DataQualityView() {
                   <td>{row.store_id ?? '—'}</td>
                   <td>{row.product_id ?? '—'}</td>
                   <td>
+                    {row.customer_id ?? '—'}
+                    {row.customer_id_is_masked && (
+                      <span className={styles.issueBadge} title="PII_VIEWERロールが無いためマスク表示">
+                        マスク済み
+                      </span>
+                    )}
+                  </td>
+                  <td>
                     <span className={styles.issueBadge}>{row.issue_type}</span>
                   </td>
                   <td>{row.net_sales ?? '—'}</td>
@@ -96,6 +131,8 @@ export function DataQualityView() {
           </table>
         )}
       </div>
+
+      <AuditLogPanel asUser={asUser} />
     </div>
   );
 }

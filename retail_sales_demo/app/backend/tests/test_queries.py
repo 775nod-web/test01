@@ -71,3 +71,51 @@ def test_no_filters_produce_no_params_across_all_builders():
     ]:
         assert params == {}
         assert " AND " not in sql or "WHERE 1 = 1" in sql
+
+
+def test_quarantine_report_selects_customer_id_for_masking():
+    sql, _ = queries.build_quarantine_report_query(None, None, None, None)
+    assert "`customer_id` AS customer_id" in sql
+
+
+def test_user_store_mapping_query_filters_by_user():
+    sql, params = queries.build_user_store_mapping_query("store1@example.com")
+    assert "`user_email` = :user_email" in sql
+    assert params == {"user_email": "store1@example.com"}
+
+
+def test_user_role_mapping_query_filters_by_user():
+    sql, params = queries.build_user_role_mapping_query("dq@example.com")
+    assert "`user_email` = :user_email" in sql
+    assert params == {"user_email": "dq@example.com"}
+
+
+def test_audit_log_insert_binds_all_fields():
+    sql, params = queries.build_audit_log_insert("u@example.com", "/api/kpi-summary", "S001", 200)
+    assert "INSERT INTO" in sql
+    assert params == {
+        "user_email": "u@example.com",
+        "endpoint": "/api/kpi-summary",
+        "store_id_filter": "S001",
+        "status_code": 200,
+    }
+
+
+def test_audit_log_query_orders_by_logged_at_desc():
+    sql, params = queries.build_audit_log_query(50)
+    assert "ORDER BY `logged_at` DESC" in sql
+    assert params == {"limit": 50}
+
+
+def test_alerts_query_filters_by_latest_date_and_store():
+    sql, params = queries.build_alerts_query(["S001"])
+    assert "MAX(`alert_date`)" in sql
+    assert "`store_id` IN (:store_id_0)" in sql
+    assert params == {"store_id_0": "S001"}
+
+
+def test_requeue_status_query_gets_latest_run():
+    sql, params = queries.build_requeue_status_query()
+    assert "ORDER BY `started_at` DESC" in sql
+    assert "LIMIT 1" in sql
+    assert params == {}

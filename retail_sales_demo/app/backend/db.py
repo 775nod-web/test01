@@ -39,3 +39,10 @@ def run_query(sql_text: str, params: Mapping[str, Any] | None = None) -> list[di
             cursor.execute(sql_text, params or {})
             columns = [col[0] for col in cursor.description]
             return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+
+def execute(sql_text: str, params: Mapping[str, Any] | None = None) -> None:
+    """Execute a parameterized INSERT/UPDATE/DDL statement (no result rows)."""
+    with get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(sql_text, params or {})
