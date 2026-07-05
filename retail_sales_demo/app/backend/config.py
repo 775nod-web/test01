@@ -3,9 +3,9 @@ import os
 # Serverless Starter Warehouse（指定済みID。変更しないこと）
 WAREHOUSE_ID = os.environ.get("DATABRICKS_WAREHOUSE_ID", "50153ad923fecd73")
 
-# Gold layerのカタログ/スキーマ名は環境に合わせて設定する（Phase 0で実環境の値を確認すること）
-GOLD_CATALOG = os.environ.get("GOLD_CATALOG", "main")
-GOLD_SCHEMA = os.environ.get("GOLD_SCHEMA", "retail_gold")
+# Gold layerのカタログ/スキーマ名。実ワークスペースで確認済み: workspace.gold
+GOLD_CATALOG = os.environ.get("GOLD_CATALOG", "workspace")
+GOLD_SCHEMA = os.environ.get("GOLD_SCHEMA", "gold")
 
 # 売上急減アラートのしきい値（前日比%。デフォルト-20%）
 SALES_DROP_ALERT_THRESHOLD_PCT = float(os.environ.get("SALES_DROP_ALERT_THRESHOLD_PCT", "-20"))

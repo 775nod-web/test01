@@ -15,9 +15,11 @@ env:
   - name: "DATABRICKS_WAREHOUSE_ID"
     value: "50153ad923fecd73"
   - name: "GOLD_CATALOG"
-    value: "main"          # 実環境のカタログ名に置き換える（Phase 0で確認）
+    value: "workspace"     # 実ワークスペースで確認済み
   - name: "GOLD_SCHEMA"
-    value: "retail_gold"   # 実環境のスキーマ名に置き換える（Phase 0で確認）
+    value: "gold"          # 実ワークスペースで確認済み
+  - name: "SILVER_SCHEMA"
+    value: "silver"        # 再照合ジョブが参照するマスターのスキーマ（実ワークスペースで確認済み）
   - name: "SALES_DROP_ALERT_THRESHOLD_PCT"
     value: "-20"
   - name: "RECONCILE_JOB_ID"

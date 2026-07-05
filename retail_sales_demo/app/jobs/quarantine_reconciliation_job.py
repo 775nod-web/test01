@@ -9,17 +9,18 @@ gold_unregistered_master_report のうち、商品/店舗マスターが更新�
 再実行する必要があり、これは本Serving layerタスクの範囲外（既存パイプライン側の改修）。
 本ジョブは「再照合対象件数の可視化」と「再照合実行の記録」までを担う。
 
-未接続環境で作成したため、products/stores マスターテーブルの実際の名称・
-カラム構成はPhase 0で確認したうえで調整すること。
+実ワークスペースで確認済み: Gold layerは workspace.gold、商品/店舗マスターは
+workspace.silver.silver_product_master / workspace.silver.silver_store_master。
 """
 import os
 
 from pyspark.sql import SparkSession
 
-CATALOG = os.environ.get("GOLD_CATALOG", "main")
-SCHEMA = os.environ.get("GOLD_SCHEMA", "retail_gold")
-PRODUCTS_TABLE = os.environ.get("PRODUCTS_MASTER_TABLE", f"{CATALOG}.{SCHEMA}.products")
-STORES_TABLE = os.environ.get("STORES_MASTER_TABLE", f"{CATALOG}.{SCHEMA}.stores")
+CATALOG = os.environ.get("GOLD_CATALOG", "workspace")
+SCHEMA = os.environ.get("GOLD_SCHEMA", "gold")
+SILVER_SCHEMA = os.environ.get("SILVER_SCHEMA", "silver")
+PRODUCTS_TABLE = os.environ.get("PRODUCTS_MASTER_TABLE", f"{CATALOG}.{SILVER_SCHEMA}.silver_product_master")
+STORES_TABLE = os.environ.get("STORES_MASTER_TABLE", f"{CATALOG}.{SILVER_SCHEMA}.silver_store_master")
 
 
 def main() -> None:

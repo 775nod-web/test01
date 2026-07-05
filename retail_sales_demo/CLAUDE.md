@@ -25,7 +25,13 @@ Databricks Free Editionでは、ワークスペースごとに作成可能なDat
 
 ## Gold layer スキーマ（参照用・変更しないこと）
 
-Serving layerはこれら4テーブルを読み取り専用で利用する。テーブル名・カタログ/スキーマ名は実環境で確認し、憶測で決め打ちしない（`phase0`で確認する）。
+Serving layerはこれら4テーブルを読み取り専用で利用する。
+
+**実ワークスペースで確認済みのカタログ/スキーマ**:
+- Gold layer: `workspace.gold`（例: `workspace.gold.gold_daily_store_sales`）
+- Silver layer（マスター参照用、quarantine再照合ジョブが利用）: `workspace.silver.silver_product_master` / `workspace.silver.silver_store_master`
+
+デモ用データは店舗5件・カテゴリ4件・POS取引230件（うちマスター未登録10件）という小規模なサンプルであり、これがFree Edition上での実演スケールとなる。「1時間あたり数千万〜1億件」という本番スケールは口頭説明のみで対応する（README.mdの優先度表を参照）。
 
 ### `gold_daily_store_sales`（粒度: sales_date × store_id）
 | 列名 | 型 | 説明 |

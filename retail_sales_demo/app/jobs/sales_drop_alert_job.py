@@ -4,9 +4,9 @@ Databricks Jobsのノートブック/Pythonタスクとして日次実行する�
 gold_daily_store_sales から店舗別の前日比売上変化率を算出し、
 しきい値（デフォルト-20%）を超えた店舗を gold_sales_alerts に書き出す。
 
-未接続環境で作成したため、実行前に以下を確認すること:
-- CATALOG / SCHEMA の値
-- SparkSession のカタログ設定（Unity Catalog前提）
+実ワークスペースで確認済み: Gold layerは workspace.gold。
+サンプルデータは店舗ごとに売上のある日が飛び飛びのため、本ジョブでは
+「前日」ではなく「直近の売上記録日」との比較で変化率を算出する。
 """
 import os
 
@@ -14,8 +14,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 
-CATALOG = os.environ.get("GOLD_CATALOG", "main")
-SCHEMA = os.environ.get("GOLD_SCHEMA", "retail_gold")
+CATALOG = os.environ.get("GOLD_CATALOG", "workspace")
+SCHEMA = os.environ.get("GOLD_SCHEMA", "gold")
 THRESHOLD_PCT = float(os.environ.get("SALES_DROP_ALERT_THRESHOLD_PCT", "-20"))
 
 

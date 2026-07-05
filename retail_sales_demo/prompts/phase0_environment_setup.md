@@ -6,11 +6,15 @@
 
 あなたはDatabricksワークスペースに接続されたコーディングエージェントです。`retail_sales_demo/CLAUDE.md` の制約に従い、小売POS売上分析デモのServing layer実装に着手する前の環境確認を行ってください。コードの実装はまだ行わず、確認と報告のみ行ってください。
 
+## 前提（確認済み情報）
+
+Gold layerは `workspace.gold` スキーマ（`gold_daily_store_sales` / `gold_category_sales` / `gold_store_ranking` / `gold_unregistered_master_report`）、マスターは `workspace.silver` スキーマ（`silver_product_master` / `silver_store_master`）に実データが投入済みであることを確認済み（店舗5件・カテゴリ4件・POS取引230件・マスター未登録10件）。以下ではこの前提の上で、権限面と実行環境を確認する。
+
 ## 実施内容
 
-1. **Unity Catalog の確認**
-   - `gold_daily_store_sales` / `gold_category_sales` / `gold_store_ranking` / `gold_unregistered_master_report` の4テーブルが実際にどのカタログ・スキーマに存在するかを確認する。存在しない場合や名称が異なる場合は、憶測で進めず私に確認する。
-   - 各テーブルに対する自分（サービスプリンシパル/実行ユーザー）のSELECT権限があるか確認する。
+1. **Unity Catalog の権限確認**
+   - `workspace.gold` の4テーブル、`workspace.silver` の2マスターテーブルに対する、自分（サービスプリンシパル/実行ユーザー）のSELECT権限があるか確認する。
+   - `retail_sales_demo/app/backend/config.py` および `app.yaml` のデフォルト値（`GOLD_CATALOG=workspace`, `GOLD_SCHEMA=gold`, `SILVER_SCHEMA=silver`）がこの環境と一致していることを再確認する。
 
 2. **Serverless SQL Warehouseの確認**
    - Warehouse ID `50153ad923fecd73`（Serverless Starter Warehouse）が存在し、起動可能な状態か確認する。
