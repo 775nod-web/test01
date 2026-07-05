@@ -1,0 +1,35 @@
+# Databricks Asset Bundles でのジョブ定義例。
+# 未接続環境で作成しているため、実際のクラスタ/サーバレス設定・パス指定は
+# デプロイ時にワークスペースの構成に合わせて調整すること。
+
+resources:
+  jobs:
+    sales_drop_alert_job:
+      name: "retail-sales-drop-alert"
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"  # 毎日6:00 (要タイムゾーン設定)
+        timezone_id: "Asia/Tokyo"
+      tasks:
+        - task_key: "compute_alerts"
+          spark_python_task:
+            python_file: "../jobs/sales_drop_alert_job.py"
+          environment_key: "serverless"
+      environments:
+        - environment_key: "serverless"
+          spec:
+            environment_version: "2"
+
+    quarantine_reconciliation_job:
+      name: "retail-quarantine-reconciliation"
+      schedule:
+        quartz_cron_expression: "0 30 6 * * ?"  # 毎日6:30 (マスター更新後を想定)
+        timezone_id: "Asia/Tokyo"
+      tasks:
+        - task_key: "reconcile"
+          spark_python_task:
+            python_file: "../jobs/quarantine_reconciliation_job.py"
+          environment_key: "serverless"
+      environments:
+        - environment_key: "serverless"
+          spec:
+            environment_version: "2"

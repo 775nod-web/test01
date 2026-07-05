@@ -1,0 +1,26 @@
+# Databricks Apps 設定ファイル。
+#
+# 注意: このファイルはDatabricksワークスペースに未接続の状態で作成しているため、
+# `command` の起動方法やキー名は実際のデプロイ時に `databricks apps` の
+# 最新ドキュメントと突き合わせて検証すること（Phase 4プロンプト参照）。
+command:
+  - "uvicorn"
+  - "backend.main:app"
+  - "--host"
+  - "0.0.0.0"
+  - "--port"
+  - "8000"
+
+env:
+  - name: "DATABRICKS_WAREHOUSE_ID"
+    value: "50153ad923fecd73"
+  - name: "GOLD_CATALOG"
+    value: "main"          # 実環境のカタログ名に置き換える（Phase 0で確認）
+  - name: "GOLD_SCHEMA"
+    value: "retail_gold"   # 実環境のスキーマ名に置き換える（Phase 0で確認）
+  - name: "SALES_DROP_ALERT_THRESHOLD_PCT"
+    value: "-20"
+  - name: "RECONCILE_JOB_ID"
+    value: ""              # Phase 3でジョブ作成後、Job IDを設定する
+  - name: "ROW_FILTER_ENABLED_BY_UC"
+    value: "false"         # UC行フィルタが有効な環境では "true" に変更する
