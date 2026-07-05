@@ -80,6 +80,8 @@ databricks apps deploy <app-name> --source-code-path .
 
 - [x] `GOLD_CATALOG`(`workspace`) / `GOLD_SCHEMA`(`gold`) — 実データ確認済み
 - [x] UC行フィルタ・列マスキングの構文（`sql/ready_to_run_step2.sql`）— SQLエディタでエラーなく動作、列マスキングの効果も確認済み（ただしDatabricks Apps経由でのend-user解決は未検証、上記の重要な注意を参照）
+- [x] `gold_sales_alerts`（売上急減アラート）— `jobs/sales_drop_alert_job.py`を実行し、直近記録日ベースで2件のアラートを確認済み
+- [x] quarantine自動再照合ジョブ — `retail-quarantine-reconciliation`としてJob登録済み（Job ID: `389797453368700`）、手動実行で`reconcilable_count=0`（マスター未更新のため正常）を確認済み
 - [ ] アプリのサービスプリンシパルが `workspace.gold` の4テーブルと `workspace.silver` のマスター2テーブルにSELECT権限を持っているか
 - [ ] Warehouse `50153ad923fecd73` が起動可能で、CAN_USE権限があるか
 - [ ] `backend/db.py` のDatabricks SDK Statement Execution API呼び出しが、実際のSDKバージョンのレスポンス構造と一致しているか

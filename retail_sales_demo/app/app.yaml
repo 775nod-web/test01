@@ -23,7 +23,7 @@ env:
   - name: "SALES_DROP_ALERT_THRESHOLD_PCT"
     value: "-20"
   - name: "RECONCILE_JOB_ID"
-    value: ""              # Phase 3でジョブ作成後、Job IDを設定する
+    value: "389797453368700"  # retail-quarantine-reconciliation ジョブ（実ワークスペースで確認済み）
   - name: "ROW_FILTER_ENABLED_BY_UC"
     value: "false"         # SQL構文は動作確認済みだが、Databricks AppsでUser Authorization
                             # (on-behalf-of-user) を有効化し、current_user()がアプリ利用者
