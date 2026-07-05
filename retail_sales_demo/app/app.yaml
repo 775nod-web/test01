@@ -1,0 +1,14 @@
+# Databricks Apps deployment config for the retail_sales_demo serving layer.
+# `command` targets backend.main:app, which is created in Phase 1 — this file
+# is a Phase 0 scaffold only and is not deployable until that module exists.
+command: ["python", "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+env:
+  - name: "GOLD_CATALOG"
+    value: "workspace"
+  - name: "GOLD_SCHEMA"
+    value: "gold"
+  - name: "SILVER_SCHEMA"
+    value: "silver"
+  - name: "SQL_WAREHOUSE_ID"
+    value: "50153ad923fecd73"
