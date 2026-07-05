@@ -14,3 +14,13 @@ env:
   # Phase 0.
   - name: "DATABRICKS_WAREHOUSE_ID"
     value: "50153ad923fecd73"
+  # Set once jobs/resources/requeue_batch_job.json has been deployed and its
+  # job_id is known — see docs/phase4_deployment.md. Leaving this unset makes
+  # POST /api/requeue-trigger return a clear HTTP 501 instead of failing oddly.
+  # - name: "REQUEUE_JOB_ID"
+  #   value: "<job_id>"
+  # Demo-only fallback identity used when no X-Forwarded-Email header is
+  # present (see app/backend/access_control.py). Not meant for production use
+  # once real SSO-forwarded identity is confirmed working.
+  - name: "DEMO_USER_EMAIL"
+    value: "hq-demo@example.com"
