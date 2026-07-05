@@ -100,10 +100,29 @@ Databricks認証情報が無い状態でも `uvicorn` は起動し `/api/health`
 cd serving_app/frontend
 npm install
 npm run build
-
-# Databricks Appsへデプロイ（appはワークスペースであらかじめ作成しておく）
 cd ..
-databricks apps deploy <app-name> --source-code-path .
+```
+
+**`--source-code-path` はローカルのパスではなく、Databricksワークスペース内の
+パスを指定する必要があります。** `.`（ローカルフォルダ）を渡すと
+`Error: Source code path must be a valid workspace path.` になります。
+先に `databricks sync` でワークスペースへコードを転送してから、そのワークスペース
+パスに対して `apps deploy` を実行してください。
+
+```bash
+# 自分のワークスペースユーザー名（メールアドレス）を確認
+databricks current-user me
+
+# ローカルのserving_appをワークスペースへ同期する（1回だけでよい。
+# 継続的に更新したい場合は先頭に --watch を付ける）
+databricks sync . /Workspace/Users/<あなたのメールアドレス>/interviewprepretail03
+
+# appをまだ作成していなければ作成する
+databricks apps create <app-name>
+
+# ワークスペース上のパスを指定してデプロイする
+databricks apps deploy <app-name> \
+  --source-code-path /Workspace/Users/<あなたのメールアドレス>/interviewprepretail03
 ```
 
 デプロイ後、Databricks Apps UIの「Resources」設定で、`50153ad923fecd73`

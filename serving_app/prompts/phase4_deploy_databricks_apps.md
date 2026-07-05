@@ -30,10 +30,16 @@
    ```bash
    databricks apps create <app-name>
    ```
-3. コードをデプロイする。
+3. コードをデプロイする。**`--source-code-path` はDatabricksワークスペース内の
+   パスでなければならず、ローカルパス（`.`）を渡すと
+   `Error: Source code path must be a valid workspace path.` になる。**
+   先に `databricks sync` でワークスペースへ転送してから、そのパスを指定する。
    ```bash
    cd ..
-   databricks apps deploy <app-name> --source-code-path .
+   databricks current-user me   # 自分のワークスペースユーザー名を確認
+   databricks sync . /Workspace/Users/<あなたのメールアドレス>/<app-name>
+   databricks apps deploy <app-name> \
+     --source-code-path /Workspace/Users/<あなたのメールアドレス>/<app-name>
    ```
 4. Databricks Apps UIの「Resources」設定で、SQL Warehouse
    （`50153ad923fecd73`、Serverless Starter Warehouse）へのアクセス権を
@@ -49,6 +55,10 @@
 
 ## トラブルシューティング
 
+- `Error: Source code path must be a valid workspace path.` が出る場合:
+  `--source-code-path` にローカルパス（`.` 等）を渡している。先に
+  `databricks sync . /Workspace/Users/<メールアドレス>/<app-name>` で
+  ワークスペースへ転送し、そのワークスペースパスを指定し直す。
 - `/api/*` が500を返す場合: Warehouseへのアクセス権限、
   `DATABRICKS_WAREHOUSE_ID` の値、Gold表のカタログ/スキーマ修飾を確認する。
 - フロントエンドが真っ白になる場合: `npm run build` が
