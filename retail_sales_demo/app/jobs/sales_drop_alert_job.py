@@ -8,7 +8,7 @@ gold_daily_store_sales から店舗別の前日比売上変化率を算出し、
 サンプルデータは店舗ごとに売上のある日が飛び飛び（年間366日中40日程度）のため、
 本ジョブでは「前日」ではなく「直近の売上記録日」との比較で変化率を算出する。
 
-実データでの検証で判明した2つの問題への対応:
+実データでの検証で判明した3つの問題への対応:
 1. 記録日同士が数週間離れているケースで比較すると、文脈の異なる日を比べることになり
    ノイズの多いアラートが大量発生した（200件中90件がアラート対象になった）。
    → 直近の記録日との間隔が14日を超える場合は比較対象から除外する。
@@ -16,6 +16,11 @@ gold_daily_store_sales から店舗別の前日比売上変化率を算出し、
    これは売上金額がマイナスになっている取引データが存在することを示唆しており、
    売上急減アラートではなくデータ品質側の問題として扱うべきである。
    → 本ジョブでは-100%未満のケースを対象外とし、原因調査は別途Silver/Gold層で行う。
+3. 上記2点を直しても、まだ1年分の全履歴に対して判定してしまうため、店舗あたり
+   複数件のアラートが積み上がり続けた（200件中74件）。実運用の日次ジョブは
+   「今日時点で最新の記録が閾値を超えているか」だけを判定するはずなので、
+   本ジョブも各店舗の「直近の売上記録日」1件のみを判定対象とする。
+   （日次で運用すれば、実行のたびにその日の判定結果が1件ずつ積み上がっていく）
 """
 import os
 
@@ -49,11 +54,14 @@ def main() -> None:
             F.col("prev_sales_amount").isNotNull() & (F.col("prev_sales_amount") != 0),
             (F.col("total_sales_amount") - F.col("prev_sales_amount")) / F.col("prev_sales_amount") * 100.0,
         ),
+    ).withColumn(
+        "latest_sales_date", F.max("sales_date").over(Window.partitionBy("store_id"))
     )
 
     alerts = (
         changed.filter(
-            (F.col("sales_change_pct") <= THRESHOLD_PCT)
+            (F.col("sales_date") == F.col("latest_sales_date"))
+            & (F.col("sales_change_pct") <= THRESHOLD_PCT)
             & (F.col("sales_change_pct") >= -100)
             & (F.col("days_since_prev") <= MAX_COMPARISON_GAP_DAYS)
         )
