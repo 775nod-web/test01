@@ -52,7 +52,9 @@ sql/05_audit_log_table.sql      -- 任意: system.access.auditが使えない場
 | `SILVER_SCHEMA` | `silver`（確認済み。再照合ジョブがマスター参照に使用） |
 | `SALES_DROP_ALERT_THRESHOLD_PCT` | アラートしきい値（%） |
 | `RECONCILE_JOB_ID` | 手順2で作成したquarantine再照合ジョブのJob ID |
-| `ROW_FILTER_ENABLED_BY_UC` | UC行フィルタが有効な場合は `true`、フォールバック運用の場合は `false` |
+| `ROW_FILTER_ENABLED_BY_UC` | `false`（下記の注意を参照。当面はAPI側フィルタを維持） |
+
+> **重要な注意（要検証）**: SQLエディタでの確認は、SQLエディタを操作している「あなた自身」の資格情報でクエリが実行されたために `current_user()` が正しく解決され、行フィルタ・列マスキングの**構文が動作すること**は確認できました。しかしDatabricks Appsからのクエリは、既定では**アプリのサービスプリンシパル**の資格情報で実行されるため、`current_user()` はアプリのサービスプリンシパルに解決され、行フィルタ・列マスキングは「アプリを見ている個々のユーザー」ではなく「アプリ自体」の権限で一律に適用されてしまいます。店舗ごとに異なるユーザーへ異なるデータを見せるには、Databricks Appsの **User Authorization（on-behalf-of-user）** を有効化し、バックエンドがエンドユーザーの資格情報でSQLを実行するように構成し、それが実際に機能することをデプロイ後に確認する必要があります。それまでは `ROW_FILTER_ENABLED_BY_UC=false` のままAPI側フィルタ（`user_store_mapping`をバックエンドが直接参照する方式）を正としてください。
 
 ### 4. フロントエンドのビルド
 
@@ -77,10 +79,11 @@ databricks apps deploy <app-name> --source-code-path .
 ## デプロイ前チェックリスト（未接続で作成したため要検証）
 
 - [x] `GOLD_CATALOG`(`workspace`) / `GOLD_SCHEMA`(`gold`) — 実データ確認済み
+- [x] UC行フィルタ・列マスキングの構文（`sql/ready_to_run_step2.sql`）— SQLエディタでエラーなく動作、列マスキングの効果も確認済み（ただしDatabricks Apps経由でのend-user解決は未検証、上記の重要な注意を参照）
 - [ ] アプリのサービスプリンシパルが `workspace.gold` の4テーブルと `workspace.silver` のマスター2テーブルにSELECT権限を持っているか
 - [ ] Warehouse `50153ad923fecd73` が起動可能で、CAN_USE権限があるか
 - [ ] `backend/db.py` のDatabricks SDK Statement Execution API呼び出しが、実際のSDKバージョンのレスポンス構造と一致しているか
-- [ ] UC行フィルタ（`sql/02_row_filter_store_access.sql`）がFree Editionで動作するか。動作しない場合は `ROW_FILTER_ENABLED_BY_UC=false` のままAPI側フィルタで運用する
+- [ ] Databricks Appsの User Authorization（on-behalf-of-user）を有効化し、`current_user()` がアプリ利用者本人に解決されるようにする（上記の重要な注意を参照）
 - [ ] `system.access.audit` が参照可能か。不可の場合は `sql/05_audit_log_table.sql` のフォールバックを使う
 - [ ] `app.yaml` の記法が現行のDatabricks Apps仕様と一致しているか
 

@@ -33,6 +33,15 @@ Serving layerはこれら4テーブルを読み取り専用で利用する。
 
 デモ用データは店舗5件・カテゴリ4件・POS取引230件（うちマスター未登録10件）という小規模なサンプルであり、これがFree Edition上での実演スケールとなる。「1時間あたり数千万〜1億件」という本番スケールは口頭説明のみで対応する（README.mdの優先度表を参照）。
 
+## ガバナンス機能の検証結果（重要）
+
+`workspace.gold` に対してUnity Catalogの行フィルタ（ROW FILTER）・列マスキング（COLUMN MASK）をSQLエディタで実行し、**Free Editionで構文エラーなく動作すること、列マスキングが実際に効くこと（customer_idが`MASKED`表示になること）を確認済み**（`app/sql/ready_to_run_step2.sql`）。
+
+ただし、この確認はSQLエディタ上で「人間が自分の資格情報で」実行した結果であり、`current_user()` がその人自身に解決されたために機能した。Databricks Appsからのクエリは既定でアプリのサービスプリンシパルとして実行されるため、**User Authorization（on-behalf-of-user）を有効化しない限り、行フィルタ・列マスキングはアプリ利用者ごとには機能しない**（全利用者がサービスプリンシパルの権限で一律に同じ結果を見ることになる）。したがって:
+
+- `app.yaml` の `ROW_FILTER_ENABLED_BY_UC` は、on-behalf-of-user認証をデプロイ後に実際に検証するまで `false` のままにし、店舗別アクセス制御はバックエンドのAPI側フィルタ（`user_store_mapping`参照）を正とする。
+- Phase 4（デプロイ）で on-behalf-of-user を有効化し、実際にアプリ経由で `current_user()` がエンドユーザーに解決されることを確認できた場合のみ `true` に切り替える。
+
 ### `gold_daily_store_sales`（粒度: sales_date × store_id）
 | 列名 | 型 | 説明 |
 |---|---|---|

@@ -25,4 +25,6 @@ env:
   - name: "RECONCILE_JOB_ID"
     value: ""              # Phase 3でジョブ作成後、Job IDを設定する
   - name: "ROW_FILTER_ENABLED_BY_UC"
-    value: "false"         # UC行フィルタが有効な環境では "true" に変更する
+    value: "false"         # SQL構文は動作確認済みだが、Databricks AppsでUser Authorization
+                            # (on-behalf-of-user) を有効化し、current_user()がアプリ利用者
+                            # 本人に解決されることを確認するまではAPI側フィルタを維持する
