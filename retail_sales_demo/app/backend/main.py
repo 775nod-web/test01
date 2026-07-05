@@ -13,9 +13,11 @@ query-building code here.
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 from typing import List, Optional
 
 from fastapi import FastAPI, Query
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import queries
@@ -170,3 +172,13 @@ def quarantine_report(
         _parse_csv(store_id), _parse_csv(issue_type), date_from, date_to
     )
     return run_query(sql, params)
+
+
+# Serves the built React SPA (Phase 2) from the same process/origin as the
+# /api/* routes above, so the frontend can call them as relative paths with
+# no CORS setup. `npm run build` in frontend/ writes straight into this
+# directory (see frontend/vite.config.ts); it's absent until that build has
+# run, so plain API development/testing doesn't require a frontend build.
+_STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+if _STATIC_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=str(_STATIC_DIR), html=True), name="frontend")

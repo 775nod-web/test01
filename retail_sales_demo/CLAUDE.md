@@ -23,10 +23,31 @@ Databricks上に構築する小売POS売上分析デモ。Bronze/Silver/Gold の
 - バックエンド設定: `app/backend/config.py`（`GOLD_CATALOG` / `GOLD_SCHEMA` / `SILVER_SCHEMA` / `SQL_WAREHOUSE_ID` を環境変数で上書き可能）
 - デプロイ設定: `app/app.yaml`
 
+## デザイントークン
+
+フロントエンドは以下をCSS変数として定義し、全画面で統一して使用する（Phase 2で新規策定。淡い配色＋
+Off White背景の落ち着いたダッシュボードトーンを想定）。
+
+| トークン名 | 用途 | 値 |
+|---|---|---|
+| `--color-bg` | 画面背景 (Off White) | `#FAF9F6` |
+| `--color-surface` | カード等の背景 | `#FFFFFF` |
+| `--color-text` | 本文濃色テキスト | `#2B2B2B` |
+| `--color-text-muted` | 補助テキスト | `#6B7280` |
+| `--pastel-blue` | 情報・中立、店舗系アクセント | `#AFC9E9` |
+| `--pastel-green` | ポジティブな数値変化 | `#B8E0C7` |
+| `--pastel-coral` | ネガティブな数値変化・警告 | `#F3B7AE` |
+| `--pastel-yellow` | 注意・暫定値バッジ | `#F5E3A1` |
+| `--pastel-purple` | 商品企画系アクセント | `#D3C5EA` |
+
+KPIカードは「淡色背景（パステル）＋濃色テキスト（`--color-text`）」を基本構成とし、数値変化の符号に応じて
+背景を `--pastel-green`（増加）/ `--pastel-coral`（減少）に切り替える。
+
 ## フェーズ
 
 1. **Phase 0 — 環境確認**（`docs/phase0_env_setup_check.md`）: UC権限・Warehouse・Databricks Apps上限・ユーザー/店舗マッピングの有無を確認する。コード実装は行わない。
-2. **Phase 1 — Serving layer API**（`docs/phase1_serving_layer_api.md`、別プロンプトで提示予定）: Phase 0の確認結果を踏まえてバックエンドAPIを実装する。
+2. **Phase 1 — Serving layer API**（`docs/phase1_serving_layer_api.md`）: Phase 0の確認結果を踏まえてバックエンドAPIを実装する。
+3. **Phase 2 — フロントエンド**（`docs/phase2_frontend.md`）: TypeScript + React (Vite) で4画面のダッシュボードを実装する。Streamlitは使用しない。
 
 ## 制約
 

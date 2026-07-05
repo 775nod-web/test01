@@ -1,0 +1,21 @@
+.button {
+  border: 1px solid var(--pastel-purple);
+  background: var(--pastel-purple);
+  color: var(--pastel-purple-text);
+  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.status {
+  margin-left: 10px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}

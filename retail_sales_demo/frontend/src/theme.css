@@ -1,0 +1,37 @@
+/*
+  Design tokens — mirrors retail_sales_demo/CLAUDE.md's "デザイントークン" table.
+  Keep these two in sync; CLAUDE.md is the source of truth.
+*/
+:root {
+  --color-bg: #faf9f6;
+  --color-surface: #ffffff;
+  --color-border: #e5e1d8;
+  --color-text: #2b2b2b;
+  --color-text-muted: #6b7280;
+
+  --pastel-blue: #afc9e9;
+  --pastel-blue-text: #1f3a5f;
+  --pastel-green: #b8e0c7;
+  --pastel-green-text: #1f5c3a;
+  --pastel-coral: #f3b7ae;
+  --pastel-coral-text: #7a2a20;
+  --pastel-yellow: #f5e3a1;
+  --pastel-yellow-text: #6b551a;
+  --pastel-purple: #d3c5ea;
+  --pastel-purple-text: #4a2f70;
+
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-card: 0 1px 3px rgba(43, 43, 43, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', system-ui, sans-serif;
+}

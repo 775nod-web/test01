@@ -1,0 +1,40 @@
+.card {
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  min-width: 180px;
+  flex: 1 1 180px;
+  box-shadow: var(--shadow-card);
+}
+
+.label {
+  font-size: 13px;
+  margin: 0 0 6px;
+  opacity: 0.85;
+}
+
+.value {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  min-height: 20px;
+}
+
+.delta {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--pastel-yellow);
+  color: var(--pastel-yellow-text);
+}

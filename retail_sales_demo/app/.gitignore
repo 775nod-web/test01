@@ -2,3 +2,7 @@
 __pycache__/
 .pytest_cache/
 *.pyc
+
+# Built by `npm run build` in ../frontend (see frontend/vite.config.ts) —
+# a deployable checkout needs to run that build before `databricks apps deploy`.
+static/
