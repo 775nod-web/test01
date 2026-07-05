@@ -34,6 +34,13 @@
    パスでなければならず、ローカルパス（`.`）を渡すと
    `Error: Source code path must be a valid workspace path.` になる。**
    先に `databricks sync` でワークスペースへ転送してから、そのパスを指定する。
+
+   **`databricks sync` は `.gitignore` に一致するファイルを転送対象から
+   除外する。`frontend/dist/`（ビルド成果物）は実際に配信されるファイルの
+   実体なので、このプロジェクトの`.gitignore`では意図的に除外していない。
+   `npm run build` の直後に毎回 `databricks sync` を実行し直さないと、
+   古い（または存在しない）`dist`のままデプロイされ、アプリを開くと
+   `{"detail":"Not Found"}` になる。**
    ```bash
    cd ..
    databricks current-user me   # 自分のワークスペースユーザー名を確認
@@ -41,6 +48,8 @@
    databricks apps deploy <app-name> \
      --source-code-path /Workspace/Users/<あなたのメールアドレス>/<app-name>
    ```
+   コードを更新するたびに「①ビルド → ②sync → ③deploy」を毎回この順番で
+   実行する。
 4. Databricks Apps UIの「Resources」設定で、SQL Warehouse
    （`50153ad923fecd73`、Serverless Starter Warehouse）へのアクセス権を
    このアプリのサービスプリンシパルに付与する。
@@ -59,8 +68,12 @@
   `--source-code-path` にローカルパス（`.` 等）を渡している。先に
   `databricks sync . /Workspace/Users/<メールアドレス>/<app-name>` で
   ワークスペースへ転送し、そのワークスペースパスを指定し直す。
+- アプリを開くと `{"detail":"Not Found"}` になる場合: ほぼ確実に
+  `frontend/dist` がワークスペースに転送されていない
+  （`databricks sync`が`.gitignore`規則で除外した、または
+  ビルド後にsyncし直していない）。`npm run build` → `databricks sync` →
+  `databricks apps deploy` の順で必ずやり直す。
+  `databricks workspace list /Workspace/Users/<メールアドレス>/<app-name>/frontend`
+  で`dist`フォルダが存在するか確認するとよい。
 - `/api/*` が500を返す場合: Warehouseへのアクセス権限、
   `DATABRICKS_WAREHOUSE_ID` の値、Gold表のカタログ/スキーマ修飾を確認する。
-- フロントエンドが真っ白になる場合: `npm run build` が
-  `frontend/dist` を生成できているか、`backend/main.py` が
-  それをマウントできているかを確認する。

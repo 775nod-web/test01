@@ -37,6 +37,14 @@ Gold layer側のスキーマ・集計ロジックはここでは変更しない�
   （`backend/main.py`）がAPI配信とビルド済みフロントエンド（`frontend/dist`）の
   静的配信の両方を兼ねる。フロントエンドとバックエンドを別プロセス・別アプリに
   分割しない。
+- `databricks apps deploy` はサーバー側でフロントエンドをビルドしない
+  （`app.yaml`の`command`は`uvicorn`起動のみ）。そのため `frontend/dist` は
+  **必ずデプロイ前にローカルで`npm run build`し、`databricks sync`で
+  ワークスペースへ転送しておく必要がある。** `databricks sync`は
+  `.gitignore`に一致するファイルを転送しないため、`.gitignore`では
+  `frontend/dist/`を意図的に除外していない（git管理下に入ること自体は
+  許容している）。この除外を復活させると、デプロイ後にアプリを開いた際
+  `{"detail":"Not Found"}` になる不具合を再発させるので注意。
 - `backend/db.py` の `Config()` は**遅延初期化**にしてある
   （`_get_config()` を呼ぶまでインスタンス化しない）。モジュールimport時に
   即座に認証解決をしようとすると、Databricks認証情報が無い環境

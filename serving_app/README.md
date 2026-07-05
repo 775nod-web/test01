@@ -109,12 +109,21 @@ cd ..
 先に `databricks sync` でワークスペースへコードを転送してから、そのワークスペース
 パスに対して `apps deploy` を実行してください。
 
+**注意（重要）**: `databricks sync` は `.gitignore` に書かれたパターンを
+転送対象から自動的に除外します。`frontend/dist/`（ビルド成果物）は
+Databricks Appsが実際に配信するファイルそのものなので、**`npm run build`の
+直後に毎回syncし直す**必要があります。syncを1回実行して満足していると、
+以前ビルドした古い`dist`のまま（あるいは`dist`自体が無いまま）デプロイされ、
+アプリを開くと `{"detail":"Not Found"}` になります。
+（そのためこのプロジェクトの`.gitignore`では意図的に`frontend/dist/`を
+除外していません。）
+
 ```bash
 # 自分のワークスペースユーザー名（メールアドレス）を確認
 databricks current-user me
 
-# ローカルのserving_appをワークスペースへ同期する（1回だけでよい。
-# 継続的に更新したい場合は先頭に --watch を付ける）
+# ローカルのserving_appをワークスペースへ同期する
+# ※ npm run build のたびに（＝コードを更新してデプロイし直すたびに）毎回実行する
 databricks sync . /Workspace/Users/<あなたのメールアドレス>/interviewprepretail03
 
 # appをまだ作成していなければ作成する
@@ -124,6 +133,9 @@ databricks apps create <app-name>
 databricks apps deploy <app-name> \
   --source-code-path /Workspace/Users/<あなたのメールアドレス>/interviewprepretail03
 ```
+
+つまり、**コードを更新するたびに「① frontendをビルド → ② sync → ③ deploy」の
+3ステップを毎回この順番で実行する**のが正しい運用です。
 
 デプロイ後、Databricks Apps UIの「Resources」設定で、`50153ad923fecd73`
 （Serverless Starter Warehouse）へのアクセス権をアプリのサービスプリンシパルに
