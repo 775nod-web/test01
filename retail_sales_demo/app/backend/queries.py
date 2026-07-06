@@ -42,11 +42,22 @@ def _store_filter_clause(allowed_stores: list[str] | None, store_id: str | None,
     return f"WHERE {' AND '.join(clauses)}" if clauses else ""
 
 
-def get_kpi_summary(date_from: str, date_to: str, store_id: str | None, allowed_stores: list[str] | None) -> dict:
-    params: dict = {"date_from": date_from, "date_to": date_to}
+def _with_date_range(where_sql: str, params: dict, date_from: str | None, date_to: str | None) -> str:
+    """date_from/date_toが両方指定された場合のみ日付範囲条件を追加する。
+    片方のみ、または両方未指定の場合は全期間を対象とする。
+    """
+    if not date_from or not date_to:
+        return where_sql
+    params["date_from"] = date_from
+    params["date_to"] = date_to
+    clause = "sales_date BETWEEN :date_from AND :date_to"
+    return f"{where_sql} AND {clause}" if where_sql else f"WHERE {clause}"
+
+
+def get_kpi_summary(date_from: str | None, date_to: str | None, store_id: str | None, allowed_stores: list[str] | None) -> dict:
+    params: dict = {}
     where = _store_filter_clause(allowed_stores, store_id, params)
-    where_sql = (where + " AND sales_date BETWEEN :date_from AND :date_to") if where \
-        else "WHERE sales_date BETWEEN :date_from AND :date_to"
+    where_sql = _with_date_range(where, params, date_from, date_to)
 
     rows = run_query(
         f"""
@@ -77,11 +88,10 @@ def get_kpi_summary(date_from: str, date_to: str, store_id: str | None, allowed_
     }
 
 
-def get_daily_store_sales(date_from: str, date_to: str, store_id: str | None, allowed_stores: list[str] | None) -> list[dict]:
-    params: dict = {"date_from": date_from, "date_to": date_to}
+def get_daily_store_sales(date_from: str | None, date_to: str | None, store_id: str | None, allowed_stores: list[str] | None) -> list[dict]:
+    params: dict = {}
     where = _store_filter_clause(allowed_stores, store_id, params)
-    where_sql = (where + " AND sales_date BETWEEN :date_from AND :date_to") if where \
-        else "WHERE sales_date BETWEEN :date_from AND :date_to"
+    where_sql = _with_date_range(where, params, date_from, date_to)
 
     return run_query(
         f"""

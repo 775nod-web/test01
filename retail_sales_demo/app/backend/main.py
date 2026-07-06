@@ -3,7 +3,6 @@
 Databricks Apps上で `uvicorn backend.main:app` として起動される想定。
 フロントエンド（frontend/dist のビルド成果物）を同一プロセスから静的配信する。
 """
-from datetime import date, timedelta
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -36,8 +35,9 @@ def _allowed_stores(request: Request) -> list[str] | None:
 
 @app.get("/api/kpi-summary")
 def kpi_summary(request: Request, date_from: str | None = None, date_to: str | None = None, store_id: str | None = None):
-    date_to = date_to or date.today().isoformat()
-    date_from = date_from or (date.today() - timedelta(days=30)).isoformat()
+    # date_from/date_toが指定されない場合は全期間を対象にする（サンプルデータが
+    # 過去の特定期間に固定されているため、「直近N日」をデフォルトにすると
+    # 実行日によってはデータが0件になってしまうため）。
     result = queries.get_kpi_summary(date_from, date_to, store_id, _allowed_stores(request))
     queries.log_access(_current_user_email(request), "kpi-summary", store_id)
     return result
@@ -45,8 +45,6 @@ def kpi_summary(request: Request, date_from: str | None = None, date_to: str | N
 
 @app.get("/api/daily-store-sales")
 def daily_store_sales(request: Request, date_from: str | None = None, date_to: str | None = None, store_id: str | None = None):
-    date_to = date_to or date.today().isoformat()
-    date_from = date_from or (date.today() - timedelta(days=30)).isoformat()
     result = queries.get_daily_store_sales(date_from, date_to, store_id, _allowed_stores(request))
     queries.log_access(_current_user_email(request), "daily-store-sales", store_id)
     return result
