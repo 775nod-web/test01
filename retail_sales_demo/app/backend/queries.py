@@ -106,7 +106,8 @@ def get_category_sales() -> list[dict]:
 
 
 def get_store_ranking(limit: int, allowed_stores: list[str] | None) -> list[dict]:
-    params: dict = {"limit": limit}
+    # limitはFastAPI側で int 型として受け取り済みのため、バインドパラメータ化せず
+    # そのまま埋め込む（LIMIT句に文字列型のバインドパラメータを渡すとSQL側でエラーになるため）。
     where = ""
     if allowed_stores is not None:
         if not allowed_stores:
@@ -122,9 +123,8 @@ def get_store_ranking(limit: int, allowed_stores: list[str] | None) -> list[dict
         FROM {fq('gold_store_ranking')}
         {where}
         ORDER BY sales_rank
-        LIMIT :limit
-        """,
-        params,
+        LIMIT {int(limit)}
+        """
     )
 
 
