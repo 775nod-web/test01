@@ -131,14 +131,27 @@ df_silver_subscriptions = (
     .withColumnRenamed("payment_date", "payment_date_raw")
     .withColumnRenamed("payment_status", "payment_status_raw")
     # payment_date: 想定される複数フォーマットを順に試し、最初に成功した解析結果を採用する
+    #
+    # 【重要】Databricks（Databricks Runtime）はANSI SQLモードが既定で有効なため、
+    # to_date(col, fmt) はフォーマット不一致の文字列に対してNULLを返さず
+    # [CANNOT_PARSE_TIMESTAMP] 例外を送出する（ローカルのOSS Sparkはデフォルト無効なため
+    # 発生に気づけなかった）。そのため、各行の文字列パターンをrlikeで事前判定し、
+    # そのフォーマットに合致する行に対してのみ to_date を呼び出すことで、
+    # 不一致による例外の発生そのものを避ける（CASE WHENは条件が偽の行では
+    # to_dateを評価しないため、例外は発生しない）。
     .withColumn(
         "payment_date",
         F.coalesce(
-            F.to_date("payment_date_raw", "yyyy-MM-dd"),    # 標準フォーマット
-            F.to_date("payment_date_raw", "yyyy/MM/dd"),
-            F.to_date("payment_date_raw", "dd-MM-yyyy"),
-            F.to_date("payment_date_raw", "MM/dd/yyyy"),
-            F.to_date("payment_date_raw", "MMMM d, yyyy"),
+            F.when(F.col("payment_date_raw").rlike(r"^\d{4}-\d{2}-\d{2}$"),
+                   F.to_date("payment_date_raw", "yyyy-MM-dd")),      # 標準フォーマット
+            F.when(F.col("payment_date_raw").rlike(r"^\d{4}/\d{2}/\d{2}$"),
+                   F.to_date("payment_date_raw", "yyyy/MM/dd")),
+            F.when(F.col("payment_date_raw").rlike(r"^\d{2}-\d{2}-\d{4}$"),
+                   F.to_date("payment_date_raw", "dd-MM-yyyy")),
+            F.when(F.col("payment_date_raw").rlike(r"^\d{2}/\d{2}/\d{4}$"),
+                   F.to_date("payment_date_raw", "MM/dd/yyyy")),
+            F.when(F.col("payment_date_raw").rlike(r"^[A-Za-z]+ \d{1,2}, \d{4}$"),
+                   F.to_date("payment_date_raw", "MMMM d, yyyy")),
         )
     )
     # payment_status: 前後空白・大小文字を正規化し、正規値以外は "unknown" に丸める
