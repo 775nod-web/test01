@@ -48,7 +48,6 @@ def run_query(statement: str, params: dict[str, Any] | None = None, timeout_s: i
         statement=statement,
         parameters=_build_parameters(params),
         wait_timeout="10s",
-        on_wait_timeout="CONTINUE",
     )
 
     waited = 0
