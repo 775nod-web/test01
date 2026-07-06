@@ -65,6 +65,27 @@ def run_query(statement: str, params: dict[str, Any] | None = None, timeout_s: i
     if response.manifest is None or response.manifest.schema is None:
         return []
 
-    columns = [col.name for col in response.manifest.schema.columns or []]
+    columns = response.manifest.schema.columns or []
+    names = [col.name for col in columns]
+    type_names = [str(getattr(col, "type_name", "") or "") for col in columns]
     rows = (response.result.data_array if response.result else None) or []
-    return [dict(zip(columns, row)) for row in rows]
+    return [
+        {name: _cast_value(value, type_name) for name, value, type_name in zip(names, row, type_names)}
+        for row in rows
+    ]
+
+
+def _cast_value(value: str | None, type_name: str) -> Any:
+    """Statement Execution APIは値を常に文字列で返すため、manifestの型情報を
+    見てPythonの型（int/float/bool）に変換する。フロントエンドでの数値計算・
+    表示（toLocaleString等）や、バックエンド側の算術演算に必要。
+    """
+    if value is None:
+        return None
+    if "INT" in type_name or "LONG" in type_name:
+        return int(value)
+    if "DOUBLE" in type_name or "FLOAT" in type_name or "DECIMAL" in type_name:
+        return float(value)
+    if "BOOLEAN" in type_name:
+        return value.lower() == "true"
+    return value
