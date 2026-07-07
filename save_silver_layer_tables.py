@@ -71,13 +71,12 @@ df_silver_member = (
 
 # ──────────────────────────────────────────────
 # 3. POSトランザクションの前処理
-#    ・行を一意に識別するIDを付与してcache（重複排除の判定を安定させるため）
+#    ・行を一意に識別するIDを付与する（重複排除の判定に使用）
 #    ・transaction_timestamp（5パターン混在の文字列）をJSTのTimestampTypeに正規化
 #    ・Gold集計で使う transaction_date / sales_amount を事前算出
 # ──────────────────────────────────────────────
 
 df_pos_base = df_bronze_pos.withColumn("_row_id", F.monotonically_increasing_id())
-df_pos_base.cache()
 
 ts_col = F.col("transaction_timestamp")
 
@@ -141,11 +140,37 @@ df_pos_flagged = (
 
 
 # ──────────────────────────────────────────────
+# 4.5 判定結果をステージング表としていったん保存し、読み直す
+#     Databricks Free Editionのサーバーレスコンピュートでは cache()/persist()
+#     （PERSIST TABLE相当）が使えないため、代わりに一度Deltaへ書き込んでから
+#     読み直すことで、有効/無効の判定結果を固定した状態で以降の分割処理を行う
+# ──────────────────────────────────────────────
+
+STAGING_TABLE = f"{SILVER_SCHEMA}.silver_pos_transactions_staging"
+
+(
+    df_pos_flagged
+    .select(
+        "transaction_id", "transaction_timestamp", "transaction_ts", "transaction_date",
+        "store_id", "product_id", "customer_id",
+        "quantity", "unit_price", "sales_amount",
+        "reject_reasons", "is_valid",
+    )
+    .write
+    .format("delta")
+    .mode("overwrite")
+    .option("overwriteSchema", "true")
+    .saveAsTable(STAGING_TABLE)
+)
+df_pos_flagged_fixed = spark.table(STAGING_TABLE)
+
+
+# ──────────────────────────────────────────────
 # 5. 有効データ（silver_pos_transactions）と隔離データ（silver_pos_transactions_rejected）に分割
 # ──────────────────────────────────────────────
 
 df_silver_pos_valid = (
-    df_pos_flagged
+    df_pos_flagged_fixed
     .filter(F.col("is_valid"))
     .withColumn("_silver_processed_at", F.lit(PROCESSED_AT).cast("timestamp"))
     .select(
@@ -157,7 +182,7 @@ df_silver_pos_valid = (
 )
 
 df_silver_pos_rejected = (
-    df_pos_flagged
+    df_pos_flagged_fixed
     .filter(~F.col("is_valid"))
     .withColumn("_silver_processed_at", F.lit(PROCESSED_AT).cast("timestamp"))
     .select(
@@ -195,7 +220,8 @@ silver_counts = {
     "silver_pos_transactions_rejected": save_silver_table(df_silver_pos_rejected, "silver_pos_transactions_rejected"),
 }
 
-df_pos_base.unpersist()
+# ステージング表は最終成果物ではないため削除する
+spark.sql(f"DROP TABLE IF EXISTS {STAGING_TABLE}")
 
 print("\n" + "=" * 40)
 print(f"=== {SILVER_SCHEMA} 保存完了サマリー ===")
