@@ -1,20 +1,20 @@
 # Databricks ノートブック用
-# Bronze層に保存済みの小売サンプルデータ（POS/商品マスター/店舗マスター/会員マスター）について、
+# sample スキーマに保存済みの小売サンプルデータ（POS/商品マスター/店舗マスター/会員マスター）について、
 #   ・各表のサンプルデータ
 #   ・各表の件数
 #   ・品質課題データの件数
 #   ・意図的に含めた品質課題一覧
 # を表示する
 #
-# 前提：generate_retail_sample_data.py と save_bronze_retail_tables.py を
-#       同セッションで実行済みであること（bronze.bronze_* テーブルが存在すること）
+# 前提：generate_retail_sample_data.py と save_sample_retail_tables.py を
+#       同セッションで実行済みであること（sample.sample_* テーブルが存在すること）
 
 from pyspark.sql import functions as F
 
-df_pos = spark.table("bronze.bronze_pos_transactions")
-df_product = spark.table("bronze.bronze_product_master")
-df_store = spark.table("bronze.bronze_store_master")
-df_member = spark.table("bronze.bronze_member_master")
+df_pos = spark.table("sample.sample_pos_transactions")
+df_product = spark.table("sample.sample_product_master")
+df_store = spark.table("sample.sample_store_master")
+df_member = spark.table("sample.sample_member_master")
 
 
 # ──────────────────────────────────────────────
@@ -46,10 +46,10 @@ member_count = df_member.count()
 print("\n" + "=" * 40)
 print("=== 各表 全件数 ===")
 print("=" * 40)
-print(f"  bronze_pos_transactions : {pos_count:>6,} 件")
-print(f"  bronze_product_master   : {product_count:>6,} 件")
-print(f"  bronze_store_master     : {store_count:>6,} 件")
-print(f"  bronze_member_master    : {member_count:>6,} 件")
+print(f"  sample_pos_transactions : {pos_count:>6,} 件")
+print(f"  sample_product_master   : {product_count:>6,} 件")
+print(f"  sample_store_master     : {store_count:>6,} 件")
+print(f"  sample_member_master    : {member_count:>6,} 件")
 
 
 # ──────────────────────────────────────────────
@@ -112,14 +112,14 @@ print(f"  [商品マスター] category null           : {null_category_count:>4
 # ──────────────────────────────────────────────
 
 quality_summary_rows = [
-    ("bronze_pos_transactions", "product_idが商品マスターに存在しない", product_mismatch_count),
-    ("bronze_pos_transactions", "store_idが店舗マスターに存在しない", store_mismatch_count),
-    ("bronze_pos_transactions", "transaction_idの重複", int(duplicate_extra_rows)),
-    ("bronze_pos_transactions", "quantityが0または負の値", quantity_anomaly_count),
-    ("bronze_pos_transactions", "unit_priceがnullまたは負の値", price_anomaly_count),
-    ("bronze_pos_transactions", "customer_idがnull（非会員取引）", null_customer_count),
-    ("bronze_pos_transactions", "transaction_timestampのフォーマット/タイムゾーン表記揺れ", timestamp_anomaly_count),
-    ("bronze_product_master", "product categoryがnull", null_category_count),
+    ("sample_pos_transactions", "product_idが商品マスターに存在しない", product_mismatch_count),
+    ("sample_pos_transactions", "store_idが店舗マスターに存在しない", store_mismatch_count),
+    ("sample_pos_transactions", "transaction_idの重複", int(duplicate_extra_rows)),
+    ("sample_pos_transactions", "quantityが0または負の値", quantity_anomaly_count),
+    ("sample_pos_transactions", "unit_priceがnullまたは負の値", price_anomaly_count),
+    ("sample_pos_transactions", "customer_idがnull（非会員取引）", null_customer_count),
+    ("sample_pos_transactions", "transaction_timestampのフォーマット/タイムゾーン表記揺れ", timestamp_anomaly_count),
+    ("sample_product_master", "product categoryがnull", null_category_count),
 ]
 df_quality_summary = spark.createDataFrame(
     quality_summary_rows,
