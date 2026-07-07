@@ -92,12 +92,13 @@ def save_silver_layer_tables():
         "yyyy-MM-dd HH:mm:ss.SSSSSS",      # マイクロ秒付き
     ]
 
-    # SQL文字列リテラルとして埋め込むため、書式中のシングルクォート（'T'等の
-    # リテラル文字指定）は ''（2連続）にエスケープしてSQL構文エラーを防ぐ
-    escaped_timestamp_formats = [fmt.replace("'", "''") for fmt in TIMESTAMP_FORMATS]
+    # F.expr()でSQL文字列として組み立てると、書式中のシングルクォート（'T'等の
+    # リテラル文字指定）のエスケープが崩れやすいため、PySparkのネイティブ関数
+    # try_to_timestamp(col, format) にPython文字列としてそのまま渡す
+    # （SQLテキストへの埋め込み・エスケープを一切行わないため安全）
     parsed_timestamp = F.coalesce(*[
-        F.expr(f"try_to_timestamp(transaction_timestamp, '{escaped_fmt}')")
-        for escaped_fmt in escaped_timestamp_formats
+        F.try_to_timestamp(F.col("transaction_timestamp"), fmt)
+        for fmt in TIMESTAMP_FORMATS
     ])
 
     df_pos_std = (
