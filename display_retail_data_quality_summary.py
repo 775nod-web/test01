@@ -7,14 +7,51 @@
 # を表示する
 #
 # 前提：generate_retail_sample_data.py と save_sample_retail_tables.py を
-#       同セッションで実行済みであること（sample.sample_* テーブルが存在すること）
+#       同セッションで実行済みであること（{カタログ}.sample.sample_* テーブルが存在すること）
+#
+# 補足：Databricks Free EditionはUnity Catalogが有効なため、テーブルは本来
+#       catalog.schema.table の3階層で管理される。保存スクリプト側と同様に
+#       current_catalog() を明示的に取得し、常に3階層のフルネームで参照する。
 
 from pyspark.sql import functions as F
 
-df_pos = spark.table("sample.sample_pos_transactions")
-df_product = spark.table("sample.sample_product_master")
-df_store = spark.table("sample.sample_store_master")
-df_member = spark.table("sample.sample_member_master")
+CATALOG = spark.catalog.currentCatalog()
+SCHEMA_NAME = "sample"
+FULL_SCHEMA = f"{CATALOG}.{SCHEMA_NAME}"
+
+REQUIRED_TABLES = [
+    "sample_pos_transactions",
+    "sample_product_master",
+    "sample_store_master",
+    "sample_member_master",
+]
+
+# ──────────────────────────────────────────────
+# 0. 前提テーブルの存在チェック
+#    見つからない場合は原因が分かるよう、Sparkの生の例外ではなく
+#    分かりやすいメッセージを出して停止する
+# ──────────────────────────────────────────────
+
+try:
+    existing_tables = {
+        row.tableName for row in spark.sql(f"SHOW TABLES IN {FULL_SCHEMA}").collect()
+    }
+except Exception:
+    existing_tables = set()
+
+missing_tables = [t for t in REQUIRED_TABLES if t not in existing_tables]
+if missing_tables:
+    raise RuntimeError(
+        f"次のテーブルが {FULL_SCHEMA} に見つかりません: {missing_tables}\n"
+        f"generate_retail_sample_data.py と save_sample_retail_tables.py を、"
+        f"このノートブックの前のセルで先に実行してください。\n"
+        f"（現在のカタログ: {CATALOG} / スキーマ: {SCHEMA_NAME}）"
+    )
+
+df_pos = spark.table(f"{FULL_SCHEMA}.sample_pos_transactions")
+df_product = spark.table(f"{FULL_SCHEMA}.sample_product_master")
+df_store = spark.table(f"{FULL_SCHEMA}.sample_store_master")
+df_member = spark.table(f"{FULL_SCHEMA}.sample_member_master")
 
 
 # ──────────────────────────────────────────────
