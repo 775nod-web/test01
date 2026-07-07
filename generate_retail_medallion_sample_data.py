@@ -424,16 +424,27 @@ print("例: spark.sql('SELECT * FROM pos_transactions LIMIT 10').show()")
 
 
 # ──────────────────────────────────────────────
-# 7. Delta保存（Unity Catalog Volume/Hiveメタストアを使う場合のみ有効化）
-#    save_bronze_delta_tables.py と同様に bronze データベースへ保存する場合は
-#    以下を参考にコメントを外して利用する
+# 7. sampleスキーマへのDelta保存
+#    sampleスキーマが存在しない場合は作成した上で、4表をDeltaテーブルとして保存する
 # ──────────────────────────────────────────────
 
-# spark.sql("CREATE DATABASE IF NOT EXISTS bronze")
-# df_stores.write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable("bronze.bronze_store_master")
-# df_products.write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable("bronze.bronze_product_master")
-# df_members.write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable("bronze.bronze_member_master")
-# df_pos.write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable("bronze.bronze_pos_transactions")
+spark.sql("CREATE SCHEMA IF NOT EXISTS sample")
+print("スキーマ 'sample' を確認/作成しました")
+
+(df_stores.write.format("delta").mode("overwrite")
+ .option("overwriteSchema", "true").saveAsTable("sample.store_master"))
+(df_products.write.format("delta").mode("overwrite")
+ .option("overwriteSchema", "true").saveAsTable("sample.product_master"))
+(df_members.write.format("delta").mode("overwrite")
+ .option("overwriteSchema", "true").saveAsTable("sample.member_master"))
+(df_pos.write.format("delta").mode("overwrite")
+ .option("overwriteSchema", "true").saveAsTable("sample.pos_transactions"))
+
+print("\n=== sampleスキーマへの保存完了 ===")
+print(f"  sample.store_master     : {spark.table('sample.store_master').count():>4,} 件")
+print(f"  sample.product_master   : {spark.table('sample.product_master').count():>4,} 件")
+print(f"  sample.member_master    : {spark.table('sample.member_master').count():>4,} 件")
+print(f"  sample.pos_transactions : {spark.table('sample.pos_transactions').count():>4,} 件")
 
 print("\n=== 全データ生成完了 ===")
 # spark.stop() はここで呼ばない
