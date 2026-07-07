@@ -1,10 +1,14 @@
 """
-カスタマーサポート チケット分析 PoC - サンプルデータ生成スクリプト
+カスタマーサポート チケット分析 PoC - サンプルデータ生成・保存スクリプト
 （Databricks Free Edition Notebook 用）
 
-Bronze レイヤーに投入する生データを模したサンプルデータを生成する。
-- 顧客マスター（customer_master）        : 15件（クリーンなマスタデータ）
-- 契約データ（contract_data）            : 15件（クリーンなマスタデータ）
+前回設計したテーブル定義に基づき、Bronze相当のサンプルデータを生成し、
+`sample` スキーマに Delta テーブルとして保存する。
+
+保存先: sample.customer_master / sample.contract_data / sample.support_tickets
+
+- 顧客マスター（customer_master）        : 15件（クリーン）
+- 契約データ（contract_data）            : 15件（クリーン）
 - サポートチケット（support_tickets）    : 53件
     - クリーンなレコード: 26件
     - 品質課題を含むレコード: 27件
@@ -13,16 +17,14 @@ Bronze レイヤーに投入する生データを模したサンプルデータ�
         センチメント欠損3 / 解決時間欠損2 / 解決時間異常値2 /
         作成日時フォーマット揺れ3）
 
-ビジネスゴール: 問い合わせが多い・未解決・高優先度・ネガティブな顧客を
-特定し、CSM/サポート責任者の優先対応リスト作成とヘルススコア算出に
-つなげるための Bronze 層サンプルデータを用意する。
+データソースはKnowledge base記載の3つ（カスタマーマスター / サポートチケッツ /
+コントラクトデータ）のみを対象とし、Product usage summaryは対象外とする。
 """
 
 from pyspark.sql import Row
 from pyspark.sql.types import (
     StructType, StructField, StringType, DoubleType, DateType
 )
-from pyspark.sql import functions as F
 import random
 from datetime import date, datetime, timedelta
 
@@ -31,6 +33,15 @@ from datetime import date, datetime, timedelta
 
 # 再現性のためのシード固定
 random.seed(42)
+
+
+# ──────────────────────────────────────────────
+# 0. 保存先スキーマの作成（無ければ作成）
+# ──────────────────────────────────────────────
+
+spark.sql("CREATE SCHEMA IF NOT EXISTS sample")
+spark.sql("USE sample")
+print("スキーマ 'sample' を選択しました（存在しない場合は作成済み）")
 
 
 # ──────────────────────────────────────────────
@@ -56,7 +67,6 @@ def random_datetime_str(start: date, end: date) -> str:
 # ──────────────────────────────────────────────
 # 1. 顧客マスター（customer_master） 15件
 #    データソース: カスタマーマスター（顧客ID、企業名、プラン、ARR、CSMオーナー、地域）
-#    品質課題なし（クリーンなマスタデータという前提）
 # ──────────────────────────────────────────────
 
 # customer_id, company_name, plan, arr, csm_owner, region
@@ -87,20 +97,23 @@ customer_master_schema = StructType([
     StructField("region",        StringType(), nullable=True),   # 顧客の所在地域
 ])
 
-customer_master_rows = [
-    Row(customer_id=cid, company_name=name, plan=plan, arr=arr, csm_owner=csm, region=region)
-    for cid, name, plan, arr, csm, region in CUSTOMER_MASTER
-]
-df_customer_master = spark.createDataFrame(customer_master_rows, schema=customer_master_schema)
+df_customer_master = spark.createDataFrame(
+    [Row(customer_id=cid, company_name=name, plan=plan, arr=arr, csm_owner=csm, region=region)
+     for cid, name, plan, arr, csm, region in CUSTOMER_MASTER],
+    schema=customer_master_schema,
+)
 
-print(f"=== 顧客マスター（{df_customer_master.count()} 件） ===")
-df_customer_master.show(truncate=False)
+(
+    df_customer_master
+    .write.format("delta").mode("overwrite").option("overwriteSchema", "true")
+    .saveAsTable("sample.customer_master")
+)
+print(f"sample.customer_master 保存完了: {spark.table('sample.customer_master').count()} 件")
 
 
 # ──────────────────────────────────────────────
 # 2. 契約データ（contract_data） 15件
 #    データソース: コントラクトデータ（顧客ID、契約開始日、更新日、契約ステータス、ARR）
-#    品質課題なし（クリーンなマスタデータという前提）
 # ──────────────────────────────────────────────
 
 # customer_id, contract_start_date, renewal_date(Noneあり=解約により更新なし), contract_status, arr
@@ -123,22 +136,26 @@ CONTRACT_DATA = [
 ]
 
 contract_data_schema = StructType([
-    StructField("customer_id",          StringType(), nullable=False),  # 顧客ID（外部キー: customer_master）
-    StructField("contract_start_date",  DateType(),   nullable=True),   # 契約開始日
-    StructField("renewal_date",         DateType(),   nullable=True),   # 契約更新日（解約済みの場合は無し）
-    StructField("contract_status",      StringType(), nullable=True),  # 契約ステータス（Active/Cancelled/Pending Renewal）
-    StructField("arr",                  DoubleType(), nullable=True),   # 契約時点のARR（円）
+    StructField("customer_id",         StringType(), nullable=False),  # 顧客ID（外部キー: customer_master）
+    StructField("contract_start_date", DateType(),   nullable=True),   # 契約開始日
+    StructField("renewal_date",        DateType(),   nullable=True),   # 契約更新日（解約済みの場合は無し）
+    StructField("contract_status",     StringType(), nullable=True),   # 契約ステータス（Active/Cancelled/Pending Renewal）
+    StructField("arr",                 DoubleType(), nullable=True),   # 契約時点のARR（円）
 ])
 
-contract_data_rows = [
-    Row(customer_id=cid, contract_start_date=start, renewal_date=renewal,
-        contract_status=status, arr=arr)
-    for cid, start, renewal, status, arr in CONTRACT_DATA
-]
-df_contract_data = spark.createDataFrame(contract_data_rows, schema=contract_data_schema)
+df_contract_data = spark.createDataFrame(
+    [Row(customer_id=cid, contract_start_date=start, renewal_date=renewal,
+         contract_status=status, arr=arr)
+     for cid, start, renewal, status, arr in CONTRACT_DATA],
+    schema=contract_data_schema,
+)
 
-print(f"=== 契約データ（{df_contract_data.count()} 件） ===")
-df_contract_data.show(truncate=False)
+(
+    df_contract_data
+    .write.format("delta").mode("overwrite").option("overwriteSchema", "true")
+    .saveAsTable("sample.contract_data")
+)
+print(f"sample.contract_data 保存完了: {spark.table('sample.contract_data').count()} 件")
 
 
 # ──────────────────────────────────────────────
@@ -146,9 +163,8 @@ df_contract_data.show(truncate=False)
 #    データソース: サポートチケッツ（チケットID、顧客ID、作成日時、優先度、
 #                  ステータス、カテゴリ、センチメント、解決時間）
 #
-#    Bronze層は生データをそのまま保持する層のため、あえて型・制約を緩く
-#    設計し（例: created_at は STRING、priority/status も STRING）、
-#    品質課題を検出できる状態のまま取り込む。
+#    Bronze相当の生データを想定し、あえて型・制約を緩く設計する
+#    （created_at は STRING、priority/status も STRING で正規値以外を許容）。
 # ──────────────────────────────────────────────
 
 VALID_CUSTOMER_IDS = [row[0] for row in CUSTOMER_MASTER]
@@ -170,7 +186,7 @@ support_tickets_schema = StructType([
     StructField("status",            StringType(), nullable=True),   # ステータス（生データ。大文字小文字/表記揺れあり）
     StructField("category",          StringType(), nullable=True),   # 問い合わせカテゴリ（欠損あり）
     StructField("sentiment",         StringType(), nullable=True),   # 顧客の感情（Positive/Neutral/Negative。欠損あり）
-    StructField("resolution_hours",  DoubleType(), nullable=True),   # 解決までの時間（時間単位）。未解決なら本来nullだが、解決済なのにnull/異常値のケースが品質課題
+    StructField("resolution_hours",  DoubleType(), nullable=True),   # 解決までの時間（時間単位）。未解決なら本来null、解決済なのにnull/異常値のケースが品質課題
     StructField("subject",           StringType(), nullable=True),   # チケット件名（参考情報）
 ])
 
@@ -192,15 +208,9 @@ for i in range(1, 27):
     resolution_hours = round(random.uniform(1, 72), 1) if status in RESOLVED_STATUSES else None
 
     clean_rows.append(Row(
-        ticket_id=ticket_id,
-        customer_id=customer_id,
-        created_at=created_at,
-        priority=priority,
-        status=status,
-        category=category,
-        sentiment=sentiment,
-        resolution_hours=resolution_hours,
-        subject=make_subject(category, ticket_id),
+        ticket_id=ticket_id, customer_id=customer_id, created_at=created_at,
+        priority=priority, status=status, category=category, sentiment=sentiment,
+        resolution_hours=resolution_hours, subject=make_subject(category, ticket_id),
     ))
 
 # --- 品質課題1: 顧客マスター不一致 2件（存在しないcustomer_id） ---
@@ -212,8 +222,7 @@ for j, cid in enumerate(["C098", "C099"]):
         created_at=random_datetime_str(DATE_START, DATE_END),
         priority=random.choice(PRIORITIES_CANONICAL), status="Open",
         category=random.choice(CATEGORIES), sentiment=random.choice(SENTIMENTS),
-        resolution_hours=None,
-        subject=make_subject("Technical Issue", ticket_id),
+        resolution_hours=None, subject=make_subject("Technical Issue", ticket_id),
     ))
 
 # --- 品質課題2: 顧客ID欠損 2件 ---
@@ -225,8 +234,7 @@ for k in range(2):
         created_at=random_datetime_str(DATE_START, DATE_END),
         priority=random.choice(PRIORITIES_CANONICAL), status="Open",
         category=random.choice(CATEGORIES), sentiment=random.choice(SENTIMENTS),
-        resolution_hours=None,
-        subject=make_subject("Billing", ticket_id),
+        resolution_hours=None, subject=make_subject("Billing", ticket_id),
     ))
 
 # --- 品質課題3: チケットID重複 2件（既存レコードをそのままコピー = 再取り込みを想定） ---
@@ -333,7 +341,7 @@ for t, dt_str in enumerate(variant_datetimes):
         subject=make_subject("Onboarding", ticket_id),
     ))
 
-# --- 全レコードを結合して DataFrame 作成 ---
+# --- 全レコードを結合して DataFrame 作成・保存 ---
 all_ticket_rows = (
     clean_rows
     + unmatched_customer_rows
@@ -349,86 +357,17 @@ all_ticket_rows = (
 )
 df_support_tickets = spark.createDataFrame(all_ticket_rows, schema=support_tickets_schema)
 
-print(f"=== サポートチケット（合計 {df_support_tickets.count()} 件） ===")
-df_support_tickets.show(20, truncate=False)
+(
+    df_support_tickets
+    .write.format("delta").mode("overwrite").option("overwriteSchema", "true")
+    .saveAsTable("sample.support_tickets")
+)
+print(f"sample.support_tickets 保存完了: {spark.table('sample.support_tickets').count()} 件")
 
-
-# ──────────────────────────────────────────────
-# 4. データ品質チェック（実データから件数を検証）
-# ──────────────────────────────────────────────
-
-print("\n" + "=" * 50)
-print("=== データ品質サマリー（support_tickets） ===")
-print("=" * 50)
-
-total_tickets = df_support_tickets.count()
-print(f"全件数: {total_tickets} 件")
-
-# (1) 顧客マスター不一致：customer_idがnullではないが、customer_masterに存在しない
-valid_ids = [r.customer_id for r in df_customer_master.select("customer_id").collect()]
-unmatched_count = df_support_tickets.filter(
-    F.col("customer_id").isNotNull() & (~F.col("customer_id").isin(valid_ids))
-).count()
-print(f"(1) 顧客マスター不一致: {unmatched_count} 件")
-
-# (2) 顧客ID欠損
-null_customer_count = df_support_tickets.filter(F.col("customer_id").isNull()).count()
-print(f"(2) 顧客ID欠損: {null_customer_count} 件")
-
-# (3) チケットID重複（重複により余分に発生している行数）
-dup_ticket_counts = df_support_tickets.groupBy("ticket_id").count().filter(F.col("count") > 1)
-dup_extra_rows = total_tickets - df_support_tickets.select("ticket_id").distinct().count()
-print(f"(3) チケットID重複: {dup_ticket_counts.count()} 種類のIDが重複 / 余分な行数 {dup_extra_rows} 件")
-
-# (4) 優先度の表記揺れ（正規値 Low/Medium/High 以外）
-priority_variant_count = df_support_tickets.filter(
-    F.col("priority").isNotNull() & (~F.col("priority").isin(PRIORITIES_CANONICAL))
-).count()
-print(f"(4) 優先度の表記揺れ: {priority_variant_count} 件")
-
-# (5) ステータスの表記揺れ（正規値 Open/In Progress/Resolved/Closed 以外）
-status_variant_count = df_support_tickets.filter(
-    F.col("status").isNotNull() & (~F.col("status").isin(STATUSES_CANONICAL))
-).count()
-print(f"(5) ステータスの表記揺れ: {status_variant_count} 件")
-
-# (6) カテゴリ欠損
-category_null_count = df_support_tickets.filter(F.col("category").isNull()).count()
-print(f"(6) カテゴリ欠損: {category_null_count} 件")
-
-# (7) センチメント欠損
-sentiment_null_count = df_support_tickets.filter(F.col("sentiment").isNull()).count()
-print(f"(7) センチメント欠損: {sentiment_null_count} 件")
-
-# (8) 解決時間の異常（ステータスが実質「解決済」を意味するのに resolution_hours が null、または720時間(30日)超）
-RESOLVED_LIKE = ["Resolved", "Closed", "resolved", "close"]
-resolution_anomaly_count = df_support_tickets.filter(
-    F.col("status").isin(RESOLVED_LIKE) &
-    (F.col("resolution_hours").isNull() | (F.col("resolution_hours") > 720))
-).count()
-print(f"(8) 解決時間の異常（欠損 or 720時間超）: {resolution_anomaly_count} 件")
-
-# (9) 作成日時のフォーマット揺れ（正規表現 'YYYY-MM-DD HH:MM:SS' に一致しない）
-created_at_variant_count = df_support_tickets.filter(
-    ~F.col("created_at").rlike(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
-).count()
-print(f"(9) 作成日時のフォーマット揺れ: {created_at_variant_count} 件")
-
-print("=" * 50)
-
-
-# ──────────────────────────────────────────────
-# 5. Spark テンポラリビューとして登録（Databricks / ローカル共通）
-# ──────────────────────────────────────────────
-
-df_customer_master.createOrReplaceTempView("customer_master")
-df_contract_data.createOrReplaceTempView("contract_data")
-df_support_tickets.createOrReplaceTempView("support_tickets")
-
-print("\nテンポラリビューを登録しました: customer_master / contract_data / support_tickets")
-print("例: spark.sql('SELECT * FROM support_tickets LIMIT 10').show()")
-
-print("\n=== 全データ生成完了 ===")
+print("\n=== sample スキーマへの保存が完了しました ===")
+print("  sample.customer_master")
+print("  sample.contract_data")
+print("  sample.support_tickets")
 # spark.stop() はここで呼ばない
 # Databricks ノートブックでは SparkSession はクラスター側が管理するため、
 # stop() を呼ぶと後続セルで NO_ACTIVE_SESSION エラーが発生する
