@@ -22,16 +22,19 @@ GOLD_SCHEMA = f"{CATALOG}.gold"
 CHECKED_AT = datetime.now()
 
 # ──────────────────────────────────────────────
-# 0. Goldスキーマ・表の作成（存在しない場合のみ）
-#    Gold表は列構成を明示したうえで事前に作成し、以降はINSERT OVERWRITEで
-#    データのみを入れ替える（表定義そのものは都度作り直さない）
+# 0. Goldスキーマ・表の作成
+#    列構成を明示して CREATE OR REPLACE TABLE で（再）作成することで、
+#    過去の試行等で異なる列構成の表が既に存在していても、
+#    実行のたびに必ずこの設計どおりのスキーマへ揃える。
+#    （CREATE TABLE IF NOT EXISTS だと、既存表の列構成が古い/異なる場合に
+#      そのまま残ってしまい、後続のINSERTで列数不一致エラーになるため）
 # ──────────────────────────────────────────────
 
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS {GOLD_SCHEMA}")
 print(f"スキーマ '{GOLD_SCHEMA}' を使用します")
 
 spark.sql(f"""
-CREATE TABLE IF NOT EXISTS {GOLD_SCHEMA}.gold_daily_sales_kpi (
+CREATE OR REPLACE TABLE {GOLD_SCHEMA}.gold_daily_sales_kpi (
     sales_date         DATE,
     total_sales        DOUBLE,
     transaction_count  BIGINT,
@@ -41,7 +44,7 @@ CREATE TABLE IF NOT EXISTS {GOLD_SCHEMA}.gold_daily_sales_kpi (
 """)
 
 spark.sql(f"""
-CREATE TABLE IF NOT EXISTS {GOLD_SCHEMA}.gold_store_daily_sales (
+CREATE OR REPLACE TABLE {GOLD_SCHEMA}.gold_store_daily_sales (
     sales_date        DATE,
     store_id          STRING,
     store_name        STRING,
@@ -53,7 +56,7 @@ CREATE TABLE IF NOT EXISTS {GOLD_SCHEMA}.gold_store_daily_sales (
 """)
 
 spark.sql(f"""
-CREATE TABLE IF NOT EXISTS {GOLD_SCHEMA}.gold_category_daily_sales (
+CREATE OR REPLACE TABLE {GOLD_SCHEMA}.gold_category_daily_sales (
     sales_date     DATE,
     category       STRING,
     total_sales    DOUBLE,
@@ -63,7 +66,7 @@ CREATE TABLE IF NOT EXISTS {GOLD_SCHEMA}.gold_category_daily_sales (
 """)
 
 spark.sql(f"""
-CREATE TABLE IF NOT EXISTS {GOLD_SCHEMA}.gold_data_quality_summary (
+CREATE OR REPLACE TABLE {GOLD_SCHEMA}.gold_data_quality_summary (
     quality_issue STRING,
     record_count  BIGINT,
     checked_at    TIMESTAMP
@@ -163,7 +166,7 @@ df_quality_summary = (
 
 
 # ──────────────────────────────────────────────
-# 6. Gold表へ保存（INSERT OVERWRITE：事前に作成した表定義はそのまま、データのみ入れ替える）
+# 6. Gold表へ保存（INSERT OVERWRITE：直前にCREATE OR REPLACEした表定義に対してデータを入れる）
 # ──────────────────────────────────────────────
 
 def save_gold_table(df, table_name: str, columns: list) -> int:
