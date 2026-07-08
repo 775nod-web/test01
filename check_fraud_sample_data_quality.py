@@ -135,10 +135,15 @@ print(f"\n(h) fraud_label が NULL         : {fraud_label_null_count} / {transac
 
 # (i) 同一顧客の短時間複数取引（バーストパターン, 15分以内の連続取引）
 #     正規形式のタイムスタンプのみパースして時系列で比較する
+#     ANSIモード（Databricksのデフォルト）では to_timestamp は形式不一致の値に対して
+#     例外を送出するため、形式不一致をNULLとして許容する try_to_timestamp を使用する
 w = Window.partitionBy("customer_id").orderBy("parsed_ts")
 df_parsed = (
     df_transactions
-    .withColumn("parsed_ts", F.to_timestamp("transaction_ts", "yyyy-MM-dd'T'HH:mm:ssXXX"))
+    .withColumn(
+        "parsed_ts",
+        F.try_to_timestamp("transaction_ts", F.lit("yyyy-MM-dd'T'HH:mm:ssXXX")),
+    )
     .filter(F.col("parsed_ts").isNotNull())
     .withColumn("prev_ts", F.lag("parsed_ts").over(w))
     .withColumn("prev_transaction_id", F.lag("transaction_id").over(w))
