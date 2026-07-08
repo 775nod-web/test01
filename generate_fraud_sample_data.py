@@ -12,7 +12,8 @@
         [5] タイムスタンプ形式・TZ揺れ      8件
         [6] 国コード表記揺れ（Japan表記等） 8件
         [7] 加盟店カテゴリnull・表記揺れ    8件（null4件＋表記揺れ4件）
-        [8] fraud_labelがnull              113件 / 126件（多くがnull）
+        [8] fraud_labelがnull              111件 / 126件（多くがnull。重複行の一部が
+                                            fraud_label設定済み正常行と重なるため populated=15件）
         [9] 同一顧客の短時間複数取引        3顧客 × 4件 = 12件
 - 保存先：sample スキーマ（Databricks Free Edition・Hiveメタストア）
 
