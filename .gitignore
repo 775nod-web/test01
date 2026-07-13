@@ -26,6 +26,7 @@ backend/static/
 .DS_Store
 .vscode/
 .idea/
+.claude/
 
 # Build artifacts
 *.log

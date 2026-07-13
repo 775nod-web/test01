@@ -110,6 +110,37 @@ egress policy). As a result:
   deployment steps to run once Apps is enabled — it will not be replaced by
   Streamlit or a local-only substitute.
 
+## Synthetic data generation (Phase 2)
+
+`notebooks/lib/datagen.py` is a pure-Python, deterministic generator (fixed
+seed, stdlib only) that produces all seven source domains with intentional,
+explainable churn/retention patterns. It has no Spark dependency, so it is
+unit-tested directly:
+
+```bash
+pip install -r requirements.txt
+pytest tests/test_datagen.py -v          # 14 tests: determinism, uniqueness,
+                                          # referential integrity, patterns
+python tests/generate_quality_report.py  # regenerates docs/data-quality-report.md
+```
+
+To materialize the data as Bronze Delta tables, run
+`notebooks/01_generate_synthetic_data.py` inside your Databricks workspace
+(import the repo as a Databricks Repo so `notebooks/lib` is importable
+alongside it). The notebook:
+
+- detects at runtime whether Unity Catalog is enabled and falls back to a
+  Hive metastore database automatically — this was **not** guessed, since
+  this build had no network path to verify it in advance;
+- is idempotent (`mode("overwrite")` on every table), so it can be rerun
+  without manual cleanup;
+- runs its own row-count, null, and referential-integrity checks after
+  writing, in addition to `docs/data-quality-report.md`.
+
+See `docs/data-dictionary.md` for full column definitions and
+`docs/data-quality-report.md` for measured row counts, ranges, class
+balance, and pattern verification from an actual 8,000-customer run.
+
 ## Restarting the Databricks App (once deployed)
 
 1. Open the workspace → **Compute → Apps**.
@@ -127,8 +158,8 @@ egress policy). As a result:
 
 | Phase | Scope | Status |
 |---|---|---|
-| 1 | Repository and environment scaffolding | Done (this document) |
-| 2 | Synthetic banking data (Bronze) | Not started |
+| 1 | Repository and environment scaffolding | Done |
+| 2 | Synthetic banking data (Bronze) | Done — run `notebooks/01_generate_synthetic_data.py` in Databricks to materialize tables |
 | 3 | Silver layer and Customer 360 (Gold) | Not started |
 | 4 | Rule-based risk score and retention actions | Not started |
 | 5 | Executive dashboard and SQL assets | Not started |
