@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/tsconfig.tsbuildinfo
+backend/static/
+
+# Env / secrets - never commit real values
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Databricks CLI local config
+.databrickscfg
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Build artifacts
+*.log

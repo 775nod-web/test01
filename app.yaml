@@ -1,0 +1,17 @@
+# Databricks Apps runtime configuration.
+#
+# The Python backend reads DATABRICKS_APP_PORT itself and binds to 0.0.0.0
+# (see backend/main.py / backend/config.py), so no shell expansion is
+# needed here. Do not put secrets or workspace-specific IDs in this file.
+command: ["python", "backend/main.py"]
+
+# Environment variables passed to the app process. Values below are
+# placeholders; real values are supplied by attaching a Databricks SQL
+# warehouse resource to the app in the Databricks Apps UI/CLI (Phase 6),
+# which injects DATABRICKS_WAREHOUSE_ID automatically. Do not hardcode a
+# warehouse ID here.
+env:
+  - name: "UC_CATALOG"
+    value: "bank_demo"
+  - name: "UC_SCHEMA_GOLD"
+    value: "gold"
