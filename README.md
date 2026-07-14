@@ -301,7 +301,7 @@ python scripts/generate_local_fixtures.py
 | 6 | React + FastAPI app on Databricks Apps | Done — verify locally per above, then deploy |
 | 7 | Optional ML / MLflow / Genie (never a dependency) | Done — see `docs/ml-comparison.md`, `docs/genie-setup.md` |
 | 8 | Integration testing, deployment, documentation | Done — see `docs/phase8-test-report.md` |
-| 9 | Ten-minute demo rehearsal and handoff | Not started |
+| 9 | Ten-minute demo rehearsal and handoff | Done — see `docs/demo-script.md`, `docs/technical-qa.md` |
 
 ## Application usage (once deployed)
 
@@ -354,6 +354,8 @@ and fall back cleanly if unavailable.
 - `docs/free-edition-limitations.md` — what Free Edition cannot do here.
 - `docs/poc-success-criteria.md` — what a production PoC would validate.
 - `docs/phase8-test-report.md` — full integration test results.
+- `docs/demo-script.md` — timed ten-minute script, click path, fallback plan, pre-demo checklist.
+- `docs/technical-qa.md` — structured answers to the seven expected technical questions.
 
 ## Troubleshooting
 
