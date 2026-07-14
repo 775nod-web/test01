@@ -2,7 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ApiError, getCaseDetail } from "../api";
 import Badge, { actionTone, priorityTone, statusTone } from "../components/common/Badge";
-import type { CaseDetail } from "../types";
+import Toast from "../components/common/Toast";
+import BehaviorComparisonTable from "../components/workbench/BehaviorComparisonTable";
+import TimelineTable from "../components/workbench/TimelineTable";
+import RelatedInfoGrid from "../components/workbench/RelatedInfoGrid";
+import AuditLogList from "../components/workbench/AuditLogList";
+import DecisionForm from "../components/workbench/DecisionForm";
+import type { CaseDetail, DecisionResponse } from "../types";
 import { formatJpy } from "../utils/format";
 
 type LoadState = "loading" | "success" | "error" | "not_found";
@@ -12,6 +18,7 @@ function CaseDetailPage() {
   const [state, setState] = useState<LoadState>("loading");
   const [detail, setDetail] = useState<CaseDetail | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setState("loading");
@@ -34,10 +41,19 @@ function CaseDetailPage() {
     load();
   }, [load]);
 
+  function handleDecisionSuccess(response: DecisionResponse) {
+    setToastMessage(response.toast_message);
+    load();
+  }
+
   return (
     <div className="case-detail-page">
+      {toastMessage && <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />}
+
       <p>
         <Link to="/">← 概況ダッシュボードへ戻る</Link>
+        {" ｜ "}
+        <Link to="/cases">調査ケース一覧へ戻る</Link>
       </p>
 
       {state === "loading" && (
@@ -73,6 +89,9 @@ function CaseDetailPage() {
                 <Badge tone={priorityTone(detail.priority)}>優先度: {detail.priority}</Badge>
                 <Badge tone={statusTone(detail.status)}>{detail.status}</Badge>
                 <Badge tone={actionTone(detail.recommended_action)}>推奨: {detail.recommended_action}</Badge>
+                {detail.investigation_result && (
+                  <Badge tone="blue">調査結果: {detail.investigation_result}</Badge>
+                )}
               </div>
             </div>
             <dl className="summary-grid">
@@ -97,8 +116,20 @@ function CaseDetailPage() {
                 <dd>{detail.customer_id}</dd>
               </div>
               <div>
+                <dt>カード</dt>
+                <dd>末尾{detail.card_last4}</dd>
+              </div>
+              <div>
+                <dt>地域</dt>
+                <dd>{detail.region}</dd>
+              </div>
+              <div>
                 <dt>チャネル</dt>
                 <dd>{detail.channel}</dd>
+              </div>
+              <div>
+                <dt>関連取引数</dt>
+                <dd>{detail.related_transaction_count}件</dd>
               </div>
             </dl>
             <p className="disclaimer-text">{detail.disclaimer}</p>
@@ -138,6 +169,12 @@ function CaseDetailPage() {
             </div>
           </section>
 
+          <BehaviorComparisonTable rows={detail.behavior_comparison} />
+
+          <TimelineTable timeline={detail.timeline} last7Days={detail.last_7_days_summary} />
+
+          <RelatedInfoGrid info={detail.related_info} />
+
           <section className="card" aria-labelledby="rule-ai-heading">
             <h2 id="rule-ai-heading">判定根拠</h2>
             <h3 className="chart-subheading">既存ルール該当理由</h3>
@@ -158,12 +195,16 @@ function CaseDetailPage() {
               使用モデルバージョン: {detail.model_version} ／ 判定日時: {detail.decision_datetime} ／ データ更新時刻:{" "}
               {detail.data_updated_at}
             </p>
+            <hr className="section-divider" />
+            <AuditLogList log={detail.audit_log} />
           </section>
 
-          <div className="card phase-note">
-            調査結果の登録、顧客の通常行動比較、取引タイムライン、関連情報、監査ログなどの詳細な調査ワークベンチ機能は
-            Phase 3で実装予定です。
-          </div>
+          <DecisionForm
+            transactionId={detail.transaction_id}
+            initialResult={detail.investigation_result}
+            initialMemo={detail.investigation_memo}
+            onSuccess={handleDecisionSuccess}
+          />
         </>
       )}
     </div>

@@ -8,7 +8,11 @@ import type {
   DecisionResponse,
   HealthResponse,
   Period,
+  Priority,
+  RecommendedAction,
+  RiskBand,
   Scenario,
+  CaseStatus,
 } from "./types";
 
 export class ApiError extends Error {
@@ -62,8 +66,23 @@ export function getDashboard(params: DashboardParams): Promise<DashboardResponse
   return request<DashboardResponse>(`/api/dashboard?${query.toString()}`);
 }
 
-export function getCases(): Promise<CaseListResponse> {
-  return request<CaseListResponse>("/api/cases");
+export interface CaseListParams {
+  status?: CaseStatus;
+  priority?: Priority;
+  recommended_action?: RecommendedAction;
+  risk_band?: RiskBand;
+  q?: string;
+}
+
+export function getCases(params: CaseListParams = {}): Promise<CaseListResponse> {
+  const query = new URLSearchParams();
+  if (params.status) query.set("status", params.status);
+  if (params.priority) query.set("priority", params.priority);
+  if (params.recommended_action) query.set("recommended_action", params.recommended_action);
+  if (params.risk_band) query.set("risk_band", params.risk_band);
+  if (params.q) query.set("q", params.q);
+  const queryString = query.toString();
+  return request<CaseListResponse>(`/api/cases${queryString ? `?${queryString}` : ""}`);
 }
 
 export function getCaseDetail(transactionId: string): Promise<CaseDetail> {
