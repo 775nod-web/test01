@@ -54,6 +54,7 @@ if lib_dir not in sys.path:
 
 try:
     import datagen
+    from catalog_utils import resolve_schema_prefix
 except ImportError as exc:
     raise ImportError(
         "Could not import notebooks/lib/datagen.py. This notebook must be run "
@@ -87,20 +88,7 @@ for name, rows in tables.items():
 
 # COMMAND ----------
 
-try:
-    spark.sql(f"CREATE CATALOG IF NOT EXISTS {catalog}")
-    spark.sql(f"USE CATALOG {catalog}")
-    target_prefix = f"{catalog}.{bronze_schema}"
-    spark.sql(f"CREATE SCHEMA IF NOT EXISTS {target_prefix}")
-    print(f"Unity Catalog available. Writing to {target_prefix}.<table>")
-except Exception as exc:
-    target_prefix = f"{catalog}_{bronze_schema}"
-    spark.sql(f"CREATE DATABASE IF NOT EXISTS {target_prefix}")
-    print(
-        f"Unity Catalog not available or not permitted here "
-        f"({type(exc).__name__}: {exc}). Falling back to Hive metastore "
-        f"database '{target_prefix}'. Writing to {target_prefix}.<table>"
-    )
+target_prefix = resolve_schema_prefix(spark, catalog, bronze_schema)
 
 # COMMAND ----------
 

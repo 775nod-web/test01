@@ -141,6 +141,31 @@ See `docs/data-dictionary.md` for full column definitions and
 `docs/data-quality-report.md` for measured row counts, ranges, class
 balance, and pattern verification from an actual 8,000-customer run.
 
+## Silver layer and Customer 360 (Phase 3)
+
+`sql/silver/*.sql` clean each Bronze domain (type casts, de-dup,
+categorical standardization, customer_id validation, referential
+integrity). `sql/gold/customer_360.sql` builds one row per customer with
+value, account, card, app, service, and campaign behavior — see
+`docs/data-dictionary.md` for every column.
+
+Run `notebooks/02_build_silver_and_gold.py` in Databricks after Phase 2's
+notebook, in the same catalog/schema. Both notebooks share
+`notebooks/lib/catalog_utils.py` to detect Unity Catalog vs. Hive
+metastore consistently. All tables are rebuilt with `DROP TABLE IF
+EXISTS` + `CREATE TABLE ... AS SELECT` (rerunnable, and the pattern that
+actually works — `CREATE OR REPLACE TABLE ... AS SELECT` failed against a
+local Delta catalog during validation and was replaced for portability).
+
+The notebook's own reconciliation cell asserts: one `customer_360` row
+per valid Silver customer, no duplicate `customer_id`, no negative
+balances, no null `value_segment`. All of this — plus the SQL and the
+Spark write/rerun path — was validated end-to-end against a local
+Spark+Delta session built from the actual Phase 2 generator output before
+being committed; see `docs/representative-customers.md` for five
+real, reproducible customer stories (one per risk driver, plus a
+high-value "safe" contrast case) pulled from that same run.
+
 ## Restarting the Databricks App (once deployed)
 
 1. Open the workspace → **Compute → Apps**.
@@ -160,7 +185,7 @@ balance, and pattern verification from an actual 8,000-customer run.
 |---|---|---|
 | 1 | Repository and environment scaffolding | Done |
 | 2 | Synthetic banking data (Bronze) | Done — run `notebooks/01_generate_synthetic_data.py` in Databricks to materialize tables |
-| 3 | Silver layer and Customer 360 (Gold) | Not started |
+| 3 | Silver layer and Customer 360 (Gold) | Done — run `notebooks/02_build_silver_and_gold.py` after Phase 2 |
 | 4 | Rule-based risk score and retention actions | Not started |
 | 5 | Executive dashboard and SQL assets | Not started |
 | 6 | React + FastAPI app on Databricks Apps | Not started |

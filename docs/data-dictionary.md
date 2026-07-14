@@ -113,9 +113,43 @@ Six internal archetypes drive the patterns above (see
 table — only its effects on the behavioral columns above are, so Phase 3/4
 logic must derive risk from behavior, not from a hidden label.
 
-## Planned Gold tables (Phase 3–4, not yet built)
+## Gold: `customer_360` (Phase 3 — one row per customer)
 
-- `customer_360` — one row per customer, unifying all domains above.
+Built by `sql/gold/customer_360.sql`. "30-day" and "90-day" changes are
+month-over-month and 3-months-over-3-months comparisons (source data is
+monthly, not daily — see `docs/free-edition-limitations.md`). Customers
+with fewer than 4 months of history get `NULL` 90-day comparisons rather
+than a misleading number.
+
+| Column | Description |
+|---|---|
+| `customer_id`, `signup_date`, `tenure_months`, `age_band`, `acquisition_channel`, `home_region` | Passed through from Silver `customers`. |
+| `value_segment` | `High`/`Medium`/`Low`, from Silver `customers.customer_value_segment` (a simulated business-assigned tier, not recomputed here). |
+| `simulated_annual_value` | **Simulated** annual value/revenue proxy. |
+| `churn_label_90d` | **Simulated ground truth**, reserved for optional Phase 7 ML validation only — never used by the Phase 4 rule-based score. |
+| `current_balance`, `avg_balance_90d` | Latest month-end balance; average balance over the trailing 3 months. |
+| `balance_change_30d_pct`, `balance_change_90d_pct` | % change in `eom_balance` vs. 1 month ago / 3 months ago. `NULL` if insufficient history. |
+| `transfer_out_amount_90d` | Sum of transfers out over the trailing 3 months. |
+| `salary_deposit_active` | 1 if the latest month had a salary deposit. |
+| `salary_deposit_stopped_flag` | 1 if salary deposits were active in an earlier month but not the latest month. |
+| `product_count`, `product_count_90d_ago`, `product_count_change_90d` | Current vs. 3-months-ago product count and the difference. |
+| `card_spend_90d` | Sum of card spend over the trailing 3 months. |
+| `card_spend_change_30d_pct`, `card_spend_change_90d_pct` | % change in monthly card spend vs. 1 / 3 months ago. |
+| `declined_txn_count_90d` | Sum of declined card transactions over the trailing 3 months. |
+| `days_since_last_login` | As of the latest month. |
+| `login_count_90d` | Sum of app logins over the trailing 3 months. |
+| `login_change_30d_pct`, `login_change_90d_pct` | % change in monthly logins vs. 1 / 3 months ago. |
+| `app_engagement_score` | Percentile rank (0–100) of `login_count_90d` among all customers — a simple, transparent ranking, not a predictive model. |
+| `contact_count_90d`, `complaint_count_90d`, `avg_satisfaction_score_90d` | Trailing-90-day service contact volume, complaint count, and average satisfaction proxy. |
+| `unresolved_contacts_total` | Unresolved contacts across all history (not just trailing 90 days). |
+| `campaign_count_12m`, `campaign_response_rate_12m`, `campaign_conversion_rate_12m` | Trailing 12-month campaign touch count, response rate, and conversion rate. |
+
+See `docs/representative-customers.md` for five real customer stories
+(one per risk driver, plus a high-value "safe" contrast) pulled from an
+actual run of this table.
+
+## Planned Gold tables (Phase 4, not yet built)
+
 - `retention_action_list` — prioritized customers with recommended action.
 - `executive_kpis` — aggregate metrics for the Executive Overview page.
 - `churn_model_scores` (optional, Phase 7) — ML-based scores compared
