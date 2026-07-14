@@ -58,6 +58,8 @@ button:hover {
 a:focus-visible,
 button:focus-visible,
 select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
 [tabindex]:focus-visible {
   outline: 2px solid var(--color-blue);
   outline-offset: 2px;
@@ -90,9 +92,20 @@ select:focus-visible,
 }
 
 .global-nav-brand {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+}
+
+.global-nav-brand-title {
   font-weight: 700;
   font-size: 16px;
-  white-space: nowrap;
+}
+
+.global-nav-brand-subtitle {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 400;
 }
 
 .global-nav-links {

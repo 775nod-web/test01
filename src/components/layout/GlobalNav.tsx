@@ -14,7 +14,10 @@ function GlobalNav({ dataUpdatedAt }: GlobalNavProps) {
   return (
     <header className="global-nav">
       <div className="global-nav-inner">
-        <div className="global-nav-brand">Fraud Decision Center</div>
+        <div className="global-nav-brand">
+          <span className="global-nav-brand-title">Fraud Decision Center</span>
+          <span className="global-nav-brand-subtitle">不正リスクを見抜き、正常な顧客体験と事業成長を守る</span>
+        </div>
         <nav aria-label="グローバルナビゲーション" className="global-nav-links">
           {NAV_ITEMS.map((item) => (
             <NavLink
