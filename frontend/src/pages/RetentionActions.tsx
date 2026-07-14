@@ -74,49 +74,51 @@ export function RetentionActions() {
         {!error && !loading && items && items.length === 0 && <EmptyState message="No customers match this filter." />}
         {!error && !loading && items && items.length > 0 && (
           <>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th scope="col">Priority</th>
-                  <th scope="col">Customer</th>
-                  <th scope="col">Risk</th>
-                  <th scope="col">Value</th>
-                  <th scope="col">Main driver</th>
-                  <th scope="col">Recommended action</th>
-                  <th scope="col">Channel</th>
-                  <th scope="col">Est. value at risk</th>
-                  <th scope="col">Review</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((r) => (
-                  <tr
-                    key={r.customer_id}
-                    onClick={() => navigate(`/customers/${r.customer_id}`)}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`Open Customer 360 for ${r.customer_id}`}
-                    onKeyDown={(e) => e.key === "Enter" && navigate(`/customers/${r.customer_id}`)}
-                  >
-                    <td>#{r.action_priority_rank}</td>
-                    <td>{r.customer_id}</td>
-                    <td>
-                      <RiskBadge segment={r.risk_segment} />
-                    </td>
-                    <td>
-                      <ValueBadge segment={r.value_segment} />
-                    </td>
-                    <td>{r.primary_driver}</td>
-                    <td>{r.recommended_action}</td>
-                    <td>{r.recommended_channel}</td>
-                    <td>${Math.round(r.estimated_value_at_risk).toLocaleString()}</td>
-                    <td>
-                      <HumanReviewBadge required={r.human_review_required} />
-                    </td>
+            <div className="table-scroll">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Priority</th>
+                    <th scope="col">Customer</th>
+                    <th scope="col">Risk</th>
+                    <th scope="col">Value</th>
+                    <th scope="col">Main driver</th>
+                    <th scope="col">Recommended action</th>
+                    <th scope="col">Channel</th>
+                    <th scope="col">Est. value at risk</th>
+                    <th scope="col">Review</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {items.map((r) => (
+                    <tr
+                      key={r.customer_id}
+                      onClick={() => navigate(`/customers/${r.customer_id}`)}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`Open Customer 360 for ${r.customer_id}`}
+                      onKeyDown={(e) => e.key === "Enter" && navigate(`/customers/${r.customer_id}`)}
+                    >
+                      <td>#{r.action_priority_rank}</td>
+                      <td>{r.customer_id}</td>
+                      <td>
+                        <RiskBadge segment={r.risk_segment} />
+                      </td>
+                      <td>
+                        <ValueBadge segment={r.value_segment} />
+                      </td>
+                      <td>{r.primary_driver}</td>
+                      <td>{r.recommended_action}</td>
+                      <td>{r.recommended_channel}</td>
+                      <td>${Math.round(r.estimated_value_at_risk).toLocaleString()}</td>
+                      <td>
+                        <HumanReviewBadge required={r.human_review_required} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <div className="pagination-row">
               <button className="btn" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}>
                 Previous

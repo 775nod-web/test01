@@ -300,7 +300,7 @@ python scripts/generate_local_fixtures.py
 | 5 | Executive dashboard and SQL assets | Done — SQL assets validated; AI/BI dashboard is a manual step, see `docs/dashboard-setup.md` |
 | 6 | React + FastAPI app on Databricks Apps | Done — verify locally per above, then deploy |
 | 7 | Optional ML / MLflow / Genie (never a dependency) | Done — see `docs/ml-comparison.md`, `docs/genie-setup.md` |
-| 8 | Integration testing, deployment, documentation | Not started |
+| 8 | Integration testing, deployment, documentation | Done — see `docs/phase8-test-report.md` |
 | 9 | Ten-minute demo rehearsal and handoff | Not started |
 
 ## Application usage (once deployed)
@@ -353,6 +353,7 @@ and fall back cleanly if unavailable.
 - `docs/representative-customers.md` — five reproducible demo customer stories.
 - `docs/free-edition-limitations.md` — what Free Edition cannot do here.
 - `docs/poc-success-criteria.md` — what a production PoC would validate.
+- `docs/phase8-test-report.md` — full integration test results.
 
 ## Troubleshooting
 

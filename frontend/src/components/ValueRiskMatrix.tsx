@@ -25,6 +25,7 @@ export function ValueRiskMatrix({ data }: { data: ValueRiskMatrixItem[] }) {
   const max = Math.max(...data.map((d) => d.customer_count), 1);
 
   return (
+    <div className="table-scroll">
     <table className="data-table matrix-table" aria-label="Customer value versus churn risk matrix">
       <thead>
         <tr>
@@ -58,5 +59,6 @@ export function ValueRiskMatrix({ data }: { data: ValueRiskMatrixItem[] }) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

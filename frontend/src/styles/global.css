@@ -31,6 +31,7 @@ body {
   background: var(--page-bg);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 a {
@@ -254,6 +255,12 @@ button {
   background: #eef1f5;
   color: var(--text-secondary);
   border: 1px solid var(--border);
+}
+
+.table-scroll {
+  overflow-x: auto;
+  /* Wide tables scroll within this box on narrow viewports — the page
+     body itself must never scroll horizontally. */
 }
 
 table.data-table {

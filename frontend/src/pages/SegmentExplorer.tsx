@@ -115,47 +115,49 @@ export function SegmentExplorer() {
         {!error && !loading && items && items.length > 0 && (
           <>
             <p className="section-subtitle">{items.length} customers match (showing up to 200).</p>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th scope="col">Customer</th>
-                  <th scope="col">Risk</th>
-                  <th scope="col">Value</th>
-                  <th scope="col">Primary driver</th>
-                  <th scope="col">Balance Δ 90d</th>
-                  <th scope="col">Card Δ 90d</th>
-                  <th scope="col">App Δ 90d</th>
-                  <th scope="col">Complaints 90d</th>
-                  <th scope="col">Recommended action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((c) => (
-                  <tr
-                    key={c.customer_id}
-                    onClick={() => navigate(`/customers/${c.customer_id}`)}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`Open Customer 360 for ${c.customer_id}`}
-                    onKeyDown={(e) => e.key === "Enter" && navigate(`/customers/${c.customer_id}`)}
-                  >
-                    <td>{c.customer_id}</td>
-                    <td>
-                      <RiskBadge segment={c.risk_segment} />
-                    </td>
-                    <td>
-                      <ValueBadge segment={c.value_segment} />
-                    </td>
-                    <td>{c.primary_driver}</td>
-                    <td>{pct(c.balance_change_90d_pct)}</td>
-                    <td>{pct(c.card_spend_change_90d_pct)}</td>
-                    <td>{pct(c.login_change_90d_pct)}</td>
-                    <td>{c.complaint_count_90d}</td>
-                    <td>{c.recommended_action}</td>
+            <div className="table-scroll">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Customer</th>
+                    <th scope="col">Risk</th>
+                    <th scope="col">Value</th>
+                    <th scope="col">Primary driver</th>
+                    <th scope="col">Balance Δ 90d</th>
+                    <th scope="col">Card Δ 90d</th>
+                    <th scope="col">App Δ 90d</th>
+                    <th scope="col">Complaints 90d</th>
+                    <th scope="col">Recommended action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {items.map((c) => (
+                    <tr
+                      key={c.customer_id}
+                      onClick={() => navigate(`/customers/${c.customer_id}`)}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`Open Customer 360 for ${c.customer_id}`}
+                      onKeyDown={(e) => e.key === "Enter" && navigate(`/customers/${c.customer_id}`)}
+                    >
+                      <td>{c.customer_id}</td>
+                      <td>
+                        <RiskBadge segment={c.risk_segment} />
+                      </td>
+                      <td>
+                        <ValueBadge segment={c.value_segment} />
+                      </td>
+                      <td>{c.primary_driver}</td>
+                      <td>{pct(c.balance_change_90d_pct)}</td>
+                      <td>{pct(c.card_spend_change_90d_pct)}</td>
+                      <td>{pct(c.login_change_90d_pct)}</td>
+                      <td>{c.complaint_count_90d}</td>
+                      <td>{c.recommended_action}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
       </div>

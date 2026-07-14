@@ -89,34 +89,38 @@ export function CustomerDetail() {
         <div className="card">
           <p className="section-title">Risk score: {data.risk_score} / 129</p>
           <p className="section-subtitle">Transparent point score — not a predictive model.</p>
-          <table className="data-table">
-            <tbody>
-              <tr>
-                <th scope="row">Primary driver</th>
-                <td>{data.primary_driver}</td>
-              </tr>
-              <tr>
-                <th scope="row">Secondary driver</th>
-                <td>{data.secondary_driver}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="table-scroll">
+            <table className="data-table">
+              <tbody>
+                <tr>
+                  <th scope="row">Primary driver</th>
+                  <td>{data.primary_driver}</td>
+                </tr>
+                <tr>
+                  <th scope="row">Secondary driver</th>
+                  <td>{data.secondary_driver}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
         <div className="card">
           <p className="section-title">Recommended action</p>
           <p className="section-subtitle">Decision support — requires human review before contact.</p>
-          <table className="data-table">
-            <tbody>
-              <tr>
-                <th scope="row">Action</th>
-                <td>{data.recommended_action}</td>
-              </tr>
-              <tr>
-                <th scope="row">Channel</th>
-                <td>{data.recommended_channel}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="table-scroll">
+            <table className="data-table">
+              <tbody>
+                <tr>
+                  <th scope="row">Action</th>
+                  <td>{data.recommended_action}</td>
+                </tr>
+                <tr>
+                  <th scope="row">Channel</th>
+                  <td>{data.recommended_channel}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -160,30 +164,32 @@ export function CustomerDetail() {
         {data.contact_history.length === 0 ? (
           <p className="section-subtitle">No contacts on record.</p>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th scope="col">Date</th>
-                <th scope="col">Channel</th>
-                <th scope="col">Reason</th>
-                <th scope="col">Complaint</th>
-                <th scope="col">Resolved</th>
-                <th scope="col">Satisfaction</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.contact_history.map((c, i) => (
-                <tr key={i}>
-                  <td>{c.contact_date}</td>
-                  <td>{c.channel}</td>
-                  <td>{c.reason}</td>
-                  <td>{c.is_complaint ? "Yes" : "No"}</td>
-                  <td>{c.is_resolved ? "Yes" : "No"}</td>
-                  <td>{c.satisfaction_score} / 5</td>
+          <div className="table-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Channel</th>
+                  <th scope="col">Reason</th>
+                  <th scope="col">Complaint</th>
+                  <th scope="col">Resolved</th>
+                  <th scope="col">Satisfaction</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.contact_history.map((c, i) => (
+                  <tr key={i}>
+                    <td>{c.contact_date}</td>
+                    <td>{c.channel}</td>
+                    <td>{c.reason}</td>
+                    <td>{c.is_complaint ? "Yes" : "No"}</td>
+                    <td>{c.is_resolved ? "Yes" : "No"}</td>
+                    <td>{c.satisfaction_score} / 5</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

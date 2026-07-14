@@ -49,26 +49,28 @@ export function PocFutureExpansion() {
         <p className="section-title">How Customer 360 extends to cross-sell</p>
         <p className="section-subtitle">{data.cross_sell_reuse_note}</p>
         {data.cross_sell_sample.length > 0 && (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th scope="col">Customer</th>
-                <th scope="col">Value</th>
-                <th scope="col">Products held</th>
-                <th scope="col">App engagement score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.cross_sell_sample.map((c) => (
-                <tr key={c.customer_id} style={{ cursor: "default" }}>
-                  <td>{c.customer_id}</td>
-                  <td>{c.value_segment}</td>
-                  <td>{c.product_count}</td>
-                  <td>{c.app_engagement_score?.toFixed(0) ?? "—"}</td>
+          <div className="table-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Customer</th>
+                  <th scope="col">Value</th>
+                  <th scope="col">Products held</th>
+                  <th scope="col">App engagement score</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.cross_sell_sample.map((c) => (
+                  <tr key={c.customer_id} style={{ cursor: "default" }}>
+                    <td>{c.customer_id}</td>
+                    <td>{c.value_segment}</td>
+                    <td>{c.product_count}</td>
+                    <td>{c.app_engagement_score?.toFixed(0) ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -81,28 +83,30 @@ export function PocFutureExpansion() {
             <span className="badge badge--optional">Optional — Phase 7</span>
           </div>
           <p className="section-subtitle">{data.ml_comparison_note}</p>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th scope="col">Approach</th>
-                <th scope="col">Precision</th>
-                <th scope="col">Recall</th>
-                <th scope="col">ROC-AUC</th>
-                <th scope="col">Note</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.ml_comparison.map((row) => (
-                <tr key={row.approach} style={{ cursor: "default" }}>
-                  <td>{row.approach}</td>
-                  <td>{row.precision.toFixed(3)}</td>
-                  <td>{row.recall.toFixed(3)}</td>
-                  <td>{row.roc_auc.toFixed(3)}</td>
-                  <td style={{ color: "var(--text-secondary)", fontSize: 12 }}>{row.note}</td>
+          <div className="table-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Approach</th>
+                  <th scope="col">Precision</th>
+                  <th scope="col">Recall</th>
+                  <th scope="col">ROC-AUC</th>
+                  <th scope="col">Note</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.ml_comparison.map((row) => (
+                  <tr key={row.approach} style={{ cursor: "default" }}>
+                    <td>{row.approach}</td>
+                    <td>{row.precision.toFixed(3)}</td>
+                    <td>{row.recall.toFixed(3)}</td>
+                    <td>{row.roc_auc.toFixed(3)}</td>
+                    <td style={{ color: "var(--text-secondary)", fontSize: 12 }}>{row.note}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <p className="section-subtitle" style={{ marginTop: 12, marginBottom: 0 }}>
             The app always falls back to the rule-based score above regardless of this comparison
             — see docs/ml-comparison.md for full methodology.
