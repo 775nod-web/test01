@@ -197,6 +197,23 @@ pytest tests/test_retention_logic.py -v
 Without pyspark installed, this file is skipped automatically (`pytest
 tests/` still runs the Phase 2 generator tests).
 
+## Dashboard and SQL assets (Phase 5)
+
+`sql/queries/*.sql` are ten validated, parameterized queries — one per
+chart/page in the ten-minute storyline (Executive Overview KPIs and three
+charts, Segment Explorer, Customer 360 summary/trends/contact history,
+Retention Actions, and the cross-sell future-view illustration). All are
+tested in `tests/test_dashboard_queries.py` for KPI reconciliation, filter
+correctness, and pagination. Phase 6's FastAPI backend calls these
+directly.
+
+Building an actual Databricks AI/BI Dashboard is a short manual step
+(~15 minutes) documented in `docs/dashboard-setup.md` — this build has no
+network path to verify Lakeview availability or test a dashboard
+definition, so per CLAUDE.md's own fallback guidance the SQL layer is the
+tested deliverable and the dashboard itself is optional polish, not a
+dependency of the app.
+
 ## Restarting the Databricks App (once deployed)
 
 1. Open the workspace → **Compute → Apps**.
@@ -218,7 +235,7 @@ tests/` still runs the Phase 2 generator tests).
 | 2 | Synthetic banking data (Bronze) | Done — run `notebooks/01_generate_synthetic_data.py` in Databricks to materialize tables |
 | 3 | Silver layer and Customer 360 (Gold) | Done — run `notebooks/02_build_silver_and_gold.py` after Phase 2 |
 | 4 | Rule-based risk score and retention actions | Done — run `notebooks/03_build_risk_and_retention.py` after Phase 3 |
-| 5 | Executive dashboard and SQL assets | Not started |
+| 5 | Executive dashboard and SQL assets | Done — SQL assets validated; AI/BI dashboard is a manual step, see `docs/dashboard-setup.md` |
 | 6 | React + FastAPI app on Databricks Apps | Not started |
 | 7 | Optional ML / MLflow / Genie (never a dependency) | Not started |
 | 8 | Integration testing, deployment, documentation | Not started |

@@ -180,6 +180,12 @@ KPIs) are Phase 5 SQL assets built directly on `retention_action_list`.
 | `broad_campaign_audience_count` | Equals `total_customers` — today's blanket-campaign baseline, for contrast with `prioritized_audience_count`. |
 | `estimated_value_at_risk_total_simulated`, `estimated_value_at_risk_high_risk_simulated` | **Simulated** sums of `estimated_value_at_risk`, labeled as such. |
 
+## SQL query assets (Phase 5)
+
+`sql/queries/*.sql` — ten parameterized, tested read queries powering the
+app's pages. See `docs/dashboard-setup.md` for the full list and which
+page/business question each one serves.
+
 ## Planned Gold tables (optional, Phase 7)
 
 - `churn_model_scores` — ML-based scores compared against `churn_label_90d`,
