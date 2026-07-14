@@ -1,4 +1,6 @@
-export function LoadingState({ label = "Loading…" }: { label?: string }) {
+import { COMMON } from "../i18n/ja";
+
+export function LoadingState({ label = COMMON.loading }: { label?: string }) {
   return (
     <div className="state-message" role="status" aria-live="polite">
       {label}
@@ -9,12 +11,12 @@ export function LoadingState({ label = "Loading…" }: { label?: string }) {
 export function ErrorState({ message }: { message: string }) {
   return (
     <div className="state-message state-message--error" role="alert">
-      Something went wrong: {message}
+      {COMMON.error}: {message}
     </div>
   );
 }
 
-export function EmptyState({ message = "No customers match these filters." }: { message?: string }) {
+export function EmptyState({ message = "この条件に一致する顧客はいません。" }: { message?: string }) {
   return (
     <div className="state-message" role="status">
       {message}

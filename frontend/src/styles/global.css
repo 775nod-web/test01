@@ -263,6 +263,32 @@ button {
      body itself must never scroll horizontally. */
 }
 
+.collapsible__summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.collapsible__summary::-webkit-details-marker {
+  display: none;
+}
+
+.collapsible__summary::before {
+  content: "▸";
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.collapsible[open] > .collapsible__summary::before {
+  content: "▾";
+}
+
+.collapsible__body {
+  margin-top: 16px;
+}
+
 table.data-table {
   width: 100%;
   border-collapse: collapse;

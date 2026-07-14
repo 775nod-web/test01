@@ -157,13 +157,18 @@ for the full scoring rule, thresholds, and action-mapping table.
 |---|---|
 | `customer_id`, `value_segment`, `simulated_annual_value` | From `customer_360`. |
 | `risk_score` | 0–129, sum of triggered signal points. Transparent point score, not a predictive model. |
+| `risk_score_normalized_100` | Display-only `ROUND(risk_score / 129 * 100)` — the 129-point scale above remains the source of truth. |
+| `triggered_signal_count` | 0–8, how many of the 8 signals fired ("N / 8"). |
 | `risk_segment` | `High` (>=40), `Medium` (15-39), `Low` (<15). |
 | `primary_driver`, `secondary_driver` | Highest- and second-highest-point triggered signals, or `'No material risk driver'`/`'None'`. |
 | `balance_decline_flag`, `salary_stopped_flag`, `card_spend_decline_flag`, `app_usage_decline_flag`, `complaint_increase_flag`, `long_inactivity_flag`, `unresolved_contact_flag`, `product_decline_flag` | The 8 underlying 0/1 signal flags, for drill-down transparency. |
 | `recommended_action`, `recommended_channel` | Assigned only for Medium/High risk; `'No immediate action'`/`'None'` otherwise. |
 | `human_review_required` | 1 for Medium/High risk (an action is recommended); 0 otherwise. No action here is automated — a person reviews and executes. |
 | `estimated_value_at_risk` | **Simulated** proxy: `simulated_annual_value × (risk_score / 129)`. Not an actuarial estimate. |
-| `action_priority_score`, `action_priority_rank` | `risk_score` + a value bonus (High +15 / Medium +5 / Low +0), ranked descending — sort key for the Retention Actions page. |
+| `is_prioritized_audience` | The single canonical "Prioritized Audience" flag: (High risk AND High/Medium value) OR (Medium risk AND High value), with an action assigned and human review required. Used identically by Executive Overview's KPI, Retention Actions' default list + CSV export, and Top Risk Drivers' population — see `docs/risk-scoring.md`. |
+| `action_priority_score` | Additive, normalized weighted sum of risk, value, value-at-risk, and actionability (0.40/0.30/0.20/0.10) — see `docs/risk-scoring.md` "Priority ranking formula" for the full comparison against a multiplicative alternative and the adoption rationale. Never shown directly in the UI. |
+| `action_priority_rank` | `ROW_NUMBER()` over `action_priority_score` descending (unique, sequential, never tied) — sort key for the Retention Actions page. |
+| `priority_tier` | `NTILE(3)` over the same ordering, labeled `A` (top third, most urgent) to `C` (bottom third). |
 
 ## Gold: `executive_kpis` (Phase 4 — one summary row)
 
@@ -176,7 +181,7 @@ KPIs) are Phase 5 SQL assets built directly on `retention_action_list`.
 | `total_customers` | All customers. |
 | `high_risk_customers`, `medium_risk_customers`, `low_risk_customers` | Reconcile to `total_customers`. |
 | `high_risk_high_value_customers` | High risk **and** High value. |
-| `prioritized_audience_count` | High risk and (High or Medium value) — the audience the demo argues should receive retention budget. |
+| `prioritized_audience_count` | `SUM(is_prioritized_audience)` from `retention_action_list` — (High risk AND High/Medium value) OR (Medium risk AND High value), with an action assigned. The same figure Retention Actions' default list, its CSV export, and Top Risk Drivers reconcile to exactly. |
 | `broad_campaign_audience_count` | Equals `total_customers` — today's blanket-campaign baseline, for contrast with `prioritized_audience_count`. |
 | `estimated_value_at_risk_total_simulated`, `estimated_value_at_risk_high_risk_simulated` | **Simulated** sums of `estimated_value_at_risk`, labeled as such. |
 

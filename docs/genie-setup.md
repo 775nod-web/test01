@@ -59,7 +59,7 @@ against — not placeholders.
 SELECT COUNT(*) FROM gold.retention_action_list
 WHERE value_segment = 'High' AND risk_segment = 'High';
 ```
-**Expected answer: 7.**
+**Expected answer: 27.**
 
 ### 2. "Show customers with both app and card engagement decline."
 
@@ -68,9 +68,10 @@ SELECT customer_id, card_spend_change_90d_pct, login_change_90d_pct
 FROM gold.customer_360
 WHERE card_spend_change_90d_pct <= -0.30 AND login_change_90d_pct <= -0.50;
 ```
-**Expected answer: 292 customers** match both conditions (this is exactly
+**Expected answer: 332 customers** match both conditions (this is exactly
 the `disengaging` archetype's intentional pattern — see
-`docs/data-quality-report.md`).
+`docs/data-quality-report.md`; the Segment Explorer's "デジタル離反兆候"
+preset reproduces this same filter).
 
 ### 3. "Group high-risk customers by primary risk driver."
 
@@ -80,9 +81,9 @@ FROM gold.retention_action_list
 WHERE risk_segment = 'High'
 GROUP BY primary_driver ORDER BY n DESC;
 ```
-**Expected answer:** `Card spend decline (90d)`: 76, `Salary deposit
-stopped`: 8, `Balance decline (90d)`: 5 (sums to the 89 High-risk
-customers reported in `docs/risk-scoring.md`).
+**Expected answer:** `Card spend decline (90d)`: 87, `Balance decline
+(90d)`: 45, `Salary deposit stopped`: 7, `App engagement decline (90d)`: 1
+(sums to the 140 High-risk customers reported in `docs/risk-scoring.md`).
 
 ### 4. "How many high-risk customers still have salary deposits?"
 
@@ -91,7 +92,7 @@ SELECT COUNT(*) FROM gold.customer_360 c
 JOIN gold.retention_action_list r ON r.customer_id = c.customer_id
 WHERE r.risk_segment = 'High' AND c.salary_deposit_active = 1;
 ```
-**Expected answer: 81** (of 89 High-risk customers — most High-risk
+**Expected answer: 133** (of 140 High-risk customers — most High-risk
 customers are flagged for reasons *other* than a stopped salary deposit,
 which is exactly what you'd expect since `salary_deposit_stopped_flag` is
 only one of eight signals).

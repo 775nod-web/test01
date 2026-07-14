@@ -4,6 +4,7 @@ import { api, ApiError } from "../api/client";
 import { HumanReviewBadge, RiskBadge, ValueBadge } from "../components/Badges";
 import { PageHeader } from "../components/Layout";
 import { EmptyState, ErrorState, LoadingState } from "../components/States";
+import { BUSINESS_QUESTIONS, COMMON, PAGE_TITLES, PRIORITY_EXPLANATION, t } from "../i18n/ja";
 import type { RetentionActionItem } from "../types";
 
 const PAGE_SIZE = 25;
@@ -32,7 +33,7 @@ export function RetentionActions() {
         offset,
       })
       .then((r) => setItems(r.items))
-      .catch((e) => setError(e instanceof ApiError ? e.message : "Unable to load retention actions."))
+      .catch((e) => setError(e instanceof ApiError ? e.message : "リテンション施策対象を読み込めませんでした。"))
       .finally(() => setLoading(false));
   }, [riskSegment, valueSegment, offset]);
 
@@ -43,50 +44,56 @@ export function RetentionActions() {
 
   return (
     <div>
-      <PageHeader title="Retention Actions" question="Who should receive which action first?" />
+      <PageHeader title={PAGE_TITLES.retentionActions} question={BUSINESS_QUESTIONS.retentionActions} />
+      <p className="section-subtitle" style={{ marginTop: -8, marginBottom: 20 }}>
+        {PRIORITY_EXPLANATION}
+      </p>
 
       <div className="card">
         <div className="filters-row">
           <div className="filter-field">
-            <label htmlFor="ra-risk">Risk segment</label>
+            <label htmlFor="ra-risk">リスク区分</label>
             <select id="ra-risk" value={riskSegment} onChange={(e) => setRiskSegment(e.target.value)}>
-              <option value="">High + Medium</option>
-              <option value="High">High only</option>
-              <option value="Medium">Medium only</option>
+              <option value="">高＋中</option>
+              <option value="High">高のみ</option>
+              <option value="Medium">中のみ</option>
             </select>
           </div>
           <div className="filter-field">
-            <label htmlFor="ra-value">Value segment</label>
+            <label htmlFor="ra-value">価値区分</label>
             <select id="ra-value" value={valueSegment} onChange={(e) => setValueSegment(e.target.value)}>
-              <option value="">All</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
+              <option value="">すべて</option>
+              <option value="High">高</option>
+              <option value="Medium">中</option>
+              <option value="Low">低</option>
             </select>
           </div>
           <a className="btn btn--primary" href={exportUrl} download style={{ textDecoration: "none" }}>
-            Download CSV
+            {COMMON.downloadCsv}
           </a>
         </div>
 
         {error && <ErrorState message={error} />}
-        {!error && loading && <LoadingState label="Loading retention actions…" />}
-        {!error && !loading && items && items.length === 0 && <EmptyState message="No customers match this filter." />}
+        {!error && loading && <LoadingState label="リテンション施策対象を読み込み中…" />}
+        {!error && !loading && items && items.length === 0 && (
+          <EmptyState message="この条件に一致する顧客はいません。" />
+        )}
         {!error && !loading && items && items.length > 0 && (
           <>
             <div className="table-scroll">
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th scope="col">Priority</th>
-                    <th scope="col">Customer</th>
-                    <th scope="col">Risk</th>
-                    <th scope="col">Value</th>
-                    <th scope="col">Main driver</th>
-                    <th scope="col">Recommended action</th>
-                    <th scope="col">Channel</th>
-                    <th scope="col">Est. value at risk</th>
-                    <th scope="col">Review</th>
+                    <th scope="col">優先順位</th>
+                    <th scope="col">ティア</th>
+                    <th scope="col">顧客</th>
+                    <th scope="col">リスク</th>
+                    <th scope="col">価値</th>
+                    <th scope="col">主な要因</th>
+                    <th scope="col">推奨アクション</th>
+                    <th scope="col">チャネル</th>
+                    <th scope="col">推定価値リスク</th>
+                    <th scope="col">確認</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -96,10 +103,11 @@ export function RetentionActions() {
                       onClick={() => navigate(`/customers/${r.customer_id}`)}
                       tabIndex={0}
                       role="button"
-                      aria-label={`Open Customer 360 for ${r.customer_id}`}
+                      aria-label={`${r.customer_id} の Customer 360 を開く`}
                       onKeyDown={(e) => e.key === "Enter" && navigate(`/customers/${r.customer_id}`)}
                     >
                       <td>#{r.action_priority_rank}</td>
+                      <td>{r.priority_tier}</td>
                       <td>{r.customer_id}</td>
                       <td>
                         <RiskBadge segment={r.risk_segment} />
@@ -107,9 +115,9 @@ export function RetentionActions() {
                       <td>
                         <ValueBadge segment={r.value_segment} />
                       </td>
-                      <td>{r.primary_driver}</td>
-                      <td>{r.recommended_action}</td>
-                      <td>{r.recommended_channel}</td>
+                      <td>{t.driver(r.primary_driver)}</td>
+                      <td>{t.action(r.recommended_action)}</td>
+                      <td>{t.channel(r.recommended_channel)}</td>
                       <td>${Math.round(r.estimated_value_at_risk).toLocaleString()}</td>
                       <td>
                         <HumanReviewBadge required={r.human_review_required} />
@@ -121,15 +129,17 @@ export function RetentionActions() {
             </div>
             <div className="pagination-row">
               <button className="btn" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}>
-                Previous
+                前へ
               </button>
-              <span>Showing {offset + 1}–{offset + items.length}</span>
+              <span>
+                {offset + 1}〜{offset + items.length} 件を表示
+              </span>
               <button
                 className="btn"
                 disabled={items.length < PAGE_SIZE}
                 onClick={() => setOffset(offset + PAGE_SIZE)}
               >
-                Next
+                次へ
               </button>
             </div>
           </>

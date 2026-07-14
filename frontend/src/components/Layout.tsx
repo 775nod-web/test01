@@ -1,18 +1,19 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
+import { COMMON, NAV } from "../i18n/ja";
 
 const NAV_ITEMS = [
-  { to: "/", label: "Executive Overview", end: true },
-  { to: "/segments", label: "Segment Explorer" },
-  { to: "/retention-actions", label: "Retention Actions" },
-  { to: "/poc", label: "PoC & Future Expansion" },
+  { to: "/", label: NAV.executiveOverview, end: true },
+  { to: "/segments", label: NAV.segmentExplorer },
+  { to: "/retention-actions", label: NAV.retentionActions },
+  { to: "/poc", label: NAV.poc },
 ];
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="app-shell">
       <nav className="app-nav" aria-label="Primary">
-        <div className="app-nav__brand">Retention Demo</div>
+        <div className="app-nav__brand">{NAV.brand}</div>
         {NAV_ITEMS.map((item) => (
           <NavLink
             key={item.to}
@@ -27,8 +28,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <main className="app-main">
         <div className="synthetic-banner" role="note">
           <span aria-hidden="true">ⓘ</span>
-          Synthetic demo data — no real customer or bank data. Figures marked
-          "simulated" are illustrative estimates, not real financial values.
+          {COMMON.syntheticBanner}
         </div>
         {children}
       </main>

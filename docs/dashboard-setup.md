@@ -11,7 +11,7 @@ parameters, and which page uses it:
 | `executive_overview.sql` | Executive Overview | Where should we focus limited retention budget? |
 | `risk_distribution.sql` | Executive Overview (chart) | How many customers fall into each risk segment? |
 | `value_risk_matrix.sql` | Executive Overview (chart) | Are risk and value the same thing, or independent? |
-| `top_risk_drivers.sql` | Executive Overview (chart) | Which behavior pattern drives the most at-risk customers? |
+| `top_risk_drivers.sql` | Executive Overview (chart) | Which behavior pattern is most common among the Prioritized Audience (not just any at-risk customer)? |
 | `segment_explorer.sql` | Segment Explorer | Which customer behavior pattern should the campaign address? |
 | `customer_360_summary.sql` | Customer 360 | Why should this customer be prioritized, and how should we respond? |
 | `customer_trends.sql` | Customer 360 (charts) | What does this customer's behavior look like over time? |

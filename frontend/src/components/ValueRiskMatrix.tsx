@@ -1,3 +1,4 @@
+import { t } from "../i18n/ja";
 import type { ValueRiskMatrixItem } from "../types";
 
 const VALUE_ORDER = ["High", "Medium", "Low"] as const;
@@ -26,13 +27,13 @@ export function ValueRiskMatrix({ data }: { data: ValueRiskMatrixItem[] }) {
 
   return (
     <div className="table-scroll">
-    <table className="data-table matrix-table" aria-label="Customer value versus churn risk matrix">
+    <table className="data-table matrix-table" aria-label="顧客価値と解約リスクのマトリクス">
       <thead>
         <tr>
-          <th scope="col">Value \ Risk</th>
+          <th scope="col">価値 ＼ リスク</th>
           {RISK_ORDER.map((r) => (
             <th scope="col" key={r}>
-              {r}
+              {t.riskSegment(r)}
             </th>
           ))}
         </tr>
@@ -40,7 +41,7 @@ export function ValueRiskMatrix({ data }: { data: ValueRiskMatrixItem[] }) {
       <tbody>
         {VALUE_ORDER.map((v) => (
           <tr key={v}>
-            <th scope="row">{v} value</th>
+            <th scope="row">{t.valueSegment(v)}</th>
             {RISK_ORDER.map((r) => {
               const cell = lookup.get(`${v}|${r}`);
               const count = cell?.customer_count ?? 0;
@@ -49,7 +50,7 @@ export function ValueRiskMatrix({ data }: { data: ValueRiskMatrixItem[] }) {
                   <span className="matrix-count">{count}</span>
                   {cell && cell.estimated_value_at_risk_simulated > 0 && (
                     <span className="matrix-sub">
-                      ${Math.round(cell.estimated_value_at_risk_simulated).toLocaleString()} sim.
+                      ${Math.round(cell.estimated_value_at_risk_simulated).toLocaleString()}（シミュレーション）
                     </span>
                   )}
                 </td>

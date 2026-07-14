@@ -33,6 +33,77 @@ ARCHETYPES = [
     ("strong_retention", 0.08),
 ]
 
+# Forced archetypes guarantee specific Risk Segment x Value Segment
+# combinations exist in every generated population (CLAUDE.md remediation
+# Fix 1) instead of leaving them to weighted-random chance. CUST000001
+# (generation index 0) is always the first FORCED_HIGH_RISK_HIGH_VALUE slot
+# — the fixed demo customer referenced throughout the app and docs.
+FORCED_HIGH_RISK_HIGH_VALUE = "forced_high_risk_high_value"
+FORCED_HIGH_RISK_MEDIUM_VALUE = "forced_high_risk_medium_value"
+FORCED_HIGH_RISK_LOW_VALUE = "forced_high_risk_low_value"
+FORCED_MEDIUM_RISK_HIGH_VALUE = "forced_medium_risk_high_value"
+FORCED_LOW_RISK_HIGH_VALUE = "forced_low_risk_high_value"
+
+FORCED_HIGH_RISK_ARCHETYPES = (
+    FORCED_HIGH_RISK_HIGH_VALUE,
+    FORCED_HIGH_RISK_MEDIUM_VALUE,
+    FORCED_HIGH_RISK_LOW_VALUE,
+)
+
+FORCED_ARCHETYPE_VALUE_SEGMENT = {
+    FORCED_HIGH_RISK_HIGH_VALUE: "High",
+    FORCED_HIGH_RISK_MEDIUM_VALUE: "Medium",
+    FORCED_HIGH_RISK_LOW_VALUE: "Low",
+    FORCED_MEDIUM_RISK_HIGH_VALUE: "High",
+    FORCED_LOW_RISK_HIGH_VALUE: "High",
+}
+
+# Order determines index assignment: quotas fill generation indices 0..N-1
+# in this order, so index 0 always lands in the first quota group.
+FORCED_QUOTA_ORDER = [
+    FORCED_HIGH_RISK_HIGH_VALUE,
+    FORCED_HIGH_RISK_MEDIUM_VALUE,
+    FORCED_HIGH_RISK_LOW_VALUE,
+    FORCED_MEDIUM_RISK_HIGH_VALUE,
+    FORCED_LOW_RISK_HIGH_VALUE,
+]
+
+
+def _forced_quota_counts(num_customers: int) -> dict[str, int]:
+    """Minimum guaranteed counts per forced archetype, scaled to population
+    size but never below a floor — keeps the Risk x Value distribution
+    guarantee (High x High >= 5, Medium x High >= 10, others exist) true at
+    both the 1,200 and 8,000 customer scales CLAUDE.md's demo uses."""
+
+    def scaled(per_8000: int, floor: int) -> int:
+        return max(floor, round(num_customers * per_8000 / 8000))
+
+    quotas = {
+        FORCED_HIGH_RISK_HIGH_VALUE: scaled(10, floor=5),
+        FORCED_HIGH_RISK_MEDIUM_VALUE: scaled(20, floor=2),
+        FORCED_HIGH_RISK_LOW_VALUE: scaled(10, floor=2),
+        FORCED_MEDIUM_RISK_HIGH_VALUE: scaled(15, floor=10),
+        FORCED_LOW_RISK_HIGH_VALUE: scaled(15, floor=2),
+    }
+    total = sum(quotas.values())
+    if total > num_customers:
+        raise ValueError(
+            f"forced quota total ({total}) exceeds num_customers ({num_customers}); "
+            "increase num_customers or lower the quota floors in _forced_quota_counts"
+        )
+    return quotas
+
+
+def _forced_archetype_by_index(num_customers: int) -> dict[int, str]:
+    quotas = _forced_quota_counts(num_customers)
+    assignment: dict[int, str] = {}
+    idx = 0
+    for archetype in FORCED_QUOTA_ORDER:
+        for _ in range(quotas[archetype]):
+            assignment[idx] = archetype
+            idx += 1
+    return assignment
+
 VALUE_SEGMENTS = ["High", "Medium", "Low"]
 AGE_BANDS = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"]
 ACQUISITION_CHANNELS = ["Branch", "Online", "Referral", "Partner"]
@@ -101,9 +172,11 @@ class CustomerParams:
     churn_label_90d: int
 
 
-def _make_customer(idx: int, rng: random.Random) -> CustomerParams:
+def _make_customer(idx: int, rng: random.Random, forced_archetype: str | None = None) -> CustomerParams:
     customer_id = f"CUST{idx + 1:06d}"
     archetype = _weighted_choice(rng, ARCHETYPES)
+    if forced_archetype is not None:
+        archetype = forced_archetype
 
     tenure_months = rng.randint(7, 96)  # at least 7 months so a full 12-month
     # history window doesn't require signup mid-window for most customers;
@@ -122,6 +195,8 @@ def _make_customer(idx: int, rng: random.Random) -> CustomerParams:
         if archetype in ("declining_balance", "strong_retention")
         else [("High", 0.15), ("Medium", 0.50), ("Low", 0.35)],
     )
+    if forced_archetype is not None:
+        value_segment = FORCED_ARCHETYPE_VALUE_SEGMENT[forced_archetype]
     base_annual_value = {
         "High": rng.uniform(2200, 6000),
         "Medium": rng.uniform(700, 2200),
@@ -159,6 +234,11 @@ def _make_customer(idx: int, rng: random.Random) -> CustomerParams:
         "salary_stopped": 0.20,
         "stable_low_risk": 0.05,
         "strong_retention": 0.02,
+        FORCED_HIGH_RISK_HIGH_VALUE: 0.0,
+        FORCED_HIGH_RISK_MEDIUM_VALUE: 0.0,
+        FORCED_HIGH_RISK_LOW_VALUE: 0.0,
+        FORCED_MEDIUM_RISK_HIGH_VALUE: 0.0,
+        FORCED_LOW_RISK_HIGH_VALUE: 0.0,
     }[archetype]
     increase_prob = {
         "strong_retention": 0.25,
@@ -167,6 +247,11 @@ def _make_customer(idx: int, rng: random.Random) -> CustomerParams:
         "disengaging": 0.03,
         "service_issues": 0.03,
         "salary_stopped": 0.03,
+        FORCED_HIGH_RISK_HIGH_VALUE: 0.0,
+        FORCED_HIGH_RISK_MEDIUM_VALUE: 0.0,
+        FORCED_HIGH_RISK_LOW_VALUE: 0.0,
+        FORCED_MEDIUM_RISK_HIGH_VALUE: 0.0,
+        FORCED_LOW_RISK_HIGH_VALUE: 0.0,
     }[archetype]
     roll = rng.random()
     if roll < decline_prob and n_optional > 0:
@@ -176,7 +261,15 @@ def _make_customer(idx: int, rng: random.Random) -> CustomerParams:
         product_change_type = "increase"
         product_change_month = rng.randint(6, 11)
 
-    at_risk_archetypes = ("declining_balance", "disengaging", "service_issues", "salary_stopped")
+    at_risk_archetypes = (
+        "declining_balance",
+        "disengaging",
+        "service_issues",
+        "salary_stopped",
+        FORCED_HIGH_RISK_HIGH_VALUE,
+        FORCED_HIGH_RISK_MEDIUM_VALUE,
+        FORCED_HIGH_RISK_LOW_VALUE,
+    )
     if archetype in at_risk_archetypes:
         churn_label_90d = 1 if rng.random() < 0.80 else 0
     elif archetype == "strong_retention":
@@ -208,10 +301,22 @@ def _make_customer(idx: int, rng: random.Random) -> CustomerParams:
 
 def generate_customers(num_customers: int, seed: int = SEED) -> list[CustomerParams]:
     rng = random.Random(seed)
-    return [_make_customer(i, rng) for i in range(num_customers)]
+    forced_by_index = _forced_archetype_by_index(num_customers)
+    return [_make_customer(i, rng, forced_by_index.get(i)) for i in range(num_customers)]
 
 
 def _balance_multipliers(p: CustomerParams, rng: random.Random) -> list[float]:
+    if p.archetype in FORCED_HIGH_RISK_ARCHETYPES:
+        # Guarantees >=30% balance decline over the trailing 90 days
+        # (comfortably above the 30% risk-scoring threshold) regardless of
+        # value segment, so every FORCED_HIGH_RISK_* customer scores High.
+        vals = [1.0 + rng.uniform(-0.03, 0.03) for _ in range(9)]
+        total_decline = rng.uniform(0.38, 0.55)
+        last = vals[8]
+        for i in range(9, 12):
+            frac = (i - 8) / 3
+            vals.append(max(0.05, last * (1 - total_decline * frac) + rng.uniform(-0.01, 0.01)))
+        return vals
     if p.archetype == "declining_balance":
         vals = [1.0 + rng.uniform(-0.03, 0.03) for _ in range(6)]
         total_decline = rng.uniform(0.35, 0.55)
@@ -236,6 +341,15 @@ def _balance_multipliers(p: CustomerParams, rng: random.Random) -> list[float]:
 
 
 def _card_multipliers(p: CustomerParams, rng: random.Random) -> list[float]:
+    if p.archetype in FORCED_HIGH_RISK_ARCHETYPES or p.archetype == FORCED_MEDIUM_RISK_HIGH_VALUE:
+        # Guarantees >=30% card spend decline over the trailing 90 days.
+        vals = [1.0 + rng.uniform(-0.05, 0.05) for _ in range(9)]
+        total_decline = rng.uniform(0.38, 0.55)
+        last = vals[8]
+        for i in range(9, 12):
+            frac = (i - 8) / 3
+            vals.append(max(0.0, last * (1 - total_decline * frac) + rng.uniform(-0.02, 0.02)))
+        return vals
     if p.archetype == "disengaging":
         vals = [1.0 + rng.uniform(-0.05, 0.05) for _ in range(6)]
         total_decline = rng.uniform(0.35, 0.55)
@@ -251,6 +365,15 @@ def _card_multipliers(p: CustomerParams, rng: random.Random) -> list[float]:
 
 
 def _login_multipliers(p: CustomerParams, rng: random.Random) -> list[float]:
+    if p.archetype in FORCED_HIGH_RISK_ARCHETYPES:
+        # Guarantees >=50% app login decline over the trailing 90 days.
+        vals = [1.0 + rng.uniform(-0.05, 0.05) for _ in range(9)]
+        total_decline = rng.uniform(0.60, 0.78)
+        last = vals[8]
+        for i in range(9, 12):
+            frac = (i - 8) / 3
+            vals.append(max(0.0, last * (1 - total_decline * frac) + rng.uniform(-0.02, 0.02)))
+        return vals
     if p.archetype == "disengaging":
         vals = [1.0 + rng.uniform(-0.05, 0.05) for _ in range(6)]
         total_decline = rng.uniform(0.55, 0.75)
@@ -355,6 +478,12 @@ def generate_contact_history(customers: list[CustomerParams], seed: int = SEED) 
         if p.archetype == "service_issues":
             n_contacts = rng.randint(3, 6)
             recent_ratio = 0.75
+        elif p.archetype in FORCED_HIGH_RISK_ARCHETYPES:
+            n_contacts = rng.randint(1, 3)
+            recent_ratio = 0.6
+        elif p.archetype == FORCED_MEDIUM_RISK_HIGH_VALUE:
+            n_contacts = rng.randint(2, 3)
+            recent_ratio = 0.7
         elif p.archetype == "stable_low_risk":
             n_contacts = rng.randint(0, 1)
             recent_ratio = 0.2
@@ -362,11 +491,20 @@ def generate_contact_history(customers: list[CustomerParams], seed: int = SEED) 
             n_contacts = rng.randint(0, 2)
             recent_ratio = 0.3
 
-        n_complaints_forced = 2 if p.archetype == "service_issues" else 0
-        unresolved_forced = 1 if p.archetype == "service_issues" else 0
+        n_complaints_forced = (
+            2 if p.archetype in ("service_issues", FORCED_MEDIUM_RISK_HIGH_VALUE)
+            else 1 if p.archetype in FORCED_HIGH_RISK_ARCHETYPES
+            else 0
+        )
+        # complaint_count_90d (gold) only counts contacts within the trailing
+        # 90-day window, so a guaranteed complaint_increase_flag needs its
+        # forced complaints to land in that window deterministically rather
+        # than via recent_ratio odds.
+        n_forced_recent = n_complaints_forced if p.archetype == FORCED_MEDIUM_RISK_HIGH_VALUE else 0
+        unresolved_forced = 1 if p.archetype in ("service_issues", *FORCED_HIGH_RISK_ARCHETYPES) else 0
 
         for c in range(n_contacts):
-            use_recent = rng.random() < recent_ratio
+            use_recent = True if c < n_forced_recent else rng.random() < recent_ratio
             contact_date = rng.choice(recent_months if use_recent else months)
             if contact_date < p.signup_date:
                 contact_date = p.signup_date

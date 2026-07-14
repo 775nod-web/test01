@@ -169,13 +169,24 @@ high-value "safe" contrast case) pulled from that same run.
 ## Risk scoring and retention actions (Phase 4)
 
 `sql/gold/retention_action_list.sql` computes a transparent, configurable
-point score (8 signals, max 129 points) into `High`/`Medium`/`Low` risk
-segments with an explainable primary/secondary driver, a recommended
-action + channel (Medium/High risk only), a mandatory
-`human_review_required` flag, and a labeled **simulated**
-`estimated_value_at_risk`. `sql/gold/executive_kpis.sql` aggregates this
+point score (8 signals, max 129 points, also shown normalized to 0-100 in
+the UI) into `High`/`Medium`/`Low` risk segments with an explainable
+primary/secondary driver, a recommended action + channel (Medium/High
+risk only), a mandatory `human_review_required` flag, and a labeled
+**simulated** `estimated_value_at_risk`. It also computes the single
+canonical `is_prioritized_audience` flag and an `action_priority_rank` /
+`priority_tier` (A/B/C) — an additive, normalized weighted sum of risk,
+value, value-at-risk, and actionability, chosen over a multiplicative
+alternative after an empirical comparison (see `docs/risk-scoring.md`
+"Priority ranking formula"). `sql/gold/executive_kpis.sql` aggregates this
 into one summary row. Full rule and threshold documentation:
 `docs/risk-scoring.md`.
+
+A small, deterministic block of customers is reserved on every run to
+guarantee every Risk x Value combination the demo needs actually exists
+(not left to chance) — see `docs/risk-scoring.md` "Guaranteed Risk x Value
+distribution". `CUST000001` is always the fixed, guaranteed
+High-risk/High-value demo customer.
 
 This is not a predictive model — see `docs/prompt-pack/PHASES_05_TO_09.md`
 Phase 7 for the optional ML comparison, which never becomes a dependency
@@ -305,18 +316,31 @@ python scripts/generate_local_fixtures.py
 
 ## Application usage (once deployed)
 
+The UI is Japanese by default (no language toggle — see
+`docs/risk-scoring.md` and the frontend's `src/i18n/ja.ts` for the i18n
+approach).
+
 1. Open the deployed Databricks Apps URL.
-2. Start at **Executive Overview** — where should retention budget focus?
-3. Open **Segment Explorer** — which behavior pattern should the campaign
-   address? Click any customer row to drill in.
-4. **Customer 360** (reached by clicking a customer) — why is this
-   customer at risk, and how should we respond?
-5. Open **Retention Actions** — who should receive which action first?
-   Filter by risk/value segment, or download the CSV.
-6. Finish at **PoC & Future Expansion** — what must be validated with real
-   bank data, and how does this extend to cross-sell? (Includes an
-   optional Phase 7 model-comparison panel, clearly labeled — the app
-   never depends on it.)
+2. Start at **経営サマリー / Executive Overview** — where should retention
+   budget focus? Use the "デモ用固定顧客 CUST000001 の Customer 360 を見る"
+   link here any time you want a guaranteed, reproducible Customer 360
+   example — `CUST000001` is a deterministic High-risk/High-value customer
+   generated on every run (`docs/risk-scoring.md`).
+3. Open **顧客セグメント分析 / Segment Explorer** — which behavior pattern
+   should the campaign address? Try the five presets (defaults to
+   高価値・高リスク); click any customer row to drill in.
+4. **顧客360 / Customer 360** (reached by clicking a customer, or the
+   `CUST000001` link above) — why is this customer at risk, and how should
+   we respond?
+5. Open **リテンション施策対象 / Retention Actions** — who should receive
+   which action first? Filter by risk/value segment, or download the CSV
+   — its row count always matches Executive Overview's "優先施策対象"
+   (Prioritized Audience) KPI.
+6. Finish at **PoCと今後の展開 / PoC & Future Expansion** — three blocks
+   up top (what to confirm in a PoC, success criteria, next action);
+   Free Edition/simulation details and the optional Phase 7 model
+   comparison are both collapsed by default — the app never depends on
+   the latter.
 
 ## Optional ML and Genie (Phase 7)
 

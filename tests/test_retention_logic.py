@@ -34,6 +34,14 @@ from pyspark.sql.types import (  # noqa: E402
 from conftest import NUM_CUSTOMERS, run_sql_file  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SQL_QUERIES_DIR = REPO_ROOT / "sql" / "queries"
+
+
+def _load_query(name: str, **placeholders) -> str:
+    text = (SQL_QUERIES_DIR / name).read_text()
+    for key, value in placeholders.items():
+        text = text.replace(f"{{{key}}}", value)
+    return text.rstrip().rstrip(";")
 
 CUSTOMER_360_SCHEMA = StructType(
     [
@@ -116,6 +124,33 @@ def test_low_risk_customers_get_no_action(spark, retention_action_list):
     assert n == 0
 
 
+def test_action_priority_rank_is_unique_and_tiers_are_valid(spark, retention_action_list):
+    gold = retention_action_list
+    rows = spark.table(f"{gold}.retention_action_list").select("action_priority_rank", "priority_tier").collect()
+    ranks = [r["action_priority_rank"] for r in rows]
+    assert len(ranks) == len(set(ranks)), "action_priority_rank must be a unique sequential rank"
+    assert sorted(ranks) == list(range(1, len(ranks) + 1))
+    assert all(r["priority_tier"] in ("A", "B", "C") for r in rows)
+
+
+def test_high_risk_high_value_generally_ranks_above_high_risk_low_value(spark, retention_action_list):
+    gold = retention_action_list
+    rows = spark.sql(
+        f"""
+        SELECT risk_segment, value_segment, action_priority_rank
+        FROM {gold}.retention_action_list
+        WHERE risk_segment = 'High' AND value_segment IN ('High', 'Low')
+        """
+    ).collect()
+    high_value_ranks = [r["action_priority_rank"] for r in rows if r["value_segment"] == "High"]
+    low_value_ranks = [r["action_priority_rank"] for r in rows if r["value_segment"] == "Low"]
+    if high_value_ranks and low_value_ranks:
+        # lower rank number = higher priority
+        import statistics
+
+        assert statistics.median(high_value_ranks) < statistics.median(low_value_ranks)
+
+
 def test_high_risk_spans_more_than_one_value_segment(spark, retention_action_list):
     gold = retention_action_list
     segments = spark.sql(
@@ -134,7 +169,24 @@ def test_executive_kpis_reconcile(spark, retention_action_list):
         == kpi["total_customers"]
     )
     assert kpi["broad_campaign_audience_count"] == kpi["total_customers"]
-    assert kpi["prioritized_audience_count"] <= kpi["high_risk_customers"]
+    # Prioritized audience = (High risk AND High/Medium value) OR (Medium risk
+    # AND High value), so it can exceed high_risk_customers alone but never
+    # exceeds High + Medium risk combined.
+    assert kpi["prioritized_audience_count"] <= kpi["high_risk_customers"] + kpi["medium_risk_customers"]
+    assert kpi["prioritized_audience_count"] > 0
+
+
+def test_prioritized_audience_count_reconciles_across_kpis_and_retention_actions(spark, retention_action_list):
+    gold = retention_action_list
+    kpi_count = spark.table(f"{gold}.executive_kpis").collect()[0]["prioritized_audience_count"]
+    raw_count = spark.sql(
+        f"SELECT COUNT(*) AS n FROM {gold}.retention_action_list WHERE is_prioritized_audience = 1"
+    ).collect()[0]["n"]
+    query = _load_query("retention_actions.sql", gold=gold)
+    retention_actions_count = spark.sql(
+        query, args={"risk_segment": None, "value_segment": None, "limit": 100000, "offset": 0}
+    ).count()
+    assert kpi_count == raw_count == retention_actions_count
 
 
 def test_rerun_is_idempotent(spark, retention_action_list):
@@ -229,6 +281,8 @@ def test_boundary_no_signals_is_low_risk_no_action(boundary_results):
     assert r["primary_driver"] == "No material risk driver"
     assert r["recommended_action"] == "No immediate action"
     assert r["human_review_required"] == 0
+    assert r["risk_score_normalized_100"] == 0
+    assert r["triggered_signal_count"] == 0
 
 
 def test_boundary_balance_threshold_is_inclusive(boundary_results):
@@ -247,6 +301,16 @@ def test_boundary_all_signals_scores_max_and_picks_top_two_drivers(boundary_resu
     assert r["primary_driver"] == "Balance decline (90d)"
     assert r["secondary_driver"] == "Salary deposit stopped"
     assert r["human_review_required"] == 1
+    assert r["risk_score_normalized_100"] == 100
+    assert r["triggered_signal_count"] == 8
+
+
+def test_risk_score_normalized_100_matches_129_scale_rounding(boundary_results):
+    # EDGE_UNRESOLVED_ONLY: risk_score=9 -> round(9/129*100) == 7
+    r = boundary_results["EDGE_UNRESOLVED_ONLY"]
+    assert r["risk_score"] == 9
+    assert r["risk_score_normalized_100"] == round(9 / 129 * 100)
+    assert r["triggered_signal_count"] == 1
 
 
 def test_boundary_high_value_alone_is_not_high_risk(boundary_results):

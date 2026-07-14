@@ -4,6 +4,7 @@ import { api, ApiError } from "../api/client";
 import { RiskBadge, ValueBadge } from "../components/Badges";
 import { PageHeader } from "../components/Layout";
 import { EmptyState, ErrorState, LoadingState } from "../components/States";
+import { BUSINESS_QUESTIONS, PAGE_TITLES, t } from "../i18n/ja";
 import type { CustomerListItem, SegmentFilterOptions } from "../types";
 
 function pct(v: number | null): string {
@@ -11,16 +12,105 @@ function pct(v: number | null): string {
   return `${(v * 100).toFixed(0)}%`;
 }
 
+interface Preset {
+  key: string;
+  label: string;
+  riskSegment: string;
+  valueSegment: string;
+  balanceDecline: boolean;
+  cardDecline: boolean;
+  appDecline: boolean;
+  complaintsOnly: boolean;
+}
+
+const PRESETS: Preset[] = [
+  {
+    key: "high_value_high_risk",
+    label: "高価値・高リスク",
+    riskSegment: "High",
+    valueSegment: "High",
+    balanceDecline: false,
+    cardDecline: false,
+    appDecline: false,
+    complaintsOnly: false,
+  },
+  {
+    key: "service_dissatisfaction",
+    label: "サービス不満",
+    riskSegment: "",
+    valueSegment: "",
+    balanceDecline: false,
+    cardDecline: false,
+    appDecline: false,
+    complaintsOnly: true,
+  },
+  {
+    key: "digital_disengagement",
+    label: "デジタル離反兆候",
+    riskSegment: "",
+    valueSegment: "",
+    balanceDecline: false,
+    cardDecline: false,
+    appDecline: true,
+    complaintsOnly: false,
+  },
+  {
+    key: "balance_outflow",
+    label: "残高流出",
+    riskSegment: "",
+    valueSegment: "",
+    balanceDecline: true,
+    cardDecline: false,
+    appDecline: false,
+    complaintsOnly: false,
+  },
+  {
+    key: "card_spend_decline",
+    label: "カード利用低下",
+    riskSegment: "",
+    valueSegment: "",
+    balanceDecline: false,
+    cardDecline: true,
+    appDecline: false,
+    complaintsOnly: false,
+  },
+];
+
+const DEFAULT_PRESET = PRESETS[0];
+
 export function SegmentExplorer() {
   const navigate = useNavigate();
   const [options, setOptions] = useState<SegmentFilterOptions | null>(null);
-  const [riskSegment, setRiskSegment] = useState("");
-  const [valueSegment, setValueSegment] = useState("");
-  const [balanceDecline, setBalanceDecline] = useState(false);
-  const [cardDecline, setCardDecline] = useState(false);
-  const [appDecline, setAppDecline] = useState(false);
-  const [complaintsOnly, setComplaintsOnly] = useState(false);
+  const [riskSegment, setRiskSegment] = useState(DEFAULT_PRESET.riskSegment);
+  const [valueSegment, setValueSegment] = useState(DEFAULT_PRESET.valueSegment);
+  const [balanceDecline, setBalanceDecline] = useState(DEFAULT_PRESET.balanceDecline);
+  const [cardDecline, setCardDecline] = useState(DEFAULT_PRESET.cardDecline);
+  const [appDecline, setAppDecline] = useState(DEFAULT_PRESET.appDecline);
+  const [complaintsOnly, setComplaintsOnly] = useState(DEFAULT_PRESET.complaintsOnly);
   const [maxProducts, setMaxProducts] = useState("");
+  const [activePreset, setActivePreset] = useState<string | null>(DEFAULT_PRESET.key);
+
+  function applyPreset(preset: Preset) {
+    setRiskSegment(preset.riskSegment);
+    setValueSegment(preset.valueSegment);
+    setBalanceDecline(preset.balanceDecline);
+    setCardDecline(preset.cardDecline);
+    setAppDecline(preset.appDecline);
+    setComplaintsOnly(preset.complaintsOnly);
+    setMaxProducts("");
+    setActivePreset(preset.key);
+  }
+
+  function clearFilters() {
+    setRiskSegment("");
+    setValueSegment("");
+    setBalanceDecline(false);
+    setCardDecline(false);
+    setAppDecline(false);
+    setComplaintsOnly(false);
+    setMaxProducts("");
+    setActivePreset(null);
+  }
 
   const [items, setItems] = useState<CustomerListItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -51,83 +141,144 @@ export function SegmentExplorer() {
 
   return (
     <div>
-      <PageHeader
-        title="Segment Explorer"
-        question="Which customer behavior pattern should the campaign address?"
-      />
+      <PageHeader title={PAGE_TITLES.segmentExplorer} question={BUSINESS_QUESTIONS.segmentExplorer} />
 
       <div className="card">
+        <div className="filters-row" role="group" aria-label="プリセット">
+          {PRESETS.map((preset) => (
+            <button
+              key={preset.key}
+              type="button"
+              className={activePreset === preset.key ? "btn btn--primary" : "btn"}
+              onClick={() => applyPreset(preset)}
+            >
+              {preset.label}
+            </button>
+          ))}
+          <button type="button" className="btn" onClick={clearFilters}>
+            クリア
+          </button>
+        </div>
         <div className="filters-row">
           <div className="filter-field">
-            <label htmlFor="risk-filter">Risk segment</label>
-            <select id="risk-filter" value={riskSegment} onChange={(e) => setRiskSegment(e.target.value)}>
-              <option value="">All</option>
+            <label htmlFor="risk-filter">リスク区分</label>
+            <select
+              id="risk-filter"
+              value={riskSegment}
+              onChange={(e) => {
+                setRiskSegment(e.target.value);
+                setActivePreset(null);
+              }}
+            >
+              <option value="">すべて</option>
               {(options?.risk_segments ?? []).map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {t.riskSegment(s)}
                 </option>
               ))}
             </select>
           </div>
           <div className="filter-field">
-            <label htmlFor="value-filter">Value segment</label>
-            <select id="value-filter" value={valueSegment} onChange={(e) => setValueSegment(e.target.value)}>
-              <option value="">All</option>
+            <label htmlFor="value-filter">価値区分</label>
+            <select
+              id="value-filter"
+              value={valueSegment}
+              onChange={(e) => {
+                setValueSegment(e.target.value);
+                setActivePreset(null);
+              }}
+            >
+              <option value="">すべて</option>
               {(options?.value_segments ?? []).map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {t.valueSegment(s)}
                 </option>
               ))}
             </select>
           </div>
           <div className="filter-field">
-            <label htmlFor="max-products">Product holdings</label>
-            <select id="max-products" value={maxProducts} onChange={(e) => setMaxProducts(e.target.value)}>
-              <option value="">Any</option>
-              <option value="1">1 or fewer</option>
-              <option value="2">2 or fewer</option>
-              <option value="3">3 or fewer</option>
+            <label htmlFor="max-products">保有商品数</label>
+            <select
+              id="max-products"
+              value={maxProducts}
+              onChange={(e) => {
+                setMaxProducts(e.target.value);
+                setActivePreset(null);
+              }}
+            >
+              <option value="">指定なし</option>
+              <option value="1">1以下</option>
+              <option value="2">2以下</option>
+              <option value="3">3以下</option>
             </select>
           </div>
         </div>
         <div className="checkbox-row">
           <label className="checkbox-field">
-            <input type="checkbox" checked={balanceDecline} onChange={(e) => setBalanceDecline(e.target.checked)} />
-            Balance decline (&gt;30%, 90d)
+            <input
+              type="checkbox"
+              checked={balanceDecline}
+              onChange={(e) => {
+                setBalanceDecline(e.target.checked);
+                setActivePreset(null);
+              }}
+            />
+            残高減少（90日で30%超）
           </label>
           <label className="checkbox-field">
-            <input type="checkbox" checked={cardDecline} onChange={(e) => setCardDecline(e.target.checked)} />
-            Card spend decline (&gt;30%, 90d)
+            <input
+              type="checkbox"
+              checked={cardDecline}
+              onChange={(e) => {
+                setCardDecline(e.target.checked);
+                setActivePreset(null);
+              }}
+            />
+            カード利用減少（90日で30%超）
           </label>
           <label className="checkbox-field">
-            <input type="checkbox" checked={appDecline} onChange={(e) => setAppDecline(e.target.checked)} />
-            App engagement decline (&gt;50%, 90d)
+            <input
+              type="checkbox"
+              checked={appDecline}
+              onChange={(e) => {
+                setAppDecline(e.target.checked);
+                setActivePreset(null);
+              }}
+            />
+            アプリ利用減少（90日で50%超）
           </label>
           <label className="checkbox-field">
-            <input type="checkbox" checked={complaintsOnly} onChange={(e) => setComplaintsOnly(e.target.checked)} />
-            2+ complaints (90d)
+            <input
+              type="checkbox"
+              checked={complaintsOnly}
+              onChange={(e) => {
+                setComplaintsOnly(e.target.checked);
+                setActivePreset(null);
+              }}
+            />
+            苦情2件以上（90日）
           </label>
         </div>
 
         {error && <ErrorState message={error} />}
-        {!error && loading && <LoadingState label="Loading customers…" />}
+        {!error && loading && <LoadingState label="顧客データを読み込み中…" />}
         {!error && !loading && items && items.length === 0 && <EmptyState />}
         {!error && !loading && items && items.length > 0 && (
           <>
-            <p className="section-subtitle">{items.length} customers match (showing up to 200).</p>
+            <p className="section-subtitle">{items.length} 件が該当（最大200件まで表示）。</p>
             <div className="table-scroll">
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th scope="col">Customer</th>
-                    <th scope="col">Risk</th>
-                    <th scope="col">Value</th>
-                    <th scope="col">Primary driver</th>
-                    <th scope="col">Balance Δ 90d</th>
-                    <th scope="col">Card Δ 90d</th>
-                    <th scope="col">App Δ 90d</th>
-                    <th scope="col">Complaints 90d</th>
-                    <th scope="col">Recommended action</th>
+                    <th scope="col">顧客</th>
+                    <th scope="col">リスク</th>
+                    <th scope="col">価値</th>
+                    <th scope="col">主なリスク要因</th>
+                    <th scope="col">残高Δ 90日</th>
+                    <th scope="col">カードΔ 90日</th>
+                    <th scope="col">アプリΔ 90日</th>
+                    <th scope="col">苦情件数 90日</th>
+                    <th scope="col">推奨アクション</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -137,7 +288,7 @@ export function SegmentExplorer() {
                       onClick={() => navigate(`/customers/${c.customer_id}`)}
                       tabIndex={0}
                       role="button"
-                      aria-label={`Open Customer 360 for ${c.customer_id}`}
+                      aria-label={`${c.customer_id} の Customer 360 を開く`}
                       onKeyDown={(e) => e.key === "Enter" && navigate(`/customers/${c.customer_id}`)}
                     >
                       <td>{c.customer_id}</td>
@@ -147,12 +298,12 @@ export function SegmentExplorer() {
                       <td>
                         <ValueBadge segment={c.value_segment} />
                       </td>
-                      <td>{c.primary_driver}</td>
+                      <td>{t.driver(c.primary_driver)}</td>
                       <td>{pct(c.balance_change_90d_pct)}</td>
                       <td>{pct(c.card_spend_change_90d_pct)}</td>
                       <td>{pct(c.login_change_90d_pct)}</td>
                       <td>{c.complaint_count_90d}</td>
-                      <td>{c.recommended_action}</td>
+                      <td>{t.action(c.recommended_action)}</td>
                     </tr>
                   ))}
                 </tbody>

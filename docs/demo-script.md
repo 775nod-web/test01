@@ -8,7 +8,15 @@ All figures below are from an actual 8,000-customer run
 (`SEED=42`, the repo's default) — reproducible by rerunning Phases 2–4 in
 your workspace with default widget values. If your workspace uses a
 different customer count or seed, the same **shape** of story holds; only
-the exact numbers will differ.
+the exact numbers will differ. The UI itself is Japanese by default (no
+language toggle) — quoted "say" lines below are translated for this
+document only.
+
+**`CUST000001` is the fixed demo customer** — a deterministic, guaranteed
+High-risk/High-value customer generated on every run regardless of seed or
+scale (see `docs/risk-scoring.md` "Guaranteed Risk x Value distribution").
+Use it as the reliable fallback for the Customer 360 section below if you
+don't want to depend on which random customers are at-risk in your run.
 
 ## 0:00–1:00 — Business context
 
@@ -29,83 +37,93 @@ built entirely on Databricks Free Edition, using synthetic data."
 **Click path**: open the deployed app URL → land on Executive Overview
 (default page).
 
-**Say, pointing at the KPI tiles**: "8,000 customers. 89 are high risk —
-just over 1%. Of those, 7 are also high-value: our top priority. Today's
-broad campaign would contact all 8,000 people; a prioritized campaign
-narrows that to 56 people who are both at-risk and worth retaining."
+**Say, pointing at the KPI tiles**: "8,000 customers. 140 are high risk —
+under 2%. Of those, 27 are also high-value: our top priority. Today's
+broad campaign would contact all 8,000 people; prioritizing narrows that
+to 548 people — high risk with high/medium value, or medium risk with
+high value — each with an action already assigned."
 
 **Expected values** (8,000-customer default):
 
 | KPI | Value |
 |---|---|
 | Total customers | 8,000 |
-| High-risk customers | 89 (1.1%) |
-| High-risk & high-value | 7 |
-| Prioritized audience (high-risk, high/medium-value) | 56 |
+| High-risk customers | 140 (1.75%) |
+| High-risk & high-value | 27 |
+| Prioritized audience | 548 |
 | Broad campaign audience | 8,000 |
-| Estimated value at risk (simulated, total) | ~$924,500 |
-| Estimated value at risk (simulated, high-risk only) | ~$43,900 |
+| Estimated value at risk (simulated, total) | ~$987,500 |
+| Estimated value at risk (simulated, high-risk only) | ~$101,100 |
 
 **Point at the value-vs-risk matrix**: "Notice High-risk customers appear
-in all three value tiers — 7 High-value, 49 Medium-value, 33 Low-value.
-Risk and value are genuinely independent; a high-value customer is not
-automatically safe, and a low-value customer is not automatically
-ignorable."
+in all three value tiers — 27 High-value, 50 Medium-value, 23 Low-value at
+this scale. Risk and value are genuinely independent; a high-value
+customer is not automatically safe, and a low-value customer is not
+automatically ignorable."
 
-**Point at Top Risk Drivers**: name the top one or two bars (typically
-"Unresolved service contact" and "Rising complaints" at this scale).
+**Point at Top Risk Drivers** (now scoped to the prioritized audience,
+548 customers): name the top one or two bars — at this scale, "Balance
+decline (90d)" (162) and "Card spend decline (90d)" (141) lead.
 
 ## 3:00–5:00 — Segment Explorer
 
 **Business question**: Which customer behavior pattern should the
 campaign address?
 
-**Click path**: nav → Segment Explorer → check "Card spend decline" and
-"App engagement decline" together.
+**Click path**: nav → Segment Explorer → click the "デジタル離反兆候"
+(digital disengagement) preset, or check "Card spend decline" and "App
+engagement decline" together.
 
 **Say**: "Here's a concrete pattern: customers whose card spending *and*
 app logins both dropped over 90 days — quietly disengaging before they
-ever complain. At our scale that's 292 customers (verified in
+ever complain. At our scale that's 332 customers (verified in
 `docs/genie-setup.md`, Q2). This is a specific, addressable segment, not
 a vague 'at risk' bucket."
 
-**Do**: click one customer row to transition into Customer 360.
+**Do**: click one customer row to transition into Customer 360. The
+default preset shown on page load, "高価値・高リスク" (high-value/high-risk),
+always includes `CUST000001` at or near the top.
 
 ## 5:00–7:00 — Customer 360
 
 **Business question**: Why is this customer at risk, and how should we
 respond?
 
-**Click path**: (arrived via row click above, or navigate directly to one
-of the five customers in `docs/representative-customers.md`).
+**Click path**: (arrived via row click above), or use the "デモ用固定顧客
+CUST000001 の Customer 360 を見る" link on Executive Overview, or navigate
+directly to one of the customers in `docs/representative-customers.md`.
 
-**Recommended customer for this slot**: `CUST000090` (high value,
--40.4% balance change over 90 days, no complaints — the cleanest single-
-driver story) or `CUST006272` (high value, salary deposit stopped,
--29.75% balance change).
+**Recommended customer for this slot**: `CUST000001` (the fixed demo
+customer — high value, -45% balance / -47% card / -83% app engagement all
+declining at once, one unresolved complaint on file — the clearest
+multi-driver story, and it's guaranteed to exist on every run).
 
-**Say, pointing at the risk score card**: "Risk score 55 out of 129 —
-transparent points, not a black box. Primary driver: card spend decline.
-Secondary: app engagement decline. Scroll down: balance, card, and app
-trends over the last 12 months, plus their actual contact history. Every
-recommendation is marked 'Human review required' — nothing here contacts
-a customer automatically."
+**Say, pointing at the risk score card**: "Risk score 64 out of 100 —
+internally 83 out of 129, transparent points, not a black box. 5 of 8
+signals detected. Primary driver: balance decline. Secondary: card spend
+decline. Scroll down: balance, card, and app trends over the last 12
+months, plus their actual contact history. Every recommendation is marked
+'担当者による確認が必要' (human review required) — nothing here contacts a
+customer automatically."
 
 ## 7:00–9:00 — Retention Actions
 
 **Business question**: Who should receive which action first?
 
-**Click path**: nav → Retention Actions (default filter: High + Medium
-risk, all values).
+**Click path**: nav → Retention Actions (default: the full prioritized
+audience, 548 customers at this scale — same figure as Executive
+Overview's "優先施策対象" KPI and the CSV export).
 
-**Say**: "This is the prioritized campaign list — ranked by risk and
-value together, not risk alone. Each row has a specific action and
-channel: a card-benefit push for spend decline, a call-center service
-recovery for unresolved contacts, a relationship review for balance
-outflow. Every row requires human review. This list can be filtered by
-risk or value segment, or exported as a CSV for the campaign team."
+**Say**: "This is the prioritized campaign list — ranked by a single
+priority score combining risk, value, estimated value at risk, and
+actionability, not risk alone. `CUST000001` sits at #3. Each row has a
+specific action and channel: a card-benefit push for spend decline, a
+call-center service recovery for unresolved contacts, a relationship
+review for balance outflow. Every row requires human review. This list
+can be filtered by risk or value segment, or exported as a CSV for the
+campaign team — the CSV row count always matches the KPI tile."
 
-**Do**: click "Download CSV" once to show it works.
+**Do**: click "CSVをダウンロード" (Download CSV) once to show it works.
 
 ## 9:00–10:00 — PoC & Future Expansion
 
@@ -114,15 +132,15 @@ decision?
 
 **Click path**: nav → PoC & Future Expansion.
 
-**Say**: "Everything here is synthetic — clearly labeled throughout the
-app. Before a production decision, we'd validate these exact signals
-against real source systems, measure real lift against a control group,
-and confirm the thresholds hold up against real churn — see the success
-criteria and metrics here. The same Customer 360 table also extends
-directly to cross-sell — not a second demo, just a reuse path, shown here
-as one illustrative query." *(Optionally, if asked)*: point at the
-"Model comparison" panel, clearly labeled optional, and note the app
-never depends on it.
+**Say**: "The top of this page is three things: what we'd confirm in a
+PoC, the success criteria, and the immediate next action — agreeing
+business goals, success criteria, target data, and environment in a PoC
+design workshop. Below that, the same Customer 360 table extends directly
+to cross-sell — not a second demo, just a reuse path, shown as one
+illustrative query." *(Optionally, if asked)*: expand the two collapsed
+sections — Free Edition/simulation details, and the optional ML
+comparison, clearly labeled 任意 (optional) and never a dependency of the
+core app.
 
 ## Fallback plan
 
@@ -151,7 +169,8 @@ governance, synthetic vs. PoC validation).
       `{"status":"ok","data_mode":"databricks"}` (not `"local"`).
 - [ ] Open and click through all five pages once, end to end.
 - [ ] Confirm the customer(s) you plan to show in Customer 360 exist —
-      search by ID from `docs/representative-customers.md`.
+      `CUST000001` (the fixed demo customer, guaranteed on every run) or
+      any other ID from `docs/representative-customers.md`.
 - [ ] Confirm the KPI totals on screen match this document (or note the
       actual numbers if your workspace used a different scale/seed).
 - [ ] Have `sql/queries/*.sql` open in a SQL editor tab as a live fallback.

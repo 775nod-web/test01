@@ -91,6 +91,9 @@ def test_customer_detail_found():
     assert body["customer_id"] == customer_id
     assert isinstance(body["trends"], list) and len(body["trends"]) > 0
     assert isinstance(body["contact_history"], list)
+    assert 0 <= body["risk_score_normalized_100"] <= 100
+    assert 0 <= body["triggered_signal_count"] <= 8
+    assert body["risk_score_normalized_100"] == round(body["risk_score"] / 129 * 100)
 
 
 def test_customer_detail_not_found():

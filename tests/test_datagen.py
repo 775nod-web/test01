@@ -209,6 +209,123 @@ def test_class_balance_within_expected_ranges():
         assert abs(actual_frac - expected_frac) < 0.06, (archetype, actual_frac, expected_frac)
 
 
+def _risk_score_and_segment(customers, txns, cards, apps, contacts):
+    """Pure-Python mirror of sql/gold/retention_action_list.sql's scoring so
+    Fix 1's population guarantees can be verified without a Spark session."""
+    from datetime import timedelta
+
+    def by_customer(rows):
+        d = {}
+        for r in rows:
+            d.setdefault(r["customer_id"], []).append(r)
+        for v in d.values():
+            v.sort(key=lambda r: r["activity_month"])
+        return d
+
+    txn_by_cust = by_customer(txns)
+    card_by_cust = by_customer(cards)
+    app_by_cust = by_customer(apps)
+    contact_by_cust: dict = {}
+    for r in contacts:
+        contact_by_cust.setdefault(r["customer_id"], []).append(r)
+
+    results = {}
+    for c in customers:
+        cid = c.customer_id
+        trows = txn_by_cust.get(cid, [])
+        crows = card_by_cust.get(cid, [])
+        arows = app_by_cust.get(cid, [])
+        conrows = contact_by_cust.get(cid, [])
+
+        balance_decline = len(trows) >= 4 and trows[-4]["eom_balance"] > 0 and (
+            (trows[-4]["eom_balance"] - trows[-1]["eom_balance"]) / trows[-4]["eom_balance"] >= 0.30
+        )
+        card_decline = len(crows) >= 4 and crows[-4]["card_spend_amount"] > 0 and (
+            (crows[-4]["card_spend_amount"] - crows[-1]["card_spend_amount"]) / crows[-4]["card_spend_amount"] >= 0.30
+        )
+        app_decline = len(arows) >= 4 and arows[-4]["login_count"] > 0 and (
+            (arows[-4]["login_count"] - arows[-1]["login_count"]) / arows[-4]["login_count"] >= 0.50
+        )
+        salary_stopped = bool(trows) and trows[-1]["salary_deposit_flag"] == 0 and any(
+            r["salary_deposit_flag"] == 1 for r in trows[:3]
+        )
+        unresolved = sum(1 - r["is_resolved"] for r in conrows)
+        complaints_90d = 0
+        if trows:
+            cutoff = trows[-1]["activity_month"] - timedelta(days=90)
+            complaints_90d = sum(1 for r in conrows if r["contact_date"] > cutoff and r["is_complaint"])
+
+        score = (
+            (26 if balance_decline else 0)
+            + (24 if salary_stopped else 0)
+            + (20 if card_decline else 0)
+            + (18 if app_decline else 0)
+            + (14 if complaints_90d >= 2 else 0)
+            + (9 if unresolved >= 1 else 0)
+        )
+        segment = "High" if score >= 40 else ("Medium" if score >= 15 else "Low")
+        results[cid] = {
+            "score": score,
+            "segment": segment,
+            "value_segment": c.value_segment,
+            "balance_decline": balance_decline,
+            "card_decline": card_decline,
+            "app_decline": app_decline,
+            "salary_stopped": salary_stopped,
+            "unresolved": unresolved,
+            "complaints_90d": complaints_90d,
+        }
+    return results
+
+
+def _generate_and_score(num_customers):
+    data = datagen.generate_all(num_customers, seed=42)
+    customers = datagen.generate_customers(num_customers, seed=42)
+    return customers, _risk_score_and_segment(
+        customers,
+        data["account_transactions"],
+        data["card_usage"],
+        data["app_activity"],
+        data["contact_history"],
+    )
+
+
+def test_risk_value_distribution_guarantees_at_1200_and_8000():
+    """CLAUDE.md remediation Fix 1: Risk x Value combinations must be
+    guaranteed, not left to weighted-random chance, at both demo scales."""
+    for num_customers in (1200, 8000):
+        _, results = _generate_and_score(num_customers)
+        from collections import Counter
+
+        combo_counts = Counter((r["segment"], r["value_segment"]) for r in results.values())
+        assert combo_counts[("High", "High")] >= 5, (num_customers, combo_counts)
+        assert combo_counts[("Medium", "High")] >= 10, (num_customers, combo_counts)
+        assert combo_counts[("High", "Medium")] >= 1, (num_customers, combo_counts)
+        assert combo_counts[("High", "Low")] >= 1, (num_customers, combo_counts)
+        assert combo_counts[("Low", "High")] >= 1, (num_customers, combo_counts)
+
+
+def test_cust000001_is_the_fixed_high_risk_high_value_demo_customer():
+    """CUST000001 must satisfy every condition the remediation spec requires,
+    generated through the normal archetype/trajectory pipeline (not a
+    post-hoc rewrite) at both 1,200 and 8,000 customer scales."""
+    for num_customers in (1200, 8000):
+        customers, results = _generate_and_score(num_customers)
+        c0 = customers[0]
+        assert c0.customer_id == "CUST000001"
+        r = results["CUST000001"]
+        assert r["segment"] == "High"
+        assert r["value_segment"] == "High"
+        assert c0.salary_stop_month is None
+        assert not r["salary_stopped"]
+        assert r["balance_decline"]
+        assert r["card_decline"]
+        assert r["app_decline"]
+        assert r["unresolved"] >= 1 or r["complaints_90d"] >= 1
+        estimated_value_at_risk = round(c0.simulated_annual_value * (r["score"] / 129.0), 2)
+        assert estimated_value_at_risk > 0
+
+
 def test_product_holdings_row_counts_match_active_months():
     data = datagen.generate_all(500, seed=42)
     holdings_by_customer = Counter(r["customer_id"] for r in data["product_holdings"])

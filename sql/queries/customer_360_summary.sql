@@ -37,6 +37,8 @@ SELECT
   c.campaign_response_rate_12m,
   c.campaign_conversion_rate_12m,
   r.risk_score,
+  r.risk_score_normalized_100,
+  r.triggered_signal_count,
   r.risk_segment,
   r.primary_driver,
   r.secondary_driver,

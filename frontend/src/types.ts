@@ -124,6 +124,8 @@ export interface CustomerDetailResponse {
   campaign_response_rate_12m: number;
   campaign_conversion_rate_12m: number;
   risk_score: number;
+  risk_score_normalized_100: number;
+  triggered_signal_count: number;
   risk_segment: RiskSegment;
   primary_driver: string;
   secondary_driver: string;
@@ -147,6 +149,7 @@ export interface RetentionActionItem {
   human_review_required: number;
   estimated_value_at_risk: number;
   action_priority_rank: number;
+  priority_tier: string;
 }
 
 export interface RetentionActionListResponse {

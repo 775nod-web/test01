@@ -70,6 +70,19 @@ def test_top_risk_drivers_excludes_no_driver_rows(spark, retention_action_list):
     assert "No material risk driver" not in drivers
 
 
+def test_top_risk_drivers_scoped_to_prioritized_audience(spark, retention_action_list):
+    gold = retention_action_list
+    query = _load_query("top_risk_drivers.sql", gold=gold)
+    rows = spark.sql(query).collect()
+    total_from_chart = sum(r["customer_count"] for r in rows)
+    prioritized_count = spark.sql(
+        f"SELECT COUNT(*) AS n FROM {gold}.retention_action_list WHERE is_prioritized_audience = 1"
+    ).collect()[0]["n"]
+    # Each prioritized customer has exactly one primary_driver, so the chart's
+    # bars (grouped by primary_driver) must sum to the same total.
+    assert total_from_chart == prioritized_count
+
+
 def test_segment_explorer_filter_by_risk_segment(spark, retention_action_list):
     gold = retention_action_list
     query = _load_query("segment_explorer.sql", gold=gold)
@@ -176,6 +189,8 @@ def test_retention_actions_excludes_low_risk(spark, retention_action_list):
     assert all(r["risk_segment"] in ("High", "Medium") for r in rows)
     ranks = [r["action_priority_rank"] for r in rows]
     assert ranks == sorted(ranks)
+    assert len(ranks) == len(set(ranks)), "action_priority_rank must be unique (no tied ranks)"
+    assert all(r["priority_tier"] in ("A", "B", "C") for r in rows)
 
 
 def test_retention_actions_pagination(spark, retention_action_list):

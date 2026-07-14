@@ -49,7 +49,7 @@ criteria, before a production decision.
    quality against the Bronze/Silver schema.
 2. **Weeks 3-4**: backfill 6-12 months of history; compute the rule-based
    score against real data; compare its High/Medium/Low distribution to
-   this demo's (`docs/risk-scoring.md` — 1.1% / 31.6% / 67.3% at
+   this demo's (`docs/risk-scoring.md` — 1.2% / 31.9% / 67.0% at
    8,000 synthetic customers) as a sanity check, not a target.
 3. **Weeks 5-8**: run a real retention campaign cycle against the
    prioritized audience for a holdout-tested subset of customers; measure

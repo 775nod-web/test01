@@ -140,6 +140,10 @@ class CustomerDetailResponse(BaseModel):
     campaign_response_rate_12m: float
     campaign_conversion_rate_12m: float
     risk_score: int
+    risk_score_normalized_100: int = Field(
+        description="Display-only ROUND(risk_score / 129 * 100). risk_score (0-129) is the source of truth."
+    )
+    triggered_signal_count: int = Field(description="How many of the 8 risk signals fired, out of 8.")
     risk_segment: RiskSegment
     primary_driver: str
     secondary_driver: str
@@ -163,6 +167,7 @@ class RetentionActionItem(BaseModel):
     human_review_required: int
     estimated_value_at_risk: float = Field(description="SIMULATED figure.")
     action_priority_rank: int
+    priority_tier: str = Field(description="A (top third), B (middle third), or C (bottom third) of the priority ranking.")
 
 
 class RetentionActionListResponse(BaseModel):

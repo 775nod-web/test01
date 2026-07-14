@@ -23,6 +23,7 @@ _CSV_COLUMNS = [
     "human_review_required",
     "estimated_value_at_risk",
     "action_priority_rank",
+    "priority_tier",
 ]
 
 
