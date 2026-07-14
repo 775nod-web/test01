@@ -136,8 +136,11 @@ segmented AS (
       WHEN risk_score >= 15 THEN 'Medium'
       ELSE 'Low'
     END AS risk_segment,
-    COALESCE(sorted_drivers[0].driver, 'No material risk driver') AS primary_driver,
-    CASE WHEN size(sorted_drivers) >= 2 THEN sorted_drivers[1].driver ELSE 'None' END AS secondary_driver
+    -- get() (not [] indexing) tolerates an empty array and returns NULL —
+    -- required under ANSI SQL mode (Databricks' default), where [0] on a
+    -- size-0 array throws INVALID_ARRAY_INDEX even inside COALESCE.
+    COALESCE(get(sorted_drivers, 0).driver, 'No material risk driver') AS primary_driver,
+    COALESCE(get(sorted_drivers, 1).driver, 'None') AS secondary_driver
   FROM ranked_drivers
 ),
 actioned AS (

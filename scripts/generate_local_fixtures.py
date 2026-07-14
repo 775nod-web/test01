@@ -140,6 +140,9 @@ def main():
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
         .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
         .config("spark.sql.warehouse.dir", warehouse)
+        # Matches Databricks' default (ANSI SQL mode on) so these fixtures
+        # are built with the same semantics the deployed app runs under.
+        .config("spark.sql.ansi.enabled", "true")
     )
     spark = configure_spark_with_delta_pip(builder).getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")

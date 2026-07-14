@@ -149,6 +149,12 @@ def spark(tmp_path_factory):
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
         .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
         .config("spark.sql.warehouse.dir", warehouse)
+        # Databricks runs with ANSI SQL mode on by default (local OSS Spark
+        # defaults to off) — matching it here is what catches bugs like
+        # `arr[0]` throwing INVALID_ARRAY_INDEX on an empty array instead of
+        # returning NULL, which only surfaces in a real Databricks workspace
+        # otherwise. Use get()/try_element_at() for safe indexing.
+        .config("spark.sql.ansi.enabled", "true")
     )
     session = configure_spark_with_delta_pip(builder).getOrCreate()
     session.sparkContext.setLogLevel("ERROR")
