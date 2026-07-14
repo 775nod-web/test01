@@ -166,6 +166,37 @@ being committed; see `docs/representative-customers.md` for five
 real, reproducible customer stories (one per risk driver, plus a
 high-value "safe" contrast case) pulled from that same run.
 
+## Risk scoring and retention actions (Phase 4)
+
+`sql/gold/retention_action_list.sql` computes a transparent, configurable
+point score (8 signals, max 129 points) into `High`/`Medium`/`Low` risk
+segments with an explainable primary/secondary driver, a recommended
+action + channel (Medium/High risk only), a mandatory
+`human_review_required` flag, and a labeled **simulated**
+`estimated_value_at_risk`. `sql/gold/executive_kpis.sql` aggregates this
+into one summary row. Full rule and threshold documentation:
+`docs/risk-scoring.md`.
+
+This is not a predictive model — see `docs/prompt-pack/PHASES_05_TO_09.md`
+Phase 7 for the optional ML comparison, which never becomes a dependency
+of the core demo.
+
+Run `notebooks/03_build_risk_and_retention.py` in Databricks after Phase 3.
+Boundary conditions (every threshold, plus "no signals," "all signals,"
+and "high value alone isn't high risk") are covered in
+`tests/test_retention_logic.py`, which also rebuilds the full pipeline at
+smaller scale and checks reconciliation, human-review gating, and rerun
+idempotency. This suite needs Spark and is **not** part of the FastAPI
+backend's dependencies, so install it separately:
+
+```bash
+pip install pyspark==3.5.3 delta-spark==3.2.1
+pytest tests/test_retention_logic.py -v
+```
+
+Without pyspark installed, this file is skipped automatically (`pytest
+tests/` still runs the Phase 2 generator tests).
+
 ## Restarting the Databricks App (once deployed)
 
 1. Open the workspace → **Compute → Apps**.
@@ -186,7 +217,7 @@ high-value "safe" contrast case) pulled from that same run.
 | 1 | Repository and environment scaffolding | Done |
 | 2 | Synthetic banking data (Bronze) | Done — run `notebooks/01_generate_synthetic_data.py` in Databricks to materialize tables |
 | 3 | Silver layer and Customer 360 (Gold) | Done — run `notebooks/02_build_silver_and_gold.py` after Phase 2 |
-| 4 | Rule-based risk score and retention actions | Not started |
+| 4 | Rule-based risk score and retention actions | Done — run `notebooks/03_build_risk_and_retention.py` after Phase 3 |
 | 5 | Executive dashboard and SQL assets | Not started |
 | 6 | React + FastAPI app on Databricks Apps | Not started |
 | 7 | Optional ML / MLflow / Genie (never a dependency) | Not started |
