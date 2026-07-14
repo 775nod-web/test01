@@ -56,7 +56,7 @@
 
 ```text
 Databricks Apps (1 App / 1 Pythonプロセス)
-└── uvicorn main:app --host 0.0.0.0 --port ${DATABRICKS_APP_PORT}
+└── bash -c "uvicorn main:app --host 0.0.0.0 --port $DATABRICKS_APP_PORT"
     └── FastAPI (backend/)
         ├── /api/health
         ├── /api/dashboard
@@ -145,9 +145,14 @@ Databricks Appsのデプロイ時に`npm run build`で生成される想定で�
    ご利用のDatabricks Appsのバージョン・公式ドキュメントに従って判断してください。
 2. `requirements.txt`に基づきPython依存関係（`fastapi`・`uvicorn[standard]`・`pydantic`のみ）が
    インストールされます。
-3. `app.yaml`の`command`に従い、`uvicorn main:app --host 0.0.0.0 --port ${DATABRICKS_APP_PORT}`で
-   プロセスが起動します。
-4. `${DATABRICKS_APP_PORT}`という環境変数名がお使いの環境と異なる場合（Databricks Appsのバージョンにより
+3. `app.yaml`の`command`に従い、`bash -c "uvicorn main:app --host 0.0.0.0 --port $DATABRICKS_APP_PORT"`
+   でプロセスが起動します。
+   > **重要**: `command`はYAML配列としてプロセスへ直接渡され、シェルを経由しないため、
+   > `command`直下に`--port`, `${DATABRICKS_APP_PORT}`のように書いても環境変数は展開されません
+   > （実機検証で`Invalid value for '--port': '${DATABRICKS_APP_PORT}' is not a valid integer`という
+   > エラーで起動に失敗することを確認済みです）。必ず`bash -c "..."`の中で`$DATABRICKS_APP_PORT`を
+   > 展開させる形にしてください。
+4. `DATABRICKS_APP_PORT`という環境変数名がお使いの環境と異なる場合（Databricks Appsのバージョンにより
    名称が変わる可能性があります）は、`app.yaml`の該当箇所を実際の変数名に合わせて修正してください。
    固定ポート番号のハードコードはしないでください。
 
@@ -328,8 +333,29 @@ npm run build   # static/ にビルド成果物を出力
 
 - そのため、Databricks CLIまたは REST API 経由でのApp作成・ソース配置・デプロイ・起動確認のいずれも
   本セッションからは実行できませんでした。
-- Databricks Apps実機でのみ発生しうる問題（ビルドステップの自動実行有無、`DATABRICKS_APP_PORT`の
-  実際の変数名、静的アセット配信のパス解決など）は、本セッションでは検証できていません。
+
+### 利用者による実機デプロイで判明した問題と対応（追記）
+
+利用者がDatabricksワークスペースへRepos経由でこのリポジトリを配置し、実際にデプロイを実行したところ、
+以下のエラーで起動に失敗しました。
+
+```text
+Error: Invalid value for '--port': '${DATABRICKS_APP_PORT}' is not a valid integer.
+```
+
+**原因**: `app.yaml`の`command`はYAML配列としてプロセスへ直接渡され、シェルを経由しないため、
+`${DATABRICKS_APP_PORT}`という記法は展開されず、文字列そのままがuvicornの`--port`引数に渡っていた。
+
+**対応**: `app.yaml`を、`bash -c`経由で環境変数を展開する形に修正済み。
+
+```yaml
+command:
+  - bash
+  - -c
+  - "uvicorn main:app --host 0.0.0.0 --port $DATABRICKS_APP_PORT"
+```
+
+修正後の再デプロイ結果は、確認でき次第本セクションに追記します。
 
 ### 必要な利用者操作
 
@@ -343,7 +369,8 @@ Databricksに接続可能なCI/CD環境）で、本README「8. Databricks Apps�
 | 症状 | 想定原因 | 対処 |
 |---|---|---|
 | アプリ起動直後に`static/`が見つからない旨のJSONが返る | Reactのビルドが実行されていない、またはビルド成果物がデプロイに含まれていない | `npm run build`を実行し、生成された`static/`をデプロイ対象に含める。Databricks Appsがビルドを自動実行する設定か確認する |
-| ポート起動エラー | `${DATABRICKS_APP_PORT}`の環境変数名が実際の環境と異なる | Databricks Appsのログで実際の環境変数名を確認し、`app.yaml`を修正する |
+| `Error: Invalid value for '--port': '${DATABRICKS_APP_PORT}' is not a valid integer` で起動失敗 | `app.yaml`の`command`を配列の直書きにしていると、シェルを経由しないため`${DATABRICKS_APP_PORT}`が展開されず文字列のまま渡ってしまう（実機で確認済みの不具合） | `app.yaml`を`command: [bash, -c, "uvicorn main:app --host 0.0.0.0 --port $DATABRICKS_APP_PORT"]`の形にする（本リポジトリは対応済み） |
+| その他のポート起動エラー | `DATABRICKS_APP_PORT`の環境変数名が実際の環境と異なる | Databricks Appsのログで実際の環境変数名を確認し、`app.yaml`を修正する |
 | `/api/*`が404になる | リバースプロキシ等でパスが書き換えられている、または`main.py`が正しくデプロイされていない | Appのソースパス・起動コマンドが`app.yaml`どおりか確認する |
 | 画面の表示が英語のままになる/文字化けする | ブラウザのキャッシュ、または文字コードの問題 | ハードリロードする。レスポンスがUTF-8で返っているか`/api/health`で確認する |
 | 調査結果を登録しても他の利用者に反映されない | 仕様どおりの挙動（セッション内・プロセスメモリ内保持） | 複数プロセス/複数インスタンスで動作している場合、状態は共有されません。デモでは1インスタンスでの利用を想定してください |
