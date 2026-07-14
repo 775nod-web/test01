@@ -1,0 +1,13 @@
+# Dev/test-only dependencies. NOT used by the deployed Databricks App —
+# see requirements.txt for production dependencies.
+-r requirements.txt
+
+# Local Spark+Delta validation of sql/silver, sql/gold, sql/queries
+# (tests/conftest.py, tests/test_retention_logic.py, tests/test_dashboard_queries.py,
+# scripts/generate_local_fixtures.py)
+pyspark==3.5.3
+delta-spark==3.2.1
+
+# Local dev fallback query engine (backend/db.py) when Databricks env vars
+# are not configured — reads backend/local_fixtures/*.parquet directly.
+duckdb==1.1.3

@@ -214,18 +214,80 @@ definition, so per CLAUDE.md's own fallback guidance the SQL layer is the
 tested deliverable and the dashboard itself is optional polish, not a
 dependency of the app.
 
-## Restarting the Databricks App (once deployed)
+## React + FastAPI application (Phase 6)
 
-1. Open the workspace → **Compute → Apps**.
-2. Select the app (e.g. `bank-retention-demo`).
-3. If status shows **Stopped**, click **Start**. Apps on Free Edition may
-   auto-stop after up to 24 hours of inactivity — this is expected, not a
+The app is TypeScript + React (Vite), built to static assets and served by
+a Python FastAPI backend — no Streamlit, no Node/Express backend. Five
+pages: Executive Overview, Segment Explorer, Customer 360 (drill-down from
+a customer row), Retention Actions, PoC & Future Expansion.
+
+**Verified locally, in a real browser, before this phase was committed**:
+built the frontend, ran the backend against a local DuckDB fixture (see
+below), and used Playwright to click through all five pages, a customer
+drill-down, the 404/not-found path, an empty-filter-result state, and a
+mobile viewport — screenshots informed two real fixes (a `0%` label that
+should have read `<1%`, and a filter checkbox row that wrapped
+inconsistently).
+
+### Local development (no Databricks connection needed)
+
+The backend automatically falls back to a small local DuckDB engine
+reading `backend/local_fixtures/*.parquet` (1,200 synthetic customers,
+committed to the repo) whenever `DATABRICKS_SERVER_HOSTNAME` /
+`DATABRICKS_HTTP_PATH` are not set — this is what makes local development
+and this phase's own verification possible without a workspace. It is
+never used in a deployed Databricks App with a SQL warehouse resource
+attached (`GET /api/health` reports `"data_mode": "databricks"` there,
+`"local"` otherwise).
+
+```bash
+# Terminal 1 — backend
+pip install -r requirements.txt duckdb==1.1.3   # duckdb is dev-only, not in requirements.txt
+python -m backend.main                          # http://localhost:8000
+
+# Terminal 2 — frontend with hot reload (proxies /api to :8000)
+cd frontend && npm install && npm run dev        # http://localhost:5173
+```
+
+To refresh `backend/local_fixtures/` after changing the generator or SQL:
+
+```bash
+pip install -r requirements-dev.txt
+python scripts/generate_local_fixtures.py
+```
+
+### Deploying to Databricks Apps
+
+1. Build the frontend: `npm install && npm run build` (root
+   `package.json`) — this writes `backend/static/`.
+2. In the Databricks workspace: **Compute → Apps → Create app**. Choose
+   "Custom" and point it at this repo (import as a Databricks Repo first
+   so the folder structure — including `notebooks/lib`, `sql/`,
+   `backend/` — is intact).
+3. Attach a **SQL warehouse** resource to the app (Apps UI → your app →
+   **Resources → Add resource → SQL warehouse**). This is what injects
+   `DATABRICKS_SERVER_HOSTNAME` / `DATABRICKS_HTTP_PATH` and authentication
+   at runtime — do not set these manually.
+4. Set the `UC_CATALOG` environment variable if your catalog isn't
+   `bank_demo` (Apps UI → your app → **Environment variables**).
+5. Deploy. Databricks Apps installs `requirements.txt` and runs the
+   `app.yaml` command (`python -m backend.main`) automatically.
+6. Open the app URL and hit `/api/health` — expect
+   `{"status":"ok","data_mode":"databricks"}`. If `data_mode` is `"local"`,
+   the SQL warehouse resource isn't attached correctly.
+7. Click through all five pages once before presenting (see the pre-demo
+   checklist in `docs/demo-script.md`, added in Phase 9).
+
+### Restarting the Databricks App
+
+1. Open the workspace → **Compute → Apps**, select the app.
+2. If status shows **Stopped**, click **Start** — Apps on Free Edition may
+   auto-stop after up to 24 hours of inactivity; this is expected, not a
    failure.
-4. Wait for status **Running**, then open the app URL.
-5. Verify the SQL warehouse resource attached to the app is also running
-   (Compute → SQL Warehouses); start it if stopped.
-6. Hit `/api/health` on the app URL to confirm the backend can reach Gold
-   tables before presenting.
+3. Wait for status **Running**, then open the app URL.
+4. Verify the attached SQL warehouse is also running (Compute → SQL
+   Warehouses); start it if stopped.
+5. Hit `/api/health` to confirm `data_mode: "databricks"` before presenting.
 
 ## Phase checklist
 
@@ -236,37 +298,58 @@ dependency of the app.
 | 3 | Silver layer and Customer 360 (Gold) | Done — run `notebooks/02_build_silver_and_gold.py` after Phase 2 |
 | 4 | Rule-based risk score and retention actions | Done — run `notebooks/03_build_risk_and_retention.py` after Phase 3 |
 | 5 | Executive dashboard and SQL assets | Done — SQL assets validated; AI/BI dashboard is a manual step, see `docs/dashboard-setup.md` |
-| 6 | React + FastAPI app on Databricks Apps | Not started |
+| 6 | React + FastAPI app on Databricks Apps | Done — verify locally per above, then deploy |
 | 7 | Optional ML / MLflow / Genie (never a dependency) | Not started |
 | 8 | Integration testing, deployment, documentation | Not started |
 | 9 | Ten-minute demo rehearsal and handoff | Not started |
 
-## Planned application usage (once Phase 6 is deployed)
+## Application usage (once deployed)
 
 1. Open the deployed Databricks Apps URL.
 2. Start at **Executive Overview** — where should retention budget focus?
-3. Open **Segment Explorer** — which behavior pattern should the campaign address?
-4. Select a customer in **Customer 360** — why is this customer at risk, and how should we respond?
+3. Open **Segment Explorer** — which behavior pattern should the campaign
+   address? Click any customer row to drill in.
+4. **Customer 360** (reached by clicking a customer) — why is this
+   customer at risk, and how should we respond?
 5. Open **Retention Actions** — who should receive which action first?
-6. Finish at **PoC & Future Expansion** — what must be validated with real bank data, and how does this extend to cross-sell?
+   Filter by risk/value segment, or download the CSV.
+6. Finish at **PoC & Future Expansion** — what must be validated with real
+   bank data, and how does this extend to cross-sell?
 
 ## Documentation
 
-- `docs/architecture.md` — system architecture (added in later phases).
+- `docs/architecture.md` — system architecture, data flow, API contract.
 - `docs/demo-script.md` — timed ten-minute script (Phase 9).
-- `docs/data-dictionary.md` — column-level data dictionary (Phase 2–4).
+- `docs/data-dictionary.md` — column-level data dictionary, all layers.
+- `docs/risk-scoring.md` — every risk signal, threshold, and action rule.
+- `docs/dashboard-setup.md` — Phase 5 SQL assets and manual dashboard steps.
+- `docs/representative-customers.md` — five reproducible demo customer stories.
 - `docs/free-edition-limitations.md` — what Free Edition cannot do here.
 - `docs/poc-success-criteria.md` — what a production PoC would validate.
 
-## Troubleshooting (placeholder — expanded in later phases)
+## Troubleshooting
 
-- **App won't start**: check Compute → Apps logs; verify `app.yaml`
-  command and that `requirements.txt` installed cleanly.
-- **No data in UI**: verify the SQL warehouse is running and the app's
-  attached warehouse resource matches the one hosting `bank_demo.gold.*`.
-- **Notebook errors on rerun**: all Phase 2–4 notebooks are designed to be
-  idempotent (`CREATE OR REPLACE TABLE`); rerun from the top rather than
-  patching state manually.
+- **App won't start**: check Compute → Apps logs; verify `app.yaml`'s
+  command (`python -m backend.main`) and that `requirements.txt` installed
+  cleanly.
+- **`/api/health` shows `data_mode: "local"` in a deployed app**: the SQL
+  warehouse resource isn't attached, or `DATABRICKS_SERVER_HOSTNAME`/
+  `DATABRICKS_HTTP_PATH` aren't set — check Apps UI → Resources.
+  Databricks Apps should inject these automatically once the SQL warehouse
+  resource is attached; if not, this is worth escalating rather than
+  working around.
+- **No data / empty pages**: verify the SQL warehouse is running and that
+  Phases 2–4 notebooks have actually been run against the catalog named in
+  `UC_CATALOG` (default `bank_demo`).
+- **A specific customer 404s in Customer 360**: the customer ID doesn't
+  exist in `gold.customer_360` — check for a typo, or that Phase 2–3 ran
+  with enough customers.
+- **Notebook errors on rerun**: all Phase 2–4 notebooks are idempotent
+  (`DROP TABLE IF EXISTS` + `CREATE TABLE ... AS SELECT`, or Delta
+  `mode("overwrite")`); rerun from the top rather than patching state
+  manually.
+- **Frontend build fails**: run `npm install` in `frontend/` first; Node
+  ≥20 required (built and tested with Node 22.22).
 
 ## Limitations (summary — full detail in `docs/free-edition-limitations.md`)
 

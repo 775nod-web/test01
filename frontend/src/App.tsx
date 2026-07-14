@@ -1,10 +1,24 @@
-// Phase 1 placeholder. Replaced by the full Executive Overview / Segment
-// Explorer / Customer 360 / Retention Actions / PoC pages in Phase 6.
+import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Layout } from "./components/Layout";
+import { CustomerDetail } from "./pages/CustomerDetail";
+import { ExecutiveOverview } from "./pages/ExecutiveOverview";
+import { PocFutureExpansion } from "./pages/PocFutureExpansion";
+import { RetentionActions } from "./pages/RetentionActions";
+import { SegmentExplorer } from "./pages/SegmentExplorer";
+
 export default function App() {
   return (
-    <div style={{ fontFamily: "sans-serif", padding: "2rem", color: "#202124" }}>
-      <h1>Customer Retention Demo</h1>
-      <p>Scaffolding placeholder — pages are implemented in Phase 6.</p>
-    </div>
+    <HashRouter>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<ExecutiveOverview />} />
+          <Route path="/segments" element={<SegmentExplorer />} />
+          <Route path="/customers/:customerId" element={<CustomerDetail />} />
+          <Route path="/retention-actions" element={<RetentionActions />} />
+          <Route path="/poc" element={<PocFutureExpansion />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Layout>
+    </HashRouter>
   );
 }
