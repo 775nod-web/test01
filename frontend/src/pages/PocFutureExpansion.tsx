@@ -71,6 +71,44 @@ export function PocFutureExpansion() {
           </table>
         )}
       </div>
+
+      {data.ml_comparison.length > 0 && (
+        <div className="card">
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <p className="section-title" style={{ margin: 0 }}>
+              Model comparison
+            </p>
+            <span className="badge badge--optional">Optional — Phase 7</span>
+          </div>
+          <p className="section-subtitle">{data.ml_comparison_note}</p>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Approach</th>
+                <th scope="col">Precision</th>
+                <th scope="col">Recall</th>
+                <th scope="col">ROC-AUC</th>
+                <th scope="col">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.ml_comparison.map((row) => (
+                <tr key={row.approach} style={{ cursor: "default" }}>
+                  <td>{row.approach}</td>
+                  <td>{row.precision.toFixed(3)}</td>
+                  <td>{row.recall.toFixed(3)}</td>
+                  <td>{row.roc_auc.toFixed(3)}</td>
+                  <td style={{ color: "var(--text-secondary)", fontSize: 12 }}>{row.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="section-subtitle" style={{ marginTop: 12, marginBottom: 0 }}>
+            The app always falls back to the rule-based score above regardless of this comparison
+            — see docs/ml-comparison.md for full methodology.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

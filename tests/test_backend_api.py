@@ -130,6 +130,11 @@ def test_poc_summary():
     assert len(body["free_edition_limitations"]) > 0
     for candidate in body["cross_sell_sample"]:
         assert candidate["risk_segment"] == "Low"
+    assert len(body["ml_comparison"]) == 3
+    for row in body["ml_comparison"]:
+        assert 0.0 <= row["precision"] <= 1.0
+        assert 0.0 <= row["recall"] <= 1.0
+        assert 0.0 <= row["roc_auc"] <= 1.0
 
 
 def test_unknown_route_falls_back_to_spa_index_or_404():

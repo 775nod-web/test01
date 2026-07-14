@@ -11,3 +11,9 @@ delta-spark==3.2.1
 # Local dev fallback query engine (backend/db.py) when Databricks env vars
 # are not configured — reads backend/local_fixtures/*.parquet directly.
 duckdb==1.1.3
+
+# Phase 7 (OPTIONAL) — baseline ML comparison. Never a dependency of the
+# core app; see notebooks/lib/ml_baseline.py and docs/ml-comparison.md.
+pandas==2.2.3
+scikit-learn==1.5.2
+mlflow-skinny==2.17.2

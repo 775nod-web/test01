@@ -164,6 +164,14 @@ export interface CrossSellCandidate {
   risk_segment: RiskSegment;
 }
 
+export interface MlComparisonRow {
+  approach: string;
+  precision: number;
+  recall: number;
+  roc_auc: number;
+  note: string;
+}
+
 export interface PocSummaryResponse {
   synthetic_elements: string[];
   must_validate_with_bank_data: string[];
@@ -171,4 +179,6 @@ export interface PocSummaryResponse {
   free_edition_limitations: string[];
   cross_sell_reuse_note: string;
   cross_sell_sample: CrossSellCandidate[];
+  ml_comparison_note: string;
+  ml_comparison: MlComparisonRow[];
 }

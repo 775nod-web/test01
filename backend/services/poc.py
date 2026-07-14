@@ -70,6 +70,44 @@ CROSS_SELL_REUSE_NOTE = (
     "storyline."
 )
 
+# OPTIONAL (Phase 7). Static, pre-computed results from an 8,000-customer
+# run — see docs/ml-comparison.md for full methodology, the fairness fix
+# (all three approaches evaluated on the identical held-out test set), and
+# how to reproduce them. Deliberately NOT a live query: the core app must
+# never depend on scikit-learn/pandas being installed, so these numbers
+# are baked in here rather than computed per-request.
+ML_COMPARISON_NOTE = (
+    "OPTIONAL enhancement, not part of the mandatory demo. Compares the "
+    "mandatory rule-based score against two simple logistic-regression "
+    "baselines on the SAME held-out test split (2,400 of 8,000 synthetic "
+    "customers). churn_label_90d is a simulated ground-truth label — this "
+    "shows whether a model can recover the generator's own patterns, not "
+    "how either approach would perform on real churn."
+)
+ML_COMPARISON_ROWS = [
+    {
+        "approach": "Rule-based (mandatory)",
+        "precision": 0.799,
+        "recall": 0.630,
+        "roc_auc": 0.787,
+        "note": "The score the app actually uses — transparent, not fitted.",
+    },
+    {
+        "approach": "Static attributes only",
+        "precision": 0.421,
+        "recall": 0.528,
+        "roc_auc": 0.514,
+        "note": "Age band, channel, region, value segment, tenure — barely above random.",
+    },
+    {
+        "approach": "Integrated behavior features",
+        "precision": 0.813,
+        "recall": 0.913,
+        "roc_auc": 0.900,
+        "note": "All Customer 360 behavioral columns — highest recall and AUC.",
+    },
+]
+
 
 def get_poc_summary(engine: QueryEngine) -> dict:
     cross_sell_sample = engine.run("cross_sell_opportunity.sql", limit=10)
@@ -79,5 +117,7 @@ def get_poc_summary(engine: QueryEngine) -> dict:
         "poc_success_metrics": POC_SUCCESS_METRICS,
         "free_edition_limitations": FREE_EDITION_LIMITATIONS,
         "cross_sell_reuse_note": CROSS_SELL_REUSE_NOTE,
+        "ml_comparison_note": ML_COMPARISON_NOTE,
+        "ml_comparison": ML_COMPARISON_ROWS,
         "cross_sell_sample": cross_sell_sample,
     }

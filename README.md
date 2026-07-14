@@ -299,7 +299,7 @@ python scripts/generate_local_fixtures.py
 | 4 | Rule-based risk score and retention actions | Done — run `notebooks/03_build_risk_and_retention.py` after Phase 3 |
 | 5 | Executive dashboard and SQL assets | Done — SQL assets validated; AI/BI dashboard is a manual step, see `docs/dashboard-setup.md` |
 | 6 | React + FastAPI app on Databricks Apps | Done — verify locally per above, then deploy |
-| 7 | Optional ML / MLflow / Genie (never a dependency) | Not started |
+| 7 | Optional ML / MLflow / Genie (never a dependency) | Done — see `docs/ml-comparison.md`, `docs/genie-setup.md` |
 | 8 | Integration testing, deployment, documentation | Not started |
 | 9 | Ten-minute demo rehearsal and handoff | Not started |
 
@@ -314,7 +314,32 @@ python scripts/generate_local_fixtures.py
 5. Open **Retention Actions** — who should receive which action first?
    Filter by risk/value segment, or download the CSV.
 6. Finish at **PoC & Future Expansion** — what must be validated with real
-   bank data, and how does this extend to cross-sell?
+   bank data, and how does this extend to cross-sell? (Includes an
+   optional Phase 7 model-comparison panel, clearly labeled — the app
+   never depends on it.)
+
+## Optional ML and Genie (Phase 7)
+
+Neither is a dependency of the core app — both are documented, tested,
+and fall back cleanly if unavailable.
+
+- **ML**: `notebooks/lib/ml_baseline.py` compares the mandatory rule-based
+  score against two simple logistic-regression baselines (static
+  attributes vs. integrated Customer 360 behavior) on the same held-out
+  test split. Run `pytest tests/test_ml_baseline.py` (needs
+  `requirements-dev.txt`) or `notebooks/07_optional_ml_baseline.py` in
+  Databricks (adds MLflow tracking and an optional
+  `gold.churn_model_scores` table). Full results and methodology,
+  including a fairness bug this build caught and fixed before writing
+  them up: `docs/ml-comparison.md`. The frontend shows a small, clearly
+  labeled "Model comparison" panel on the PoC page — static numbers, not
+  a live query, so the core app never needs scikit-learn installed.
+- **Genie**: could not be configured or tested directly (no network path
+  to any Databricks workspace from this build). `docs/genie-setup.md`
+  gives exact setup steps, a business glossary, and verified expected
+  answers (computed against the real 8,000-customer data via the same SQL
+  the app uses) for the four suggested demo questions, so you have a
+  known-correct answer to check a live Genie response against.
 
 ## Documentation
 
@@ -323,6 +348,8 @@ python scripts/generate_local_fixtures.py
 - `docs/data-dictionary.md` — column-level data dictionary, all layers.
 - `docs/risk-scoring.md` — every risk signal, threshold, and action rule.
 - `docs/dashboard-setup.md` — Phase 5 SQL assets and manual dashboard steps.
+- `docs/ml-comparison.md` — optional Phase 7 ML baseline comparison.
+- `docs/genie-setup.md` — optional Phase 7 Genie configuration and fallback.
 - `docs/representative-customers.md` — five reproducible demo customer stories.
 - `docs/free-edition-limitations.md` — what Free Edition cannot do here.
 - `docs/poc-success-criteria.md` — what a production PoC would validate.

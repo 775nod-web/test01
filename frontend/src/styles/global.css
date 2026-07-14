@@ -250,6 +250,12 @@ button {
   border: 1px solid var(--yellow);
 }
 
+.badge--optional {
+  background: #eef1f5;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
 table.data-table {
   width: 100%;
   border-collapse: collapse;

@@ -186,7 +186,16 @@ KPIs) are Phase 5 SQL assets built directly on `retention_action_list`.
 app's pages. See `docs/dashboard-setup.md` for the full list and which
 page/business question each one serves.
 
-## Planned Gold tables (optional, Phase 7)
+## Gold: `churn_model_scores` (optional, Phase 7 — not built by default)
 
-- `churn_model_scores` — ML-based scores compared against `churn_label_90d`,
-  never a dependency of the core (rule-based) demo.
+Written only if `notebooks/07_optional_ml_baseline.py` is run. Never read
+by the mandatory app.
+
+| Column | Description |
+|---|---|
+| `customer_id` | FK to `customer_360`. |
+| `ml_churn_probability` | Predicted probability from the optional logistic-regression baseline (`notebooks/lib/ml_baseline.py`), fit on all Customer 360 behavioral features. |
+| `model_name` | Fixed string identifying the model version, e.g. `behavioral_features_logreg_v1`. |
+
+See `docs/ml-comparison.md` for how this compares to the mandatory
+rule-based score — measured on a held-out test set, not this table.

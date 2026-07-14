@@ -180,6 +180,14 @@ class CrossSellCandidate(BaseModel):
     risk_segment: RiskSegment
 
 
+class MlComparisonRow(BaseModel):
+    approach: str
+    precision: float
+    recall: float
+    roc_auc: float
+    note: str
+
+
 class PocSummaryResponse(BaseModel):
     synthetic_elements: list[str]
     must_validate_with_bank_data: list[str]
@@ -187,3 +195,5 @@ class PocSummaryResponse(BaseModel):
     free_edition_limitations: list[str]
     cross_sell_reuse_note: str
     cross_sell_sample: list[CrossSellCandidate]
+    ml_comparison_note: str
+    ml_comparison: list[MlComparisonRow]
