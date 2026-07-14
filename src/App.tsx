@@ -1,9 +1,8 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import DashboardPage from "./pages/DashboardPage";
 import WorkbenchPage from "./pages/WorkbenchPage";
 import CaseDetailPage from "./pages/CaseDetailPage";
-import GuidePage from "./pages/GuidePage";
 
 function App() {
   return (
@@ -13,7 +12,7 @@ function App() {
           <Route index element={<DashboardPage />} />
           <Route path="cases" element={<WorkbenchPage />} />
           <Route path="cases/:transactionId" element={<CaseDetailPage />} />
-          <Route path="guide" element={<GuidePage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
     </BrowserRouter>

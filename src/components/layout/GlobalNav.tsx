@@ -7,7 +7,6 @@ interface GlobalNavProps {
 const NAV_ITEMS = [
   { to: "/", label: "概況", end: true },
   { to: "/cases", label: "調査ケース", end: false },
-  { to: "/guide", label: "デモガイド", end: false },
 ];
 
 function GlobalNav({ dataUpdatedAt }: GlobalNavProps) {
@@ -33,9 +32,6 @@ function GlobalNav({ dataUpdatedAt }: GlobalNavProps) {
         <div className="global-nav-meta">
           {dataUpdatedAt && <span className="global-nav-updated">データ更新: {dataUpdatedAt}</span>}
           <span className="badge badge-demo">デモ用</span>
-          <NavLink to="/guide" className="global-nav-help">
-            ヘルプ
-          </NavLink>
         </div>
       </div>
     </header>
