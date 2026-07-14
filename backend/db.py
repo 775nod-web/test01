@@ -4,10 +4,15 @@ executes them against either:
 
   - Databricks SQL (production — Databricks Apps runtime), via
     databricks-sql-connector, authenticating through the Databricks SDK's
-    default credential chain (no static tokens in source or config).
+    default credential chain (no static tokens in source or config). The
+    server hostname / HTTP path come from DATABRICKS_SERVER_HOSTNAME /
+    DATABRICKS_HTTP_PATH if set, otherwise are resolved at startup via the
+    SDK from DATABRICKS_HOST + the app's service-principal credentials —
+    some Databricks Apps deployments only provide the latter for an
+    attached SQL warehouse resource (see get_query_engine()).
   - A local DuckDB session reading backend/local_fixtures/*.parquet (dev
-    only — used automatically when Databricks connection env vars are not
-    present, e.g. running `uvicorn backend.main:app` on a laptop).
+    only — used automatically when no Databricks connection can be
+    resolved at all, e.g. running `uvicorn backend.main:app` on a laptop).
 
 Both engines accept the same canonical query files, written with
 Databricks/Spark-native named parameters (`:param_name`) and `{gold}` /
@@ -181,19 +186,66 @@ class LocalDuckDBQueryEngine(QueryEngine):
             self._con.execute("SELECT 1").fetchall()
 
 
+def _resolve_warehouse_via_sdk() -> tuple[str, str] | None:
+    """Resolve (server_hostname, http_path) using the Databricks SDK.
+
+    A SQL warehouse resource attached in the Databricks Apps UI does not
+    always inject DATABRICKS_SERVER_HOSTNAME / DATABRICKS_HTTP_PATH
+    directly — some workspaces only provide DATABRICKS_HOST plus a
+    service-principal identity (DATABRICKS_CLIENT_ID/CLIENT_SECRET),
+    confirmed against a real Free Edition deployment. In that case, look
+    the warehouse up via the SDK instead (WorkspaceClient() authenticates
+    automatically from those same env vars). Set DATABRICKS_WAREHOUSE_ID
+    to pin a specific warehouse when more than one is visible to the app;
+    otherwise the first one found is used (Free Edition has exactly one).
+    """
+    from databricks.sdk import WorkspaceClient
+    from databricks.sdk.service.sql import State
+
+    w = WorkspaceClient()
+    warehouse_id = os.environ.get("DATABRICKS_WAREHOUSE_ID")
+    if warehouse_id:
+        endpoint = w.warehouses.get(warehouse_id)
+    else:
+        warehouses = sorted(w.warehouses.list(), key=lambda e: 0 if e.state == State.RUNNING else 1)
+        if not warehouses:
+            return None
+        endpoint = warehouses[0]
+        if len(warehouses) > 1:
+            logger.warning(
+                "Multiple SQL warehouses visible to this app; using '%s' (%s). "
+                "Set DATABRICKS_WAREHOUSE_ID to pin a specific one.",
+                endpoint.name,
+                endpoint.id,
+            )
+    if endpoint.odbc_params is None:
+        return None
+    return endpoint.odbc_params.hostname, endpoint.odbc_params.path
+
+
 @lru_cache(maxsize=1)
 def get_query_engine() -> QueryEngine:
     server_hostname = os.environ.get("DATABRICKS_SERVER_HOSTNAME")
     http_path = os.environ.get("DATABRICKS_HTTP_PATH")
     catalog = os.environ.get("UC_CATALOG", "bank_demo")
 
+    if not (server_hostname and http_path) and os.environ.get("DATABRICKS_HOST"):
+        try:
+            resolved = _resolve_warehouse_via_sdk()
+        except Exception:
+            logger.exception("Could not resolve a SQL warehouse via the Databricks SDK")
+            resolved = None
+        if resolved:
+            server_hostname, http_path = resolved
+
     if server_hostname and http_path:
         logger.info("Using Databricks SQL engine (catalog=%s)", catalog)
         return DatabricksQueryEngine(catalog=catalog, http_path=http_path, server_hostname=server_hostname)
 
     logger.warning(
-        "DATABRICKS_SERVER_HOSTNAME/DATABRICKS_HTTP_PATH not set — falling back "
-        "to local DuckDB fixture data. This is expected in local development, "
-        "not in a deployed Databricks App (attach a SQL warehouse resource)."
+        "DATABRICKS_SERVER_HOSTNAME/DATABRICKS_HTTP_PATH not set and no SQL "
+        "warehouse could be resolved via the SDK — falling back to local "
+        "DuckDB fixture data. This is expected in local development, not in "
+        "a deployed Databricks App (attach a SQL warehouse resource)."
     )
     return LocalDuckDBQueryEngine()

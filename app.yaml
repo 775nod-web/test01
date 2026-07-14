@@ -11,11 +11,22 @@
 command: ["python", "-m", "backend.main"]
 
 # Environment variables passed to the app process. UC_CATALOG is the only
-# one the backend reads directly (backend/config.py, backend/db.py);
-# DATABRICKS_SERVER_HOSTNAME / DATABRICKS_HTTP_PATH and auth are supplied
-# automatically by attaching a Databricks SQL warehouse resource to the
-# app in the Databricks Apps UI/CLI (Phase 6 deployment steps) — do not
-# hardcode a warehouse ID or host here.
+# one the backend reads directly (backend/config.py, backend/db.py).
+#
+# Attaching a Databricks SQL warehouse resource to the app (Apps UI ->
+# Resources -> Add resource -> SQL warehouse) does not always inject
+# DATABRICKS_SERVER_HOSTNAME / DATABRICKS_HTTP_PATH directly — confirmed
+# against a real Free Edition deployment, where only DATABRICKS_HOST plus
+# a service-principal identity (DATABRICKS_CLIENT_ID/CLIENT_SECRET) were
+# provided. backend/db.py handles both cases: it uses
+# DATABRICKS_SERVER_HOSTNAME/DATABRICKS_HTTP_PATH directly if present,
+# otherwise resolves the warehouse via the Databricks SDK using
+# DATABRICKS_HOST + the service-principal credentials. If more than one
+# SQL warehouse is visible to the app, set DATABRICKS_WAREHOUSE_ID below
+# to pin a specific one — do not hardcode a hostname here.
+#
+# - name: "DATABRICKS_WAREHOUSE_ID"
+#   value: "<warehouse-id-if-you-need-to-pin-one>"
 env:
   - name: "UC_CATALOG"
     value: "bank_demo"
