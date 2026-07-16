@@ -69,6 +69,9 @@ def test_feedback_summary_starts_empty() -> None:
     assert body["modified_count"] == 0
     assert body["skipped_count"] == 0
     assert body["recent_decisions"] == []
+    # 判断記録が無くても施策後の反応サンプルは取得でき、担当者判断はNoneになる
+    assert len(body["sample_outcomes"]) > 0
+    assert all(outcome["decision"] is None for outcome in body["sample_outcomes"])
 
 
 def test_feedback_summary_reflects_saved_decisions() -> None:
@@ -101,3 +104,65 @@ def test_feedback_summary_reflects_saved_decisions() -> None:
     assert body["by_generation_mode"]["pre_generated"] == 1
     assert len(body["recent_decisions"]) == 3
     assert body["recent_decisions"][0]["display_name"]  # 顧客360と結合して表示名が入っていること
+
+
+def test_sample_outcomes_are_fixed_and_flagged_as_sample() -> None:
+    """施策後の反応・利用再開サンプルは固定データであり、再取得しても変化しない。"""
+    first = client.get("/api/feedback-summary").json()["sample_outcomes"]
+    second = client.get("/api/feedback-summary").json()["sample_outcomes"]
+    assert first == second
+    assert len(first) >= 3
+    assert all(outcome["is_sample"] is True for outcome in first)
+
+
+def test_sample_outcomes_customer_ids_exist_in_customer360() -> None:
+    outcomes = client.get("/api/feedback-summary").json()["sample_outcomes"]
+    customers_response = client.get("/api/customers").json()
+    known_ids = {c["customer_id"] for c in customers_response["customers"]}
+    for outcome in outcomes:
+        assert outcome["customer_id"] in known_ids
+        assert outcome["customer_response"]
+        assert outcome["usage_recovery_status"]
+
+
+def test_sample_outcome_reflects_saved_decision_for_same_customer() -> None:
+    """サンプル対象顧客に実際の判断を保存すると、その顧客の行に担当者判断が反映される。"""
+    outcomes_before = client.get("/api/feedback-summary").json()["sample_outcomes"]
+    sample_customer_id = outcomes_before[0]["customer_id"]
+
+    client.post(
+        f"/api/customers/{sample_customer_id}/decision",
+        json={
+            "decision": "approved",
+            "selected_action": "複数サービスをまたぐ軽量なポイント施策",
+            "comment": "テスト用の承認",
+            "generation_mode": "rule_based",
+        },
+    )
+
+    outcomes_after = client.get("/api/feedback-summary").json()["sample_outcomes"]
+    matched = next(o for o in outcomes_after if o["customer_id"] == sample_customer_id)
+    assert matched["decision"] == "approved"
+    assert matched["comment"] == "テスト用の承認"
+    assert matched["decided_at"]
+    # 施策後の反応・利用再開自体はサンプルのまま変化しない
+    original = next(o for o in outcomes_before if o["customer_id"] == sample_customer_id)
+    assert matched["customer_response"] == original["customer_response"]
+    assert matched["usage_recovery_status"] == original["usage_recovery_status"]
+
+
+def test_sample_outcomes_do_not_break_existing_feedback_summary_fields() -> None:
+    """既存フィールドが引き続き揃っていることを確認する（後方互換性）。"""
+    body = client.get("/api/feedback-summary").json()
+    for key in (
+        "total_decisions",
+        "approved_count",
+        "modified_count",
+        "skipped_count",
+        "by_generation_mode",
+        "recent_decisions",
+        "updated_at",
+        "storage_mode",
+        "persisted",
+    ):
+        assert key in body

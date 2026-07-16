@@ -68,6 +68,11 @@ Databricks Free EditionとDatabricks Appsを使い、次の一連の業務を日
 - デモ実演用の短縮操作手順を追加（本README 25節）
 - 本番化時に追加する設計・既知の制約を一覧化（本README 26節・27節）
 
+### デプロイ後の追加修正
+- Databricks Repos経由のデプロイでは`frontend/dist`がGit管理外だと反映されないことが実機で判明し、ビルド成果物をGit管理下に含める方式へ変更（本README 9節・18節）
+- 利用者の依頼により、画面下部の「デモ構成／本番化時に追加する事項」パネル、フッターの一文、「⑥ フィードバック概要」内の本番化注記（APIの`note`フィールドを含む）を削除。この時点でUI・APIのいずれにも本番化境界の明示は残っていない（本README 17節「本番化境界パネルの削除について」参照）
+- Step 6「フィードバック概要」に、施策後の反応・利用再開のデモ用サンプル表示を追加し、改善ループ（判断→施策→反応→利用再開→次の分析・モデル・施策改善）を画面上で完結させた（`artifacts/sample_campaign_outcomes.json`、`backend/services/sample_outcomes.py`、`GET /api/feedback-summary`の`sample_outcomes`フィールド、本README 6節）
+
 ## 3. 技術構成
 
 ### フロントエンド
@@ -120,7 +125,8 @@ Node.jsはReactのビルドにのみ使用します。Databricks Apps起動時�
 │   ├── customer360.json
 │   ├── predictions.json
 │   ├── model_metadata.json
-│   └── pre_generated_recommendations.json
+│   ├── pre_generated_recommendations.json
+│   └── sample_campaign_outcomes.json    # 施策後の反応・利用再開のデモ用固定サンプル（本README 6節）
 ├── runtime/                              # 判断保存など実行時state。Git管理外（.gitignore）
 │   └── decisions.json                    # POST /api/customers/{id}/decision で生成される
 ├── backend/
@@ -141,7 +147,8 @@ Node.jsはReactのビルドにのみ使用します。Databricks Apps起動時�
 │   │   ├── recommendation_service.py    # llm→pre_generated→rule_basedの切り替え
 │   │   ├── decision_store.py            # 判断保存（ファイル／Databricks差し替え境界）
 │   │   ├── decision_service.py          # 判断保存の入力検証・組み立て
-│   │   └── feedback_service.py          # フィードバック概要の集計
+│   │   ├── feedback_service.py          # フィードバック概要の集計（判断＋サンプル反応の結合）
+│   │   └── sample_outcomes.py           # 施策後の反応・利用再開の固定サンプル読み込み
 │   └── tests/
 │       ├── test_config.py
 │       ├── test_api.py
@@ -180,7 +187,8 @@ Node.jsはReactのビルドにのみ使用します。Databricks Apps起動時�
 │       │   ├── RecommendationPanel.tsx  # 次のアクション（要約・候補・承認/修正/見送り）
 │       │   ├── RecommendationPanel.test.tsx
 │       │   ├── ErrorBoundary.tsx        # パネル単位の描画エラー分離
-│       │   └── FeedbackSummaryPanel.tsx # フィードバック概要
+│       │   ├── FeedbackSummaryPanel.tsx # フィードバック概要（判断集計＋施策後の反応サンプル）
+│       │   └── FeedbackSummaryPanel.test.tsx
 │       └── styles/
 │           ├── tokens.css
 │           └── global.css
@@ -322,6 +330,16 @@ APIレスポンスの `generation_mode`（内部値）と `generation_mode_label
 | `rule_based` | デモ用ルールベース生成 |
 
 ルールベース生成を「LLM実行済み」「生成AI実行済み」と表示することはない。
+
+### フィードバックループ（Step 6：施策後の反応・利用再開サンプル）
+
+DEMO_SPEC.mdのStep 6「改善ループを確認する」を画面上で完結させるため、「⑥ フィードバック概要」に、施策後の反応・利用再開の**デモ用固定サンプル**を追加している。
+
+- `artifacts/sample_campaign_outcomes.json`：6名の代表顧客（`C059`, `C017`, `C015`, `C045`, `C010`, `C031`。本README 22節の代表顧客と同一）について、`campaign_status`（実施済み／施策未実施）・`customer_response`（メール開封／案内ページ閲覧／クーポン利用／問い合わせ／反応なし／施策未実施）・`usage_recovery_status`（30日以内に利用再開／一部サービスで利用再開／利用再開なし／観測期間中／施策未実施）・`observed_at`・`is_sample: true` を固定値で保持する。固定シードの合成データとは異なりランダム生成ではなく、手作業で作成した固定JSONであるため、実行するたびに同じ内容になる。
+- `backend/services/sample_outcomes.py`がこのJSONを読み込み、`backend/services/feedback_service.py`の`build_feedback_summary()`が、各サンプル対象顧客について**実際に保存された最新の判断**（`decision`・`selected_action`・`comment`・`decided_at`）があれば結合し、無ければ`decision: null`（未対応）として返す。反応・利用再開の値自体は判断の有無に関わらず常に固定サンプルのままである。
+- `GET /api/feedback-summary`のレスポンスに`sample_outcomes`フィールドとして追加される（既存フィールドは変更しておらず、後方互換）。
+- UIでは「施策後の反応と利用状況（デモ用サンプル）」という見出しの下に、これがサンプルであることを明記したうえでカード一覧を表示する。「担当者判断」欄のみ実際にこの画面で保存したデータであり、「施策後の反応」「利用状況」はサンプルである旨を明示している（`frontend/src/components/FeedbackSummaryPanel.tsx`）。
+- 実際のメール・クーポン配信、CRM/キャンペーンシステムとの接続、実顧客の施策結果取り込みは行っていない（本README 24節）。
 
 ## 7. ローカル開発
 
@@ -545,11 +563,13 @@ Databricks Free Edition／Databricks Apps環境で確実に動かすため、以
 | `GET /api/customers/{customer_id}` | 顧客360＋休眠予測の詳細 | 該当顧客が無ければ404（Japanese `detail` メッセージ） |
 | `GET /api/customers/{customer_id}/recommendation` | 次アクション候補 | 要約・候補（最大3件）・理由・注意事項・参照元・生成方式を返す |
 | `POST /api/customers/{customer_id}/decision` | 判断（承認／修正／見送り）の保存 | `decision_id`, `decided_at` を付与して返す |
-| `GET /api/feedback-summary` | フィードバック概要 | 承認/修正/見送り件数、生成方式別件数、直近の判断一覧 |
+| `GET /api/feedback-summary` | フィードバック概要 | 承認/修正/見送り件数、生成方式別件数、直近の判断一覧、施策後の反応・利用再開サンプル |
 
 `/api/customers` と `/api/customers/{customer_id}` は共通のレスポンス envelope（`data_mode`, `model_mode`, `updated_at`）を持つ。合成データ・予測結果が未生成の場合は503を返し、`scripts/generate_demo_data.py` → `scripts/prepare_customer360.py` → `scripts/train_model.py` の実行を促すメッセージを含む。
 
 `recommendation` エンドポイントは `generation_mode` / `generation_mode_label`（本README 6節）を必ず含む。`decision` エンドポイントのリクエストボディは `decision`（`approved` / `modified` / `skipped`）、`selected_action`、`modified_text`、`comment`、`generation_mode`、`model_version` を受け付ける（いずれも `selected_action` 以降は任意）。
+
+`feedback-summary` エンドポイントの `sample_outcomes` は、代表顧客6名分の`customer_id`・`display_name`・`campaign_status`・`customer_response`・`usage_recovery_status`・`observed_at`・`is_sample: true`に加え、該当顧客の実際の最新判断があれば`decision`・`selected_action`・`comment`・`decided_at`（無ければ全てnull）を含む（本README 6節「フィードバックループ」参照）。
 
 ## 17. アプリの使い方（Phase 1〜6時点）
 
@@ -561,7 +581,7 @@ Phase 1〜4を通じて、Layer 1〜4の一連の業務フロー（Step①〜⑥
 - 中央下「③ 休眠リスク」：リスク帯、休眠確率、主要理由（最大3件、グラフの数値と一致）、モデルバージョン・推論日時
 - 右「④ 次のアクション」：顧客状況の要約、アクション候補（最大3件、理由付き）、注意事項、参照元（社内ナレッジ文書）、生成方式（`LLM生成` / `事前生成済みLLM回答` / `デモ用ルールベース生成`）
 - 右「⑤ 承認・修正・見送り」：④と同じパネル内で、アクションを選択し承認・修正・見送りを選び、コメントを添えて保存する。保存後は完了表示に切り替わる（判断保存先に書き込めない場合は「一時保存です」という警告も表示する。本README 13節）
-- 下部「⑥ フィードバック概要」：承認・修正・見送りの件数、直近の判断一覧（生成方式込み）（判断が一時保存の場合はここにも警告を表示する。自動再学習が未実装であることの明記は、利用者の依頼により画面から削除済み。本README 17節「本番化境界パネルの削除について」参照）
+- 下部「⑥ フィードバック概要」：承認・修正・見送りの件数、直近の判断一覧（生成方式込み）、施策後の反応・利用再開のデモ用サンプル（代表顧客6名。実際の判断があれば同じ行に反映される）（判断が一時保存の場合はここにも警告を表示する。自動再学習が未実装であることの明記は、利用者の依頼により画面から削除済み。本README 17節「本番化境界パネルの削除について」参照）
 
 いずれかのAPI呼び出しが失敗した場合も、失敗した領域だけが日本語のエラーメッセージに切り替わり、他の領域は操作を継続できる（画面全体はクラッシュしない）。
 
@@ -702,12 +722,13 @@ Databricks Free EditionのDatabricks Appsは、一定時間アクセスが無い
 顧客維持担当者向けの本番画面の詳しい説明は本README「17節」に記載している。ここでは、デモを実演する担当者向けに、必要な操作だけを短く示す。
 
 1. アプリを開く。ヘッダーで「合成データ（demo）」等の表示を確認し、これがデモ用データであることを一言添える。
-2. 左「① 本日の優先顧客」から、高リスク（赤・「高リスク」ラベル）の顧客を1人クリックする。
+2. 左「① 本日の優先顧客」から、高リスク（赤・「高リスク」ラベル）の顧客を1人クリックする。⑥で施策後の反応サンプルまで一気通貫で見せたい場合は、下記「実演で見せると効果的な代表顧客」の6名（`C059`, `C017`, `C015`, `C045`, `C010`, `C031`）のいずれかを選ぶとよい。
 3. 中央上「② 顧客360」で、EC・QR決済/カードの利用推移グラフが右肩下がりであることを指し示す。
 4. 中央下「③ 休眠リスク」で、休眠確率とリスク帯、主要理由（最大3件）を読み上げる。理由の数値がグラフと一致することを説明する。
 5. 右「④ 次のアクション」で、要約・アクション候補・理由・注意事項・参照元・生成方式（`LLM生成` / `事前生成済みLLM回答` / `デモ用ルールベース生成` のいずれか）を確認する。
 6. 「⑤ 承認・修正・見送り」で、候補を1つ選び「承認」を押し、任意でコメントを入力して「判断を保存」を押す。保存完了表示に切り替わることを見せる。
 7. 下部「⑥ フィードバック概要」で、件数と直近の判断一覧に今保存した判断が反映されていることを確認する。デモで実装済みの範囲と本番化時に追加する範囲の違いを口頭で補足したい場合は、本README 24節「本番化時に追加する設計一覧」を参考に説明する（画面上の折りたたみパネルは利用者の依頼により削除済み。本README 17節参照）。
+8. 続けて「施策後の反応と利用状況（デモ用サンプル）」を見せ、手順6で承認した顧客の行に自分が選んだ判断が表示されていることを指し示す。「施策後の反応」「利用状況」はサンプルであり、「担当者判断」欄のみ実際の記録であることを説明し、判断→施策→反応→利用再開→次の顧客選定・モデル・施策改善へ戻るという改善ループの全体像で締めくくる。
 
 このデモは10分程度を想定している。各ステップの見出しに①〜⑥の番号を付けているため、口頭説明とスクロール操作が対応しやすい。
 
@@ -779,6 +800,7 @@ DEMO_SPEC.md「13. 説明のみとする本番機能」「15. 画面に表示す
 | モデル承認・ドリフト監視・自動再学習 | 未実装（UI・API双方の明記は利用者の依頼により削除済み。本README 17節） |
 | RAG品質評価 | 未実装（社内ナレッジ6件を全件参照する簡易実装のみ） |
 | 外部施策システムとの本番API連携 | 未実装（判断結果の保存のみ。自動配信は行わない） |
+| 施策後の反応・利用再開の実データ取り込み、効果の因果推論 | 未実装（`artifacts/sample_campaign_outcomes.json`による固定サンプル表示のみ。本README 6節「フィードバックループ」） |
 | 障害復旧とSLA | 未実装（本README 21節の再起動手順は運用の目安であり、SLAを保証するものではない） |
 | CI/CDによるビルド・デプロイ自動化 | 未実装（`scripts/prepare_deploy.sh` は手動実行前提。本README 18節） |
 
@@ -888,6 +910,21 @@ DEMO_SPEC.md「13. 説明のみとする本番機能」「15. 画面に表示す
 - [x] ブラウザ（Playwright）で実際に画面を開き、顧客選択→顧客360→休眠リスク→次アクション→判断保存→フィードバック概要反映までの一連の操作が成功することをスクリーンショットで確認済み
 - [ ] 実際のDatabricksワークスペースへの接続・デプロイ・起動確認：この開発環境からDatabricksワークスペース本体へのネットワーク接続ができないため未実施（本README 20節に理由を記載）
 
+### 施策後の反応・利用再開サンプル（フィードバックループ追加分）
+
+- [x] サンプル結果（`artifacts/sample_campaign_outcomes.json`）が固定され、再取得しても変化しない（`test_sample_outcomes_are_fixed_and_flagged_as_sample`）
+- [x] サンプルの`customer_id`が実在する顧客と一致する（`test_sample_outcomes_customer_ids_exist_in_customer360`）
+- [x] 各サンプルに`is_sample: true`が含まれる（同上）
+- [x] 判断記録が無い状態でもフィードバック概要が取得でき、`sample_outcomes`の`decision`は`null`になる（`test_feedback_summary_starts_empty`）
+- [x] サンプル対象顧客に実際の判断を保存すると、同じ顧客の行に担当者判断（`decision`/`selected_action`/`comment`/`decided_at`）が反映される。反応・利用再開自体は変化しない（`test_sample_outcome_reflects_saved_decision_for_same_customer`）
+- [x] 既存の`/api/feedback-summary`のフィールド（`total_decisions`等）が引き続き揃っており、後方互換性が保たれている（`test_sample_outcomes_do_not_break_existing_feedback_summary_fields`）
+- [x] フロントエンドで「施策後の反応と利用状況（デモ用サンプル）」の見出しとサンプル注記が表示される（`FeedbackSummaryPanel.test.tsx`）
+- [x] `反応なし`・`利用再開なし`・`観測期間中`・`施策未実施`を含む全カテゴリの表示を確認
+- [x] 判断未保存時は「未対応（判断未保存）」、保存済みの場合は判断内容（選択アクション・コメント含む）を表示することを確認
+- [x] サンプルデータが空でもレイアウトが崩れないことを確認
+- [x] Playwrightで、顧客選択→承認保存→フィードバック概要反映→サンプル行への反映→サンプル注記の表示、までの一連の流れを確認（幅375pxのモバイル表示でもカードが1列に収まり文字が重ならないことをスクリーンショットで確認）
+- [x] `python -m pytest backend/tests`（75件成功・1件スキップ）、`npm run typecheck`、`npm run test`（16件成功）、`npm run build`、`bash scripts/prepare_deploy.sh` が全件成功
+
 ## 27. 最終受け入れチェック（Phase 6）
 
 Phase 6のプロンプトで示された受け入れ条件を、カテゴリごとに1項目ずつ確認した結果を記録する。
@@ -901,7 +938,7 @@ Phase 6のプロンプトで示された受け入れ条件を、カテゴリご�
 - [x] 休眠リスクと理由を確認できる（中央下「③ 休眠リスク」、確率・リスク帯・理由最大3件）
 - [x] 次アクションと根拠を確認できる（右「④ 次のアクション」、候補最大3件・理由・注意事項・参照元）
 - [x] 人が承認、修正、見送りできる（右「⑤ 承認・修正・見送り」、自動実行なし）
-- [x] 結果が改善ループへ記録される（下部「⑥ フィードバック概要」、`POST /api/customers/{id}/decision` → `GET /api/feedback-summary` で反映を確認済み）
+- [x] 結果が改善ループへ記録される（下部「⑥ フィードバック概要」、`POST /api/customers/{id}/decision` → `GET /api/feedback-summary` で反映を確認済み。加えて施策後の反応・利用再開のデモ用サンプル表示により、判断→施策→反応→利用再開→次の分析・モデル・施策改善という改善ループの全体像を画面上で確認できる。本README 6節「フィードバックループ」参照）
 
 ### 技術
 

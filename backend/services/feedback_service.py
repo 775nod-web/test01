@@ -11,6 +11,7 @@ from typing import Optional
 from backend.config import GENERATION_MODE_LABEL, current_timestamp
 from backend.services.data_source import CustomerDataset, load_customer_dataset
 from backend.services.decision_store import get_decision_store
+from backend.services.sample_outcomes import load_sample_outcomes
 
 RECENT_DECISIONS_LIMIT = 10
 
@@ -49,6 +50,32 @@ def build_feedback_summary(
             }
         )
 
+    latest_decision_by_customer: dict[str, dict] = {}
+    for decision in sorted(decisions, key=lambda d: d["decided_at"]):
+        latest_decision_by_customer[decision["customer_id"]] = decision
+
+    sample_outcomes = []
+    for outcome in load_sample_outcomes():
+        customer_id = outcome["customer_id"]
+        customer = dataset.customers_by_id.get(customer_id)
+        display_name = customer["display_name"] if customer else customer_id
+        matched_decision = latest_decision_by_customer.get(customer_id)
+        sample_outcomes.append(
+            {
+                "customer_id": customer_id,
+                "display_name": display_name,
+                "campaign_status": outcome["campaign_status"],
+                "customer_response": outcome["customer_response"],
+                "usage_recovery_status": outcome["usage_recovery_status"],
+                "observed_at": outcome["observed_at"],
+                "is_sample": True,
+                "decision": matched_decision["decision"] if matched_decision else None,
+                "selected_action": matched_decision.get("selected_action") if matched_decision else None,
+                "comment": matched_decision.get("comment") if matched_decision else None,
+                "decided_at": matched_decision.get("decided_at") if matched_decision else None,
+            }
+        )
+
     return {
         "total_decisions": len(decisions),
         "approved_count": approved_count,
@@ -56,6 +83,7 @@ def build_feedback_summary(
         "skipped_count": skipped_count,
         "by_generation_mode": by_generation_mode,
         "recent_decisions": recent_decisions,
+        "sample_outcomes": sample_outcomes,
         "updated_at": current_timestamp(),
         "storage_mode": store.storage_mode,
         "persisted": store.persisted,

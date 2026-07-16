@@ -1,10 +1,65 @@
-import type { FeedbackSummaryResponse } from "../types";
+import type { FeedbackSummaryResponse, SampleOutcome } from "../types";
 
 const DECISION_LABEL: Record<string, string> = {
   approved: "承認",
   modified: "修正",
   skipped: "見送り",
 };
+
+const RESPONSE_STATUS_CLASS: Record<string, string> = {
+  メール開封: "outcome-badge--engaged",
+  案内ページ閲覧: "outcome-badge--engaged",
+  クーポン利用: "outcome-badge--engaged",
+  問い合わせ: "outcome-badge--engaged",
+  反応なし: "outcome-badge--neutral",
+  施策未実施: "outcome-badge--neutral",
+};
+
+const RECOVERY_STATUS_CLASS: Record<string, string> = {
+  "30日以内に利用再開": "outcome-badge--recovered",
+  一部サービスで利用再開: "outcome-badge--recovered",
+  観測期間中: "outcome-badge--observing",
+  利用再開なし: "outcome-badge--neutral",
+  施策未実施: "outcome-badge--neutral",
+};
+
+function formatObservedAt(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleDateString("ja-JP");
+  } catch {
+    return dateStr;
+  }
+}
+
+function SampleOutcomeCard({ outcome }: { outcome: SampleOutcome }) {
+  const decisionLabel = outcome.decision ? (DECISION_LABEL[outcome.decision] ?? outcome.decision) : "未対応（判断未保存）";
+  return (
+    <li className="outcome-card">
+      <p className="outcome-card__name">{outcome.display_name}</p>
+      <p className="outcome-card__row">
+        <span className="outcome-card__row-label">担当者判断：</span>
+        {decisionLabel}
+        {outcome.selected_action ? `（${outcome.selected_action}）` : ""}
+        {outcome.comment ? ` ・ ${outcome.comment}` : ""}
+      </p>
+      <p className="outcome-card__row">
+        <span className="outcome-card__row-label">施策後の反応：</span>
+        <span className={`outcome-badge ${RESPONSE_STATUS_CLASS[outcome.customer_response] ?? "outcome-badge--neutral"}`}>
+          {outcome.customer_response}
+        </span>
+      </p>
+      <p className="outcome-card__row">
+        <span className="outcome-card__row-label">利用状況：</span>
+        <span
+          className={`outcome-badge ${RECOVERY_STATUS_CLASS[outcome.usage_recovery_status] ?? "outcome-badge--neutral"}`}
+        >
+          {outcome.usage_recovery_status}
+        </span>
+        <span className="outcome-card__observed-at">（確認日：{formatObservedAt(outcome.observed_at)}）</span>
+      </p>
+    </li>
+  );
+}
 
 export function FeedbackSummaryPanel({ summary }: { summary: FeedbackSummaryResponse }) {
   return (
@@ -31,10 +86,6 @@ export function FeedbackSummaryPanel({ summary }: { summary: FeedbackSummaryResp
         </div>
       </div>
 
-      <p className="feedback-summary__explanation">
-        承認・修正・見送りの判断は、次の顧客選定や施策改善、モデルの見直しへ活用する想定のデータとして記録されます。
-      </p>
-
       {summary.recent_decisions.length > 0 && (
         <ul className="feedback-summary__recent">
           {summary.recent_decisions.map((decision, index) => (
@@ -46,6 +97,24 @@ export function FeedbackSummaryPanel({ summary }: { summary: FeedbackSummaryResp
           ))}
         </ul>
       )}
+
+      {summary.sample_outcomes.length > 0 && (
+        <div className="feedback-summary__outcomes">
+          <h3 className="feedback-summary__outcomes-title">施策後の反応と利用状況（デモ用サンプル）</h3>
+          <p className="feedback-summary__outcomes-note">
+            以下の「施策後の反応」「利用状況」はデモ用の固定サンプルであり、実際の顧客の反応ではありません。「担当者判断」欄のみ、実際にこの画面で保存した判断です。
+          </p>
+          <ul className="feedback-summary__outcomes-list">
+            {summary.sample_outcomes.map((outcome) => (
+              <SampleOutcomeCard key={outcome.customer_id} outcome={outcome} />
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <p className="feedback-summary__explanation">
+        承認・修正・見送りの判断は、次の顧客選定や施策改善、モデルの見直しへ活用する想定のデータとして記録されます。
+      </p>
     </div>
   );
 }

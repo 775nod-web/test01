@@ -91,6 +91,7 @@ class FeedbackSummaryResponse(BaseModel):
     skipped_count: int
     by_generation_mode: dict[str, int]
     recent_decisions: list[dict[str, Any]]
+    sample_outcomes: list[dict[str, Any]]
     updated_at: str
     storage_mode: str
     persisted: bool

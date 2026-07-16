@@ -142,6 +142,20 @@ export interface RecentDecision {
   generation_mode_label: string;
 }
 
+export interface SampleOutcome {
+  customer_id: string;
+  display_name: string;
+  campaign_status: string;
+  customer_response: string;
+  usage_recovery_status: string;
+  observed_at: string;
+  is_sample: true;
+  decision: DecisionType | null;
+  selected_action: string | null;
+  comment: string | null;
+  decided_at: string | null;
+}
+
 export interface FeedbackSummaryResponse {
   total_decisions: number;
   approved_count: number;
@@ -149,6 +163,7 @@ export interface FeedbackSummaryResponse {
   skipped_count: number;
   by_generation_mode: Record<string, number>;
   recent_decisions: RecentDecision[];
+  sample_outcomes: SampleOutcome[];
   updated_at: string;
   storage_mode: string;
   persisted: boolean;

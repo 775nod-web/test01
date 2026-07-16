@@ -556,6 +556,90 @@
   font-size: 0.8rem;
 }
 
+.feedback-summary__outcomes {
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: var(--space-md);
+}
+
+.feedback-summary__outcomes-title {
+  margin: 0 0 var(--space-xs) 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.feedback-summary__outcomes-note {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+}
+
+.feedback-summary__outcomes-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-sm);
+}
+
+.outcome-card {
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.outcome-card__name {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.outcome-card__row {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  overflow-wrap: break-word;
+}
+
+.outcome-card__row-label {
+  color: var(--color-text-primary);
+}
+
+.outcome-card__observed-at {
+  color: var(--color-text-disabled);
+  font-size: 0.72rem;
+}
+
+.outcome-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.outcome-badge--engaged,
+.outcome-badge--recovered {
+  background: var(--color-green-50);
+  color: var(--color-green-700);
+}
+
+.outcome-badge--observing {
+  background: var(--color-yellow-50);
+  color: var(--color-yellow-700);
+}
+
+.outcome-badge--neutral {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
+}
+
 .badge--model-mode {
   background: var(--color-green-50);
   color: var(--color-green-700);
