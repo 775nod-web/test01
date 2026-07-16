@@ -152,5 +152,4 @@ export interface FeedbackSummaryResponse {
   updated_at: string;
   storage_mode: string;
   persisted: boolean;
-  note: string;
 }

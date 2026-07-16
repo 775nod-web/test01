@@ -101,8 +101,3 @@ def test_feedback_summary_reflects_saved_decisions() -> None:
     assert body["by_generation_mode"]["pre_generated"] == 1
     assert len(body["recent_decisions"]) == 3
     assert body["recent_decisions"][0]["display_name"]  # 顧客360と結合して表示名が入っていること
-
-
-def test_feedback_summary_notes_auto_retraining_is_not_implemented() -> None:
-    response = client.get("/api/feedback-summary")
-    assert "本番化" in response.json()["note"]

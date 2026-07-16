@@ -10,18 +10,9 @@ from typing import Optional
 
 from backend.config import GENERATION_MODE_LABEL, current_timestamp
 from backend.services.data_source import CustomerDataset, load_customer_dataset
-from backend.services.decision_store import STORAGE_MODE_FILE, get_decision_store
+from backend.services.decision_store import get_decision_store
 
 RECENT_DECISIONS_LIMIT = 10
-
-FEEDBACK_NOTE = (
-    "承認・修正・見送りの記録は集計に反映されますが、"
-    "実際の自動再学習・自動施策改善は本番化時に追加する予定です。"
-)
-
-STORAGE_NOT_PERSISTED_NOTE = (
-    "現在、判断保存先への書き込みができないため、記録は一時的なもの（アプリ再起動で消去）です。"
-)
 
 
 def build_feedback_summary(
@@ -58,10 +49,6 @@ def build_feedback_summary(
             }
         )
 
-    note = FEEDBACK_NOTE
-    if store.storage_mode != STORAGE_MODE_FILE:
-        note = f"{STORAGE_NOT_PERSISTED_NOTE} {FEEDBACK_NOTE}"
-
     return {
         "total_decisions": len(decisions),
         "approved_count": approved_count,
@@ -72,5 +59,4 @@ def build_feedback_summary(
         "updated_at": current_timestamp(),
         "storage_mode": store.storage_mode,
         "persisted": store.persisted,
-        "note": note,
     }

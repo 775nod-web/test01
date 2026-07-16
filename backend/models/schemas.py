@@ -94,4 +94,3 @@ class FeedbackSummaryResponse(BaseModel):
     updated_at: str
     storage_mode: str
     persisted: bool
-    note: str
