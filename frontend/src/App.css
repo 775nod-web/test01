@@ -638,11 +638,6 @@
   color: var(--color-blue-700);
 }
 
-.badge--model-mode {
-  background: var(--color-green-50);
-  color: var(--color-green-700);
-}
-
 .recommendation-panel__decision-title {
   margin: 0;
   font-size: 0.85rem;

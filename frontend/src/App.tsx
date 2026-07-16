@@ -49,16 +49,6 @@ type FeedbackSummaryState =
   | { status: "ready"; summary: FeedbackSummaryResponse }
   | { status: "error"; message: string };
 
-const DATA_MODE_LABEL: Record<string, string> = {
-  demo: "合成データ（demo）",
-  databricks: "Databricks接続",
-};
-
-const MODEL_MODE_LABEL: Record<string, string> = {
-  trained: "実学習モデル",
-  precomputed: "事前計算済み予測",
-};
-
 function formatUpdatedAt(iso: string): string {
   try {
     return new Date(iso).toLocaleString("ja-JP");
@@ -80,18 +70,8 @@ function HeaderMeta({ state }: { state: HeaderState }) {
     );
   }
   const { metadata } = state;
-  const dataModeBadgeClass =
-    metadata.data_mode === "databricks" ? "badge badge--databricks" : "badge badge--demo";
   return (
     <span className="header__meta">
-      <span className={dataModeBadgeClass}>
-        {DATA_MODE_LABEL[metadata.data_mode] ?? metadata.data_mode}
-      </span>
-      {metadata.model_mode && (
-        <span className="badge badge--model-mode">
-          {MODEL_MODE_LABEL[metadata.model_mode] ?? metadata.model_mode}
-        </span>
-      )}
       <span>最終更新: {formatUpdatedAt(metadata.updated_at)}</span>
     </span>
   );
