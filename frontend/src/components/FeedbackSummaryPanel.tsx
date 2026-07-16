@@ -46,8 +46,6 @@ export function FeedbackSummaryPanel({ summary }: { summary: FeedbackSummaryResp
           ))}
         </ul>
       )}
-
-      <p className="feedback-summary__production-note">本番化時に追加：{summary.note}</p>
     </div>
   );
 }

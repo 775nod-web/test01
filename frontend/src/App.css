@@ -547,12 +547,6 @@
   overflow-y: auto;
 }
 
-.feedback-summary__production-note {
-  margin: 0;
-  font-size: 0.75rem;
-  color: var(--color-text-disabled);
-}
-
 .feedback-summary__not-persisted {
   margin: 0;
   padding: var(--space-sm);
