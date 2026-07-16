@@ -40,7 +40,6 @@ function makeSummary(overrides: Partial<FeedbackSummaryResponse> = {}): Feedback
     by_generation_mode: {},
     recent_decisions: [],
     sample_outcomes: [],
-    improvement_summary: { expand_candidates: null, review_candidates: null, next_hypothesis: null },
     updated_at: "2026-07-16T00:00:00+00:00",
     storage_mode: "file",
     persisted: true,
@@ -165,34 +164,4 @@ describe("FeedbackSummaryPanel", () => {
     ).toHaveLength(1);
   });
 
-  it("今回の改善ポイントに継続・展開候補、見直し候補、次回検証する仮説を表示する", () => {
-    render(
-      <FeedbackSummaryPanel
-        summary={makeSummary({
-          sample_outcomes: [makeOutcome()],
-          improvement_summary: {
-            expand_candidates: "クーポン利用で利用再開が確認できた施策は展開を検討します。",
-            review_candidates: "反応がなかった施策はチャネルの見直しを検討します。",
-            next_hypothesis: "接触チャネルを変えると反応率が改善するかを検証します。",
-          },
-        })}
-      />,
-    );
-    expect(screen.getByText("今回の改善ポイント")).toBeInTheDocument();
-    expect(screen.getByText("継続・展開候補")).toBeInTheDocument();
-    expect(screen.getByText("見直し候補")).toBeInTheDocument();
-    expect(screen.getByText("次回検証する仮説")).toBeInTheDocument();
-  });
-
-  it("改善ポイントが無い場合は空状態のメッセージを表示する", () => {
-    render(
-      <FeedbackSummaryPanel
-        summary={makeSummary({
-          sample_outcomes: [makeOutcome()],
-          improvement_summary: { expand_candidates: null, review_candidates: null, next_hypothesis: null },
-        })}
-      />,
-    );
-    expect(screen.getByText(/現時点では十分な結果がありません/)).toBeInTheDocument();
-  });
 });

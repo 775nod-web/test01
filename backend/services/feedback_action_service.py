@@ -24,19 +24,6 @@ ENGAGED_RESPONSES = {"メール開封", "案内ページ閲覧", "クーポン�
 # 「利用再開あり」とみなす利用状況
 RECOVERED_STATUSES = {"30日以内に利用再開", "一部サービスで利用再開"}
 
-# Step 6の全体サマリーで「継続・展開候補」に分類するアクション種別
-EXPAND_TYPES = {ACTION_TYPE_EXPAND}
-# 「見直し候補」に分類するアクション種別
-REVIEW_TYPES = {
-    ACTION_TYPE_CHANGE_OFFER,
-    ACTION_TYPE_CHANGE_CHANNEL,
-    ACTION_TYPE_CHANGE_TIMING,
-    ACTION_TYPE_REVIEW_TARGETING,
-    ACTION_TYPE_STOP,
-}
-# 「次回検証する仮説」に分類するアクション種別
-HYPOTHESIS_TYPES = {ACTION_TYPE_CONTINUE_OBSERVATION, ACTION_TYPE_REVERIFY_EFFECT}
-
 
 def _build(action_type: str, label: str, reason: str, next_review_timing: str) -> dict:
     return {
@@ -136,48 +123,3 @@ def determine_next_action(
         result["reason"] = f"{result['reason']}承認済みの施策として次回の施策評価に活用します。"
 
     return result
-
-
-def build_improvement_summary(sample_outcomes: list[dict]) -> dict:
-    """複数顧客の推奨アクションから、Step 6下部の全体サマリー3項目を組み立てる。
-
-    件数が0件の場合は無理に文章を生成せず、全項目をNoneのまま返す
-    （呼び出し側・UIで「十分な結果がありません」を表示する）。
-    """
-    expand = [o for o in sample_outcomes if o["recommended_next_action"]["type"] in EXPAND_TYPES]
-    review = [o for o in sample_outcomes if o["recommended_next_action"]["type"] in REVIEW_TYPES]
-    hypothesis = [o for o in sample_outcomes if o["recommended_next_action"]["type"] in HYPOTHESIS_TYPES]
-
-    expand_candidates = None
-    if expand:
-        first = expand[0]
-        expand_candidates = (
-            f"{first['customer_response']}で利用再開が確認できた施策は、"
-            "同様の利用低下パターンを持つ顧客への展開を検討します。"
-        )
-
-    review_candidates = None
-    if review:
-        first = review[0]
-        review_candidates = (
-            f"{first['customer_response']}だった施策は、"
-            f"{first['recommended_next_action']['label']}を検討します。"
-        )
-
-    next_hypothesis = None
-    if hypothesis:
-        first = hypothesis[0]
-        first_type = first["recommended_next_action"]["type"]
-        if first_type == ACTION_TYPE_REVERIFY_EFFECT:
-            next_hypothesis = (
-                f"{first['customer_response']}でも利用が再開したケースがあり、"
-                "施策効果自体が本当にあったのかを次回検証します。"
-            )
-        else:
-            next_hypothesis = "観測期間中または施策未実施の顧客について、十分な期間をおいてから利用再開の有無を次回検証します。"
-
-    return {
-        "expand_candidates": expand_candidates,
-        "review_candidates": review_candidates,
-        "next_hypothesis": next_hypothesis,
-    }

@@ -1,4 +1,4 @@
-import type { FeedbackSummaryResponse, ImprovementSummary, SampleOutcome } from "../types";
+import type { FeedbackSummaryResponse, SampleOutcome } from "../types";
 
 const DECISION_LABEL: Record<string, string> = {
   approved: "承認",
@@ -74,42 +74,6 @@ function SampleOutcomeCard({ outcome }: { outcome: SampleOutcome }) {
   );
 }
 
-function ImprovementSummarySection({ summary }: { summary: ImprovementSummary }) {
-  const hasAny = Boolean(summary.expand_candidates || summary.review_candidates || summary.next_hypothesis);
-
-  return (
-    <div className="feedback-summary__improvement">
-      <h3 className="feedback-summary__improvement-title">今回の改善ポイント</h3>
-      {hasAny ? (
-        <dl className="feedback-summary__improvement-list">
-          {summary.expand_candidates && (
-            <div className="feedback-summary__improvement-item">
-              <dt>継続・展開候補</dt>
-              <dd>{summary.expand_candidates}</dd>
-            </div>
-          )}
-          {summary.review_candidates && (
-            <div className="feedback-summary__improvement-item">
-              <dt>見直し候補</dt>
-              <dd>{summary.review_candidates}</dd>
-            </div>
-          )}
-          {summary.next_hypothesis && (
-            <div className="feedback-summary__improvement-item">
-              <dt>次回検証する仮説</dt>
-              <dd>{summary.next_hypothesis}</dd>
-            </div>
-          )}
-        </dl>
-      ) : (
-        <p className="feedback-summary__improvement-empty">
-          現時点では十分な結果がありません。追加の施策結果を確認後、改善候補を表示します。
-        </p>
-      )}
-    </div>
-  );
-}
-
 export function FeedbackSummaryPanel({ summary }: { summary: FeedbackSummaryResponse }) {
   return (
     <div className="feedback-summary">
@@ -155,7 +119,6 @@ export function FeedbackSummaryPanel({ summary }: { summary: FeedbackSummaryResp
               <SampleOutcomeCard key={outcome.customer_id} outcome={outcome} />
             ))}
           </ul>
-          <ImprovementSummarySection summary={summary.improvement_summary} />
         </div>
       )}
 

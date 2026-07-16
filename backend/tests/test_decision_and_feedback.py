@@ -190,11 +190,3 @@ def test_skipped_decision_updates_recommended_next_action_to_review_targeting() 
     outcomes_after = client.get("/api/feedback-summary").json()["sample_outcomes"]
     matched = next(o for o in outcomes_after if o["customer_id"] == sample_customer_id)
     assert matched["recommended_next_action"]["type"] == "対象顧客の条件を見直す"
-
-
-def test_feedback_summary_includes_improvement_summary_with_expected_keys() -> None:
-    body = client.get("/api/feedback-summary").json()
-    summary = body["improvement_summary"]
-    assert "expand_candidates" in summary
-    assert "review_candidates" in summary
-    assert "next_hypothesis" in summary

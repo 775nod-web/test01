@@ -8,7 +8,6 @@ from backend.services.feedback_action_service import (
     ACTION_TYPE_CONTINUE_OBSERVATION,
     ACTION_TYPE_EXPAND,
     ACTION_TYPE_REVIEW_TARGETING,
-    build_improvement_summary,
     determine_next_action,
 )
 
@@ -112,46 +111,3 @@ def test_same_input_returns_same_result_every_time() -> None:
     first = determine_next_action(**kwargs)
     second = determine_next_action(**kwargs)
     assert first == second
-
-
-def test_build_improvement_summary_returns_none_fields_when_no_outcomes() -> None:
-    summary = build_improvement_summary([])
-    assert summary["expand_candidates"] is None
-    assert summary["review_candidates"] is None
-    assert summary["next_hypothesis"] is None
-
-
-def test_build_improvement_summary_populates_fields_when_outcomes_exist() -> None:
-    outcomes = [
-        {
-            "customer_response": "クーポン利用",
-            "recommended_next_action": {
-                "type": ACTION_TYPE_EXPAND,
-                "label": "同様の利用低下パターンを持つ顧客への展開候補",
-                "reason": "テスト",
-                "next_review_timing": "30日後",
-            },
-        },
-        {
-            "customer_response": "反応なし",
-            "recommended_next_action": {
-                "type": ACTION_TYPE_CHANGE_CHANNEL,
-                "label": "別チャネルでの接触候補",
-                "reason": "テスト",
-                "next_review_timing": "14日後",
-            },
-        },
-        {
-            "customer_response": "問い合わせ",
-            "recommended_next_action": {
-                "type": ACTION_TYPE_CONTINUE_OBSERVATION,
-                "label": "継続して観測",
-                "reason": "テスト",
-                "next_review_timing": "30日後",
-            },
-        },
-    ]
-    summary = build_improvement_summary(outcomes)
-    assert summary["expand_candidates"] is not None
-    assert summary["review_candidates"] is not None
-    assert summary["next_hypothesis"] is not None

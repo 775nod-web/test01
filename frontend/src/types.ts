@@ -164,12 +164,6 @@ export interface SampleOutcome {
   recommended_next_action: RecommendedNextAction;
 }
 
-export interface ImprovementSummary {
-  expand_candidates: string | null;
-  review_candidates: string | null;
-  next_hypothesis: string | null;
-}
-
 export interface FeedbackSummaryResponse {
   total_decisions: number;
   approved_count: number;
@@ -178,7 +172,6 @@ export interface FeedbackSummaryResponse {
   by_generation_mode: Record<string, number>;
   recent_decisions: RecentDecision[];
   sample_outcomes: SampleOutcome[];
-  improvement_summary: ImprovementSummary;
   updated_at: string;
   storage_mode: string;
   persisted: boolean;

@@ -11,7 +11,7 @@ from typing import Optional
 from backend.config import GENERATION_MODE_LABEL, current_timestamp
 from backend.services.data_source import CustomerDataset, load_customer_dataset
 from backend.services.decision_store import get_decision_store
-from backend.services.feedback_action_service import build_improvement_summary, determine_next_action
+from backend.services.feedback_action_service import determine_next_action
 from backend.services.sample_outcomes import load_sample_outcomes
 
 RECENT_DECISIONS_LIMIT = 10
@@ -91,8 +91,6 @@ def build_feedback_summary(
             }
         )
 
-    improvement_summary = build_improvement_summary(sample_outcomes)
-
     return {
         "total_decisions": len(decisions),
         "approved_count": approved_count,
@@ -101,7 +99,6 @@ def build_feedback_summary(
         "by_generation_mode": by_generation_mode,
         "recent_decisions": recent_decisions,
         "sample_outcomes": sample_outcomes,
-        "improvement_summary": improvement_summary,
         "updated_at": current_timestamp(),
         "storage_mode": store.storage_mode,
         "persisted": store.persisted,
