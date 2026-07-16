@@ -37,10 +37,9 @@ function makeSummary(overrides: Partial<FeedbackSummaryResponse> = {}): Feedback
 }
 
 describe("FeedbackSummaryPanel", () => {
-  it("サンプルデータである旨の注記を表示する", () => {
+  it("施策後の反応と利用状況の見出しを表示する", () => {
     render(<FeedbackSummaryPanel summary={makeSummary({ sample_outcomes: [makeOutcome()] })} />);
-    expect(screen.getByText("施策後の反応と利用状況（デモ用サンプル）")).toBeInTheDocument();
-    expect(screen.getByText(/デモ用の固定サンプルであり、実際の顧客の反応ではありません/)).toBeInTheDocument();
+    expect(screen.getByText("施策後の反応と利用状況")).toBeInTheDocument();
   });
 
   it("施策後の反応・利用状況・確認日を表示する", () => {
@@ -122,7 +121,7 @@ describe("FeedbackSummaryPanel", () => {
 
   it("サンプルデータが空でも画面が崩れない", () => {
     const { container } = render(<FeedbackSummaryPanel summary={makeSummary({ sample_outcomes: [] })} />);
-    expect(screen.queryByText("施策後の反応と利用状況（デモ用サンプル）")).not.toBeInTheDocument();
+    expect(screen.queryByText("施策後の反応と利用状況")).not.toBeInTheDocument();
     expect(container).toBeInTheDocument();
   });
 });

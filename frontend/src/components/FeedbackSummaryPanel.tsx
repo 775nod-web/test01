@@ -100,10 +100,7 @@ export function FeedbackSummaryPanel({ summary }: { summary: FeedbackSummaryResp
 
       {summary.sample_outcomes.length > 0 && (
         <div className="feedback-summary__outcomes">
-          <h3 className="feedback-summary__outcomes-title">施策後の反応と利用状況（デモ用サンプル）</h3>
-          <p className="feedback-summary__outcomes-note">
-            以下の「施策後の反応」「利用状況」はデモ用の固定サンプルであり、実際の顧客の反応ではありません。「担当者判断」欄のみ、実際にこの画面で保存した判断です。
-          </p>
+          <h3 className="feedback-summary__outcomes-title">施策後の反応と利用状況</h3>
           <ul className="feedback-summary__outcomes-list">
             {summary.sample_outcomes.map((outcome) => (
               <SampleOutcomeCard key={outcome.customer_id} outcome={outcome} />
@@ -111,10 +108,6 @@ export function FeedbackSummaryPanel({ summary }: { summary: FeedbackSummaryResp
           </ul>
         </div>
       )}
-
-      <p className="feedback-summary__explanation">
-        承認・修正・見送りの判断は、次の顧客選定や施策改善、モデルの見直しへ活用する想定のデータとして記録されます。
-      </p>
     </div>
   );
 }
