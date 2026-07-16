@@ -130,6 +130,7 @@ export interface DecisionRecord {
   decided_at: string;
   generation_mode: string | null;
   model_version: string | null;
+  persisted: boolean;
 }
 
 export interface RecentDecision {
@@ -149,5 +150,7 @@ export interface FeedbackSummaryResponse {
   by_generation_mode: Record<string, number>;
   recent_decisions: RecentDecision[];
   updated_at: string;
+  storage_mode: string;
+  persisted: boolean;
   note: string;
 }

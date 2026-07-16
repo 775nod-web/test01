@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class CustomerSummary(BaseModel):
@@ -64,11 +64,11 @@ class RecommendationResponse(BaseModel):
 
 class DecisionRequest(BaseModel):
     decision: Literal["approved", "modified", "skipped"]
-    selected_action: Optional[str] = None
-    modified_text: Optional[str] = None
-    comment: Optional[str] = None
-    generation_mode: Optional[str] = None
-    model_version: Optional[str] = None
+    selected_action: Optional[str] = Field(default=None, max_length=200)
+    modified_text: Optional[str] = Field(default=None, max_length=2000)
+    comment: Optional[str] = Field(default=None, max_length=2000)
+    generation_mode: Optional[str] = Field(default=None, max_length=50)
+    model_version: Optional[str] = Field(default=None, max_length=100)
 
 
 class DecisionRecord(BaseModel):
@@ -81,6 +81,7 @@ class DecisionRecord(BaseModel):
     decided_at: str
     generation_mode: Optional[str] = None
     model_version: Optional[str] = None
+    persisted: bool = True
 
 
 class FeedbackSummaryResponse(BaseModel):
@@ -91,4 +92,6 @@ class FeedbackSummaryResponse(BaseModel):
     by_generation_mode: dict[str, int]
     recent_decisions: list[dict[str, Any]]
     updated_at: str
+    storage_mode: str
+    persisted: bool
     note: str

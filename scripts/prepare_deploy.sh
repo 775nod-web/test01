@@ -24,7 +24,7 @@ fail() {
   exit 1
 }
 
-log "1/7 必要なコマンドを確認します"
+log "1/8 必要なコマンドを確認します"
 command -v node >/dev/null 2>&1 || fail "node コマンドが見つかりません。Node.jsをインストールしてください。"
 command -v npm >/dev/null 2>&1 || fail "npm コマンドが見つかりません。Node.jsをインストールしてください。"
 
@@ -37,25 +37,28 @@ command -v "$PYTHON_BIN" >/dev/null 2>&1 || fail "python3 / python コマンド�
 "$PYTHON_BIN" -c "import pytest" >/dev/null 2>&1 || \
   fail "pytest がインストールされていません。'pip install -r requirements.txt' を実行してください。"
 
-log "2/7 フロントエンド依存をインストールします (npm ci)"
+log "2/8 フロントエンド依存をインストールします (npm ci)"
 (cd "$FRONTEND_DIR" && npm ci) || fail "npm ci に失敗しました。"
 
-log "3/7 TypeScript型チェックを実行します"
+log "3/8 TypeScript型チェックを実行します"
 (cd "$FRONTEND_DIR" && npm run typecheck) || fail "TypeScript型チェックに失敗しました。"
 
-log "4/7 Production Buildを実行します"
+log "4/8 フロントエンドの単体テストを実行します"
+(cd "$FRONTEND_DIR" && npm run test) || fail "フロントエンドの単体テストに失敗しました。"
+
+log "5/8 Production Buildを実行します"
 (cd "$FRONTEND_DIR" && npm run build) || fail "フロントエンドのビルドに失敗しました。"
 
-log "5/7 ビルド成果物を確認します"
+log "6/8 ビルド成果物を確認します"
 if [ ! -f "$DIST_INDEX" ]; then
   fail "${DIST_INDEX} が見つかりません。ビルドが正しく完了していません。"
 fi
 log "確認OK: ${DIST_INDEX}"
 
-log "6/7 Pythonの主要テストを実行します"
+log "7/8 Pythonの主要テストを実行します"
 (cd "$ROOT_DIR" && "$PYTHON_BIN" -m pytest backend/tests -v) || fail "Pythonテストに失敗しました。"
 
-log "7/7 デプロイ対象のファイル構成を確認します"
+log "8/8 デプロイ対象のファイル構成を確認します"
 echo "--------------------------------------------------"
 echo "以下がDatabricks Appsへ配置するソースフォルダーに含まれることを確認してください:"
 echo "  app.yaml"

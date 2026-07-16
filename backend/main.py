@@ -15,8 +15,10 @@ import logging
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from backend.api.routes import router as api_router
 from backend.config import (
@@ -53,6 +55,17 @@ def create_app(
 
     if index_html.is_file():
         app.mount("/", StaticFiles(directory=dist_dir, html=True), name="frontend")
+
+        # SPAフォールバック：未知のパス（例: ページの直接URL読み込みや再読み込み）でも
+        # /api/* 以外は index.html を返す。1画面構成のアプリだが、Databricks Apps側の
+        # プロキシ挙動や将来のクライアントサイドルーティング追加に備えて用意しておく。
+        # /api/* の404はJSONの詳細メッセージのまま返す（index.htmlへ差し替えない）。
+        @app.exception_handler(StarletteHTTPException)
+        async def spa_fallback_handler(request: Request, exc: StarletteHTTPException):
+            if exc.status_code == 404 and not request.url.path.startswith("/api/"):
+                return FileResponse(index_html)
+            return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+
     elif resolved_env == APP_ENV_PRODUCTION:
         logger.error(PREPARE_DEPLOY_HINT)
         raise FrontendBuildMissingError(PREPARE_DEPLOY_HINT)

@@ -39,6 +39,15 @@ def test_post_decision_returns_saved_record_with_decided_at() -> None:
     assert body["decision"] == "approved"
     assert body["decision_id"]
     assert body["decided_at"]
+    assert body["persisted"] is True
+
+
+def test_post_decision_rejects_overlong_comment() -> None:
+    response = client.post(
+        "/api/customers/C001/decision",
+        json={"decision": "approved", "comment": "x" * 2001},
+    )
+    assert response.status_code == 422
 
 
 def test_post_decision_404_for_unknown_customer() -> None:

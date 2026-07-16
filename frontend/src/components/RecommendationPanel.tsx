@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { postDecision } from "../api/client";
-import type { DecisionType, RecommendationResponse } from "../types";
+import type { DecisionRecord, DecisionType, RecommendationResponse } from "../types";
 
 const GENERATION_MODE_BADGE_CLASS: Record<string, string> = {
   llm: "badge badge--databricks",
@@ -37,6 +37,7 @@ export function RecommendationPanel({ customerId, recommendation, onDecisionSave
   const [comment, setComment] = useState("");
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [savedRecord, setSavedRecord] = useState<DecisionRecord | null>(null);
 
   // 顧客が変わったら入力状態をリセットする
   useEffect(() => {
@@ -46,6 +47,7 @@ export function RecommendationPanel({ customerId, recommendation, onDecisionSave
     setComment("");
     setSaveState("idle");
     setErrorMessage(null);
+    setSavedRecord(null);
   }, [customerId]);
 
   async function handleSave() {
@@ -55,7 +57,7 @@ export function RecommendationPanel({ customerId, recommendation, onDecisionSave
     setSaveState("saving");
     setErrorMessage(null);
     try {
-      await postDecision(customerId, {
+      const record = await postDecision(customerId, {
         decision: decisionType,
         selected_action: selectedActionTitle,
         modified_text: decisionType === "modified" ? modifiedText : null,
@@ -63,6 +65,7 @@ export function RecommendationPanel({ customerId, recommendation, onDecisionSave
         generation_mode: recommendation.generation_mode,
         model_version: recommendation.model_version,
       });
+      setSavedRecord(record);
       setSaveState("saved");
       onDecisionSaved();
     } catch (error) {
@@ -71,20 +74,25 @@ export function RecommendationPanel({ customerId, recommendation, onDecisionSave
     }
   }
 
-  if (saveState === "saved") {
+  if (saveState === "saved" && savedRecord) {
     return (
       <div className="recommendation-panel">
         <div className="recommendation-panel__saved">
           <span aria-hidden="true">✅</span>
           <div>
             <p className="recommendation-panel__saved-title">
-              判断を記録しました（{DECISION_LABEL[decisionType ?? "skipped"]}）
+              判断を記録しました（{DECISION_LABEL[savedRecord.decision]}）
             </p>
             <p className="recommendation-panel__saved-sub">
               フィードバック概要に反映されました。他の顧客を選択して続けられます。
             </p>
           </div>
         </div>
+        {!savedRecord.persisted && (
+          <p className="recommendation-panel__not-persisted">
+            ⚠️ 現在、判断の保存先に書き込めないため一時保存です。アプリを再起動すると失われる可能性があります。
+          </p>
+        )}
       </div>
     );
   }

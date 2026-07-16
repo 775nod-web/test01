@@ -488,6 +488,15 @@
   color: var(--color-text-secondary);
 }
 
+.recommendation-panel__not-persisted {
+  margin: var(--space-sm) 0 0 0;
+  padding: var(--space-sm);
+  background: var(--color-yellow-50);
+  color: var(--color-yellow-700);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
 /* フィードバック概要 */
 .feedback-section {
   margin: 0 var(--space-lg) var(--space-lg) var(--space-lg);
@@ -550,6 +559,15 @@
   margin: 0;
   font-size: 0.75rem;
   color: var(--color-text-disabled);
+}
+
+.feedback-summary__not-persisted {
+  margin: 0;
+  padding: var(--space-sm);
+  background: var(--color-yellow-50);
+  color: var(--color-yellow-700);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
 }
 
 .badge--model-mode {

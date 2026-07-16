@@ -9,6 +9,13 @@ const DECISION_LABEL: Record<string, string> = {
 export function FeedbackSummaryPanel({ summary }: { summary: FeedbackSummaryResponse }) {
   return (
     <div className="feedback-summary">
+      {!summary.persisted && (
+        <p className="feedback-summary__not-persisted">
+          ⚠️
+          現在、判断の保存先に書き込めないため、記録は一時的なものです（アプリ再起動で失われます）。
+        </p>
+      )}
+
       <div className="feedback-summary__counts">
         <div className="feedback-summary__count">
           <span className="feedback-summary__count-value">{summary.approved_count}</span>

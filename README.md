@@ -15,7 +15,7 @@ Databricks Free EditionとDatabricks Appsを使い、次の一連の業務を日
 
 > この顧客へ今対応すべきか。対応するなら、どのアクションが妥当か。
 
-## 2. 現在の実装状況（Phase 1〜4）
+## 2. 現在の実装状況（Phase 1〜5）
 
 ### Phase 1（土台）
 - React + TypeScript + Vite のフロントエンド骨格（1画面、日本語ベースレイアウト）
@@ -49,7 +49,15 @@ Databricks Free EditionとDatabricks Appsを使い、次の一連の業務を日
 - 技術詳細・本番化境界を折りたたみ式の「デモ構成／本番化時に追加する事項」へ隔離し、通常時は非表示にする
 - APIエラー・ネットワーク障害時も日本語メッセージを表示し、各パネルを`ErrorBoundary`で分離することで、一部の表示エラーが画面全体をクラッシュさせないようにする
 - ルールベース生成が、過去に同じ施策種別で「反応なし」だった場合にその旨を注意事項へ明記し、優先度を下げるよう改善（推奨とフィードバック履歴の矛盾を防止）
-- 高・中・低リスクの代表顧客についてデータ・予測・推奨の整合性を確認（本README 18節参照）
+- 高・中・低リスクの代表顧客についてデータ・予測・推奨の整合性を確認（本README 20節参照）
+
+### Phase 5（テスト・Databricks Apps対応・Free Edition向け堅牢化）
+- SPAフォールバック（`/api/*`以外の未知パスでも`index.html`を返す）を追加し、静的ファイル配信とAPIルートが競合しないことをテストで確認
+- 判断保存先が書き込み不可（読み取り専用ファイルシステム等）の場合、インメモリストレージへ自動フォールバックし、`persisted`フィールドで永続化状況をAPI・UIへ明示
+- APIリクエストの文字数上限（コメント等2000字、選択アクション200字）を追加し、無制限入力を防止
+- 依存関係・ログ出力・CORS設定を点検（未使用依存なし、秘密情報のログ出力なし、CORSは同一オリジンのため意図的に未設定）
+- フロントエンドの単体テスト（Vitest + Testing Library）を追加し、`scripts/prepare_deploy.sh`に組み込み
+- Databricks Free Edition向けの確認事項をREADMEへ集約（本README 14節）
 
 ## 3. 技術構成
 
@@ -135,12 +143,14 @@ Node.jsはReactのビルドにのみ使用します。Databricks Apps起動時�
 │       ├── test_llm_client.py           # LLM呼び出しのタイムアウト・再試行・出力検証テスト
 │       ├── test_recommendation_service.py  # llm→pre_generated→rule_based切り替えテスト
 │       ├── test_recommendation_api.py   # /api/customers/{id}/recommendation の疎通テスト
-│       └── test_decision_and_feedback.py   # 判断保存・フィードバック概要のテスト
+│       ├── test_decision_and_feedback.py   # 判断保存・フィードバック概要のテスト
+│       └── test_decision_store_fallback.py # 書き込み不可時のインメモリフォールバックのテスト
 ├── frontend/
 │   ├── package.json
 │   ├── package-lock.json
 │   ├── tsconfig.json
 │   ├── vite.config.ts
+│   ├── vitest.config.ts                # 単体テスト設定（jsdom環境）
 │   ├── index.html
 │   ├── dist/                           # npm run build で生成（Git管理外）
 │   └── src/
@@ -149,13 +159,18 @@ Node.jsはReactのビルドにのみ使用します。Databricks Apps起動時�
 │       ├── App.css
 │       ├── types.ts
 │       ├── api/client.ts
+│       ├── test/setup.ts               # Testing Libraryのクリーンアップ・jest-dom設定
 │       ├── components/
 │       │   ├── CustomerListPanel.tsx
+│       │   ├── CustomerListPanel.test.tsx
 │       │   ├── Customer360Panel.tsx
 │       │   ├── RiskPanel.tsx
 │       │   ├── UsageTrendChart.tsx
 │       │   ├── RiskBadge.tsx
+│       │   ├── RiskBadge.test.tsx
 │       │   ├── RecommendationPanel.tsx  # 次のアクション（要約・候補・承認/修正/見送り）
+│       │   ├── RecommendationPanel.test.tsx
+│       │   ├── ErrorBoundary.tsx        # パネル単位の描画エラー分離
 │       │   └── FeedbackSummaryPanel.tsx # フィードバック概要
 │       └── styles/
 │           ├── tokens.css
@@ -213,7 +228,7 @@ python scripts/train_model.py              # artifacts/predictions.json, model_m
 
 - `generate_demo_data.py` は同一シード・同一コードであれば何度実行しても同一の `data/` を生成する（wall-clockに依存する値を持たない）。実行結果は差分なしで確認済み。
 - `prepare_customer360.py` と `train_model.py` の出力も、タイムスタンプ系フィールド（`generated_at`, `trained_at`, `inference_at`, `checked_at`）を除けば再実行時に完全一致することを確認済み。
-- DEMO_SPEC.mdの「データ品質の必須検証」は、生成スクリプト内の即時チェック（違反時は非0終了）と `backend/tests/test_data_quality.py` の両方でカバーしている（本README 18節「データ品質」参照）。
+- DEMO_SPEC.mdの「データ品質の必須検証」は、生成スクリプト内の即時チェック（違反時は非0終了）と `backend/tests/test_data_quality.py` の両方でカバーしている（本README 20節「データ品質」参照）。
 
 ## 6. 推奨アクション生成パイプライン（Layer 3 / GenAI・RAG相当）
 
@@ -248,7 +263,7 @@ python scripts/train_model.py              # artifacts/predictions.json, model_m
   ```
 
 - `LLM_ENDPOINT_URL` と `LLM_API_KEY` が両方設定されている場合のみ実LLMを試行する（`backend/config.py` の `resolve_llm_config()`）。
-- リクエストはOpenAI互換のchat completions形式（`messages` に system/user、レスポンスは `choices[0].message.content` がJSON文字列）を想定している。Databricks Model Serving等、実際に利用するエンドポイントの形式に合わせて `_call_endpoint` を調整する必要がある（本README 16節「実装上の仮定」参照）。
+- リクエストはOpenAI互換のchat completions形式（`messages` に system/user、レスポンスは `choices[0].message.content` がJSON文字列）を想定している。Databricks Model Serving等、実際に利用するエンドポイントの形式に合わせて `_call_endpoint` を調整する必要がある（本README 18節「実装上の仮定」参照）。
 - 出力は必ずスキーマ検証する：`summary`（1〜400字）、`actions`（1〜3件、各titleとreason）、`cautions`（文字列配列）、`references`（コンテキストで渡した`doc_id`のみ許可。それ以外を含む出力＝ハルシネーションとして拒否する）。
 - 通信エラー・タイムアウトは最大 `LLM_MAX_RETRIES` 回まで再試行する。出力形式の不正は再試行しても解決しないため、検証失敗時は即座に打ち切る。
 - 失敗時は例外（`LLMRequestError` / `LLMOutputInvalidError`）を送出するのみで、リクエストヘッダー・レスポンス本文・秘密情報はログへ出力しない（例外の型名のみを記録する）。呼び出し元（`recommendation_service`）が捕捉し、次の方式へフォールバックする。
@@ -306,6 +321,9 @@ npm run dev
 
 # 型チェックのみ
 npm run typecheck
+
+# 単体テスト（Vitest + Testing Library）
+npm run test
 ```
 
 developmentモードでは `frontend/dist` の有無にかかわらずPython APIが起動するため、`npm run dev` の開発サーバーと `python -m backend.main` を並行起動して開発できます。
@@ -320,6 +338,7 @@ developmentモードでは `frontend/dist` の有無にかかわらずPython API
 cd frontend
 npm ci
 npm run typecheck
+npm run test
 npm run build
 cd ..
 ```
@@ -335,10 +354,11 @@ bash scripts/prepare_deploy.sh
 1. `node` / `npm` / `python3`（または `python`）／ `pytest` が利用可能か確認する
 2. `npm ci` でフロントエンド依存をインストールする
 3. `npm run typecheck` でTypeScript型チェックを実行する
-4. `npm run build` でProduction Buildを実行する
-5. `frontend/dist/index.html` が生成されたことを確認する
-6. `python -m pytest backend/tests -v` でPythonの主要テストを実行する
-7. デプロイ対象に含めるべきファイル構成を一覧表示する
+4. `npm run test` でフロントエンドの単体テスト（Vitest）を実行する
+5. `npm run build` でProduction Buildを実行する
+6. `frontend/dist/index.html` が生成されたことを確認する
+7. `python -m pytest backend/tests -v` でPythonの主要テストを実行する
+8. デプロイ対象に含めるべきファイル構成を一覧表示する
 
 ### ビルド確認
 
@@ -413,7 +433,52 @@ Port: DATABRICKS_APP_PORT → UVICORN_PORT → PORT → 8000
 
 Phase 1では実際のDatabricks SQL接続は行わず、モード判定のみを実装しています。実データ接続はPhase 2以降で追加します。
 
-## 13. Databricks Appsへのデプロイ手順
+## 13. セキュリティ・堅牢化（Phase 5）
+
+Databricks Free Edition／Databricks Apps環境で確実に動かすため、以下を確認・実装した。
+
+### SPAフォールバックとAPIルートの分離
+
+- `backend/main.py` は `frontend/dist/index.html` が存在する場合、`/api/*` 以外の未知のパス（直リンクやブラウザの再読み込み）でも404にせず `index.html` を返すフォールバックを実装している（`spa_fallback_handler`）。現状は1画面構成でクライアントサイドルーティングを持たないが、Databricks Appsのプロキシ挙動や将来のルーティング追加に備えた保険である。
+- `/api/*` の404は引き続きJSONの日本語 `detail` メッセージのまま返し、`index.html` へ差し替えない（`backend/tests/test_deploy_modes.py` の `test_unknown_api_path_stays_json_404_not_spa_index` で確認）。
+- APIルーターは静的ファイルのマウントより前に登録しているため、`/api/health` 等が静的ファイル配信に奪われることはない（同ファイルの `test_unknown_non_api_path_falls_back_to_spa_index` 等で確認）。
+
+### 判断保存の書き込み失敗への対応
+
+- `backend/services/decision_store.py` は、判断保存先ディレクトリへの書き込み可否を毎回軽量に確認し（一時ファイルを作成・削除するprobe）、書き込めない場合は例外で失敗させず、プロセス内メモリのフォールバックストア（`InMemoryDecisionStore`）へ自動的に切り替える。
+- レスポンスの `persisted` フィールド（`POST /api/customers/{id}/decision` のレスポンス、`GET /api/feedback-summary` の `storage_mode`/`persisted`）で、実際に永続化されたかどうかを利用者が画面上で確認できる。UIは `persisted: false` の場合に「一時保存です。アプリ再起動で失われる可能性があります」という警告を表示する。
+- Databricks Apps環境でコンテナのファイルシステムが読み取り専用、または再起動でファイルが失われる場合でも、判断保存API自体は失敗せずに動作し続ける（`backend/tests/test_decision_store_fallback.py` で、権限に依存しない失敗パス（親コンポーネントがファイルであるパス）を使って検証済み）。
+
+### API入力検証
+
+- `POST /api/customers/{customer_id}/decision` はPydanticで `decision` を `approved`/`modified`/`skipped` のいずれかに限定し、`comment`・`modified_text` は2000字、`selected_action`は200字を上限とする（超過時は422）。無制限の入力によるリソース消費を避けるための最小限の制限であり、業務要件を追加するものではない。
+
+### CORS
+
+- フロントエンドとバックエンドは常に同一オリジン（PythonがReactビルドを配信し、開発時もViteが `/api` をプロキシする）で通信するため、`CORSMiddleware` は導入していない。クロスオリジンアクセスを許可する設定を追加する必要はなく、意図的に何も設定していない。
+
+### ログ出力の点検
+
+- LLM呼び出し失敗時は例外の型名（`type(exc).__name__`）のみを記録し、リクエストヘッダー・レスポンス本文・認証情報を一切ログへ出力しない（`backend/services/llm_client.py`）。
+- Databricks/ファイルストレージのフォールバック時のログは、固定文言とローカルパス・匿名customer_id（例：`C001`）のみで、顧客の氏名・コメント本文・秘密情報は含まない。
+- リポジトリ全体を点検し、環境変数やAPIキーを `print`/`logger` へ出力する箇所がないことを確認済み。
+
+### 依存関係の点検
+
+- `requirements.txt`（fastapi, uvicorn, httpx, pytest）、`scripts/requirements-scripts.txt`（scikit-learn, numpy）、`frontend/package.json` の全依存関係を確認し、いずれも実際にコード内で使用されていることを確認した（未使用の依存は無かったため削除対象はなし）。
+- `app.yaml` の起動コマンドはPythonのみであり、Node.js/Expressがバックエンドとして起動することはない。
+
+## 14. Databricks Free Edition向けの確認事項
+
+- **サーバーレス・クォータ制限環境であること**：Databricks Free Editionはサーバーレスコンピュートで動作し、計算量やリソースに制限がある。本デモは合成データ60顧客・軽量なロジスティック回帰・事前計算済み予測を用いることで、この制約下でも動作するように設計している。
+- **アプリが停止した場合の再起動方法**：Databricks Appsのアプリ管理画面からアプリを再起動する。`data/`・`artifacts/` はリポジトリにコミット済みのため、再起動時に合成データや事前計算済み予測を再生成する必要はない。判断履歴（`runtime/decisions.json`）はGit管理外のため、コンテナの永続ディスクが再起動をまたいで保持されない構成の場合は失われる可能性がある（本README 13節）。
+- **外部サービスを必須にしていないこと**：実LLMエンドポイント・Databricks SQL・Unity Catalogのいずれも未設定で起動できる。デフォルトでは合成データ（`demo`モード）と、事前生成済み回答／ルールベース生成のみで、Step①〜⑥のデモフロー全体が完走する。
+- **モデルサービングやVector Searchなしでもデモ可能であること**：休眠予測は `scripts/train_model.py` で事前学習・事前計算した結果を `artifacts/predictions.json` に保存しており、実行時にモデルサービングを呼び出さない。ナレッジ検索も同様に、`data/knowledge/knowledge_base.json` を直接読み込むのみでVector Searchを使わない。
+- **合成データと事前計算済み予測の場所**：生データは `data/`、統合済み顧客360・予測・事前生成済み推奨は `artifacts/`（本README 5節・6節）。いずれもGit管理下でリポジトリに含まれる。
+- **Databricks接続を有効化する場合の設定箇所**：データモードは `DATABRICKS_SERVER_HOSTNAME` / `DATABRICKS_HTTP_PATH` / `DATABRICKS_TOKEN`（本README 12節）。実LLMは `LLM_ENDPOINT_URL` / `LLM_API_KEY` / `LLM_MODEL` / `LLM_TIMEOUT_SECONDS` / `LLM_MAX_RETRIES`（本README 6節）。いずれもDatabricks Appsのアプリ設定（環境変数またはリソース）から注入する想定で、コードへ直接記載しない。
+- **デモモードと本番想定の違い**：デモモードは合成データ・事前計算済み予測・ファイルベースの判断保存を使う。本番相当では、Databricks SQL/Unity Catalogからの実データ取得、実LLMエンドポイントの常時利用、Databricks側の判断保存先（Delta テーブル等）への書き込みに置き換える設計を、差し替え境界（`backend/services/data_source.py`, `backend/services/decision_store.py`）として用意している（実装はいずれも未実施）。
+
+## 15. Databricks Appsへのデプロイ手順
 
 正確な操作はワークスペースUIと利用可能な機能に合わせて確認してください。完成条件は、ローカル起動ではなくDatabricks Apps上で表示できることです。
 
@@ -431,7 +496,7 @@ Phase 1では実際のDatabricks SQL接続は行わず、モード判定のみ�
 10. `/api/metadata` で `data_mode` が想定通り（`demo` または `databricks`）であることを確認する。
 11. **`/api/health` だけでなく、ブラウザでアプリを開いてUI（日本語ヘッダーと3カラムの空状態レイアウト）が実際に表示されることを確認する。**
 
-## 14. API一覧
+## 16. API一覧
 
 | メソッド・パス | 内容 | 備考 |
 | --- | --- | --- |
@@ -447,7 +512,7 @@ Phase 1では実際のDatabricks SQL接続は行わず、モード判定のみ�
 
 `recommendation` エンドポイントは `generation_mode` / `generation_mode_label`（本README 6節）を必ず含む。`decision` エンドポイントのリクエストボディは `decision`（`approved` / `modified` / `skipped`）、`selected_action`、`modified_text`、`comment`、`generation_mode`、`model_version` を受け付ける（いずれも `selected_action` 以降は任意）。
 
-## 15. アプリの使い方（Phase 1〜4時点）
+## 17. アプリの使い方（Phase 1〜5時点）
 
 Phase 1〜4を通じて、Layer 1〜4の一連の業務フロー（Step①〜⑥）が一画面で完結します。画面各所の見出しには①〜⑥の番号を付け、デモを進める順序がひと目でわかるようにしています。
 
@@ -456,13 +521,13 @@ Phase 1〜4を通じて、Layer 1〜4の一連の業務フロー（Step①〜⑥
 - 中央上「② 顧客360」：選択顧客のEC・QR決済/カード利用推移グラフ、利用サービス数（前期との比較）、最終利用日、問い合わせ件数、データソース一覧
 - 中央下「③ 休眠リスク」：リスク帯、休眠確率、主要理由（最大3件、グラフの数値と一致）、モデルバージョン・推論日時
 - 右「④ 次のアクション」：顧客状況の要約、アクション候補（最大3件、理由付き）、注意事項、参照元（社内ナレッジ文書）、生成方式（`LLM生成` / `事前生成済みLLM回答` / `デモ用ルールベース生成`）
-- 右「⑤ 承認・修正・見送り」：④と同じパネル内で、アクションを選択し承認・修正・見送りを選び、コメントを添えて保存する。保存後は完了表示に切り替わる
-- 下部「⑥ フィードバック概要」：承認・修正・見送りの件数、直近の判断一覧（生成方式込み）、自動再学習が未実装であることの明記
+- 右「⑤ 承認・修正・見送り」：④と同じパネル内で、アクションを選択し承認・修正・見送りを選び、コメントを添えて保存する。保存後は完了表示に切り替わる（判断保存先に書き込めない場合は「一時保存です」という警告も表示する。本README 13節）
+- 下部「⑥ フィードバック概要」：承認・修正・見送りの件数、直近の判断一覧（生成方式込み）、自動再学習が未実装であることの明記（判断が一時保存の場合はここにも警告を表示する）
 - 最下部「デモ構成／本番化時に追加する事項」（折りたたみ）：デモで実装済みの範囲と、本番化時に追加する範囲を分けて表示する。普段は閉じており、技術的な背景を説明したいときだけ開く
 
 いずれかのAPI呼び出しが失敗した場合も、失敗した領域だけが日本語のエラーメッセージに切り替わり、他の領域は操作を継続できる（画面全体はクラッシュしない）。
 
-## 16. 実装上の仮定
+## 18. 実装上の仮定
 
 - 仮定：フロントエンドのビルド成果物（`frontend/dist`）は通常の開発コミットではGit管理対象外とし、デプロイ前に `scripts/prepare_deploy.sh`（または手動の `npm run build`）を実行して生成し、デプロイ時のみビルド済みフォルダーとして同期する。
 - 理由：ビルド成果物を常にリポジトリへコミットすると、ソースとの差分管理が煩雑になり、依存関係の更新時に不整合が生じやすいため。一方でGit URLから直接デプロイするとビルド成果物が欠落するため、デプロイ時は「ビルド済みフォルダーを配置」という別の同期方式を用いる。
@@ -504,15 +569,19 @@ Phase 1〜4を通じて、Layer 1〜4の一連の業務フロー（Step①〜⑥
 - 理由：全60顧客分の事前生成済み回答を用意することは本フェーズの検証目的（3方式の切り替えが正しく動くことの実証）に対して過剰であり、ルールベース生成が全顧客をカバーする最終フォールバックとして機能するため、6件で切り替えロジックの実証は十分と判断した。
 - 本番で確認する事項：デモで見せたい顧客が6件に含まれない場合、`scripts/generate_pregenerated_recommendations.py` の `PRE_GENERATED_CONTENT` へ対象顧客を追加する。
 
-- 仮定：判断保存は既定でリポジトリ直下の `runtime/decisions.json`（Git管理外）へのファイル書き込みとする。Databricksデータモード（`DATABRICKS_SERVER_HOSTNAME` 等が設定済み）の場合でも、Databricks側の保存先接続は未実装のため、警告ログを出したうえで同じファイルストレージへフォールバックする。
-- 理由：DEMO_SPEC.mdの要件は「永続ストレージが未設定でも動くこと」であり、Databricks Free Edition環境での確実な動作を優先した。Databricks側の実装（Delta テーブルへの書き込み等）は接続方式の検証が必要なため、本フェーズのスコープ外とした。
-- 本番で確認する事項：Databricks側の判断保存先（Delta テーブル等）を用意し、`backend/services/decision_store.py` の `_get_databricks_store` を実装に置き換える。
+- 仮定：判断保存は既定でリポジトリ直下の `runtime/decisions.json`（Git管理外）へのファイル書き込みとする。Databricksデータモード（`DATABRICKS_SERVER_HOSTNAME` 等が設定済み）の場合でも、Databricks側の保存先接続は未実装のため、警告ログを出したうえで同じファイルストレージへフォールバックする。書き込み先ディレクトリが読み取り専用等で書き込めない場合は、さらにプロセス内メモリへフォールバックし、`persisted: false` をAPI・UIへ返す（Phase 5、本README 13節）。
+- 理由：DEMO_SPEC.mdの要件は「永続ストレージが未設定でも動くこと」であり、Databricks Free Edition環境での確実な動作を優先した。Databricks Apps環境ではコンテナのファイルシステムが読み取り専用・再起動で消去される場合があるため、書き込み失敗を例外にせず利用者に状況を明示する設計とした。Databricks側の実装（Delta テーブルへの書き込み等）は接続方式の検証が必要なため、本フェーズのスコープ外とした。
+- 本番で確認する事項：Databricks側の判断保存先（Delta テーブル等）を用意し、`backend/services/decision_store.py` の `_get_databricks_store` を実装に置き換える。インメモリフォールバックが常用される環境であれば、永続化されたキューやオブジェクトストレージへの書き込みも検討する。
+
+- 仮定：判断保存の書き込み可否は、リクエストのたびに一時ファイルの作成・削除で軽量に確認する（`_is_directory_writable`）。書き込み不可と判定された場合のインメモリストア（`InMemoryDecisionStore`）は、プロセス内で共有インスタンスとして扱い、直前に保存した判断がその後の一覧取得に反映されるようにする。
+- 理由：ファイルストレージとインメモリストアの内容を都度マージする実装は複雑になり、本フェーズの検証目的（書き込み失敗時にAPI自体を失敗させないこと）に対して過剰と判断した。
+- 本番で確認する事項：実運用でファイルシステムの書き込み可否が頻繁に変化する場合、書き込み成功時に記録したファイル内容とインメモリ分の統合方法を検討する。
 
 - 仮定：ルールベース生成が提案するアクションは、DEMO_SPEC.mdが例示する5種類（EC再利用の案内／QR決済の利用メリット案内／カード利用特典の案内／複数サービスをまたぐ軽量なポイント施策／施策を行わず経過観察）に固定し、それ以外の自由記述アクションは生成しない。
 - 理由：推奨アクションが業務方針から逸脱しないことを構造的に保証するため（自由記述だと過度なインセンティブ等が紛れ込むリスクがある）。
 - 本番で確認する事項：実際の施策カタログが追加・変更された場合、`backend/services/rule_based_generator.py` のアクション定数とナレッジ文書（`data/knowledge/knowledge_base.json`）を合わせて更新する。
 
-## 17. 失敗時の対処
+## 19. 失敗時の対処
 
 `frontend/dist/index.html` が見つからずproductionモードで起動が失敗した場合：
 
@@ -521,7 +590,7 @@ Phase 1〜4を通じて、Layer 1〜4の一連の業務フロー（Step①〜⑥
 3. 生成された `frontend/dist` を含むフォルダーを、Databricksワークスペースの配置先へ再同期する。
 4. Databricks Appsを再デプロイし、アプリログと `/api/health`・画面表示の両方を再確認する。
 
-## 18. デモ前チェック・データ品質テスト結果（Phase 1〜4時点で確認済みの項目）
+## 20. デモ前チェック・データ品質テスト結果（Phase 1〜5時点で確認済みの項目）
 
 ### 起動・デプロイ関連（Phase 1）
 
@@ -583,7 +652,30 @@ Phase 1〜4を通じて、Layer 1〜4の一連の業務フロー（Step①〜⑥
 - [x] `npm run typecheck` / `npm run build` / `python -m pytest backend/tests`（65件）が全件成功する
 - [x] Step①〜⑥の一連の操作をPlaywrightで最初から最後まで実行し、スクリーンショットで確認済み
 
-## 19. 伝えること・伝えないこと
+### ポート・ホスト解決（Phase 1、`backend/tests/test_config.py` で確認済み）
+
+- [x] `DATABRICKS_APP_PORT` が設定されている場合は最優先される（`test_resolve_port_prefers_databricks_app_port_over_others`）
+- [x] `DATABRICKS_APP_PORT` 未設定時は `UVICORN_PORT` へ移行する（`test_resolve_port_prefers_uvicorn_port_over_port`）
+- [x] さらに未設定時は `PORT` へ移行する（`test_resolve_port_uses_port_when_only_port_set`）
+- [x] すべて未設定の場合は既定値8000になる（`test_resolve_port_defaults_to_8000`）
+- [x] 空文字列の環境変数は未設定として扱われる（`test_resolve_port_ignores_empty_string_values`）
+- [x] `UVICORN_HOST` 未設定時は `0.0.0.0` になる（`test_resolve_host_defaults_to_zero_zero_zero_zero`）
+
+### テスト・堅牢化（Phase 5）
+
+- [x] SPAフォールバック：未知の非APIパスは `index.html` を返し、`/api/*` の404はJSONのまま（`test_unknown_non_api_path_falls_back_to_spa_index`, `test_unknown_api_path_stays_json_404_not_spa_index`）
+- [x] 静的ファイル配信とAPIルートが競合しない（同上、`/api/health` 等が静的マウントに奪われないことを確認）
+- [x] 判断保存先が書き込み不可の場合、インメモリストレージへ自動フォールバックし、`persisted: false` を返す（`backend/tests/test_decision_store_fallback.py`。権限依存の回避策として、親コンポーネントがファイルであるパスを使った privilege-independent なテストで確認）
+- [x] インメモリフォールバックはプロセス内で共有され、直前の保存内容が一覧取得に反映される
+- [x] APIの入力検証：`decision` は許可値のみ（422）、コメント等の文字数上限超過は422
+- [x] ログに秘密情報・個人情報を出力していないことをコード全体で確認（LLM呼び出し失敗時は例外の型名のみ記録）
+- [x] CORSミドルウェアを導入していないこと（フロントエンド・バックエンドは常に同一オリジン）を確認
+- [x] 依存関係（`requirements.txt`, `scripts/requirements-scripts.txt`, `frontend/package.json`）に未使用のものが無いことを確認
+- [x] フロントエンド単体テスト11件（Vitest + Testing Library）が全件成功する：`RiskBadge`（色以外の手段でのリスク表示）、`CustomerListPanel`（一覧表示・選択・`aria-pressed`）、`RecommendationPanel`（表示・保存成功・保存失敗時の日本語エラー・非永続時の警告表示）
+- [x] `bash scripts/prepare_deploy.sh` にフロントエンド単体テストを組み込み、型チェック・テスト・ビルド・Pythonテストが一括で成功する
+- [ ] Databricks Apps上での実際の読み取り専用ファイルシステム・再起動シナリオの確認（この修正では未実施、ワークスペースアクセスが必要）
+
+## 21. 伝えること・伝えないこと
 
 ### 伝えること
 - 部門別データを一人の顧客像へ統合する設計であること

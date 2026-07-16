@@ -67,3 +67,47 @@ def test_reload_at_root_serves_spa_index_repeatedly(tmp_path: Path) -> None:
         response = client.get("/")
         assert response.status_code == 200
         assert "spa" in response.text
+
+
+def test_unknown_non_api_path_falls_back_to_spa_index(tmp_path: Path) -> None:
+    """未知のパス（直リンクやリロード）でも/api/*以外はindex.htmlへフォールバックする。"""
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    (dist_dir / "index.html").write_text(
+        "<!doctype html><html><body>spa</body></html>", encoding="utf-8"
+    )
+
+    app = create_app(app_env="production", frontend_dist_dir=dist_dir)
+    client = TestClient(app)
+
+    response = client.get("/some/unknown/route")
+    assert response.status_code == 200
+    assert "spa" in response.text
+
+
+def test_unknown_api_path_stays_json_404_not_spa_index(tmp_path: Path) -> None:
+    """/api/*の404はindex.htmlへ差し替えず、JSON詳細メッセージのまま返す
+    （静的ファイル配信とAPIルートが競合しないことの確認）。"""
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    (dist_dir / "index.html").write_text(
+        "<!doctype html><html><body>spa</body></html>", encoding="utf-8"
+    )
+
+    app = create_app(app_env="production", frontend_dist_dir=dist_dir)
+    client = TestClient(app)
+
+    response = client.get("/api/customers/NOPE")
+    assert response.status_code == 404
+    assert response.headers["content-type"].startswith("application/json")
+    assert "NOPE" in response.json()["detail"]
+
+
+def test_unknown_path_without_dist_returns_plain_404(tmp_path: Path) -> None:
+    """distが無いdevelopmentモードでは、SPAフォールバックは適用されず通常の404になる。"""
+    missing_dist = tmp_path / "no-such-dist"
+    app = create_app(app_env="development", frontend_dist_dir=missing_dist)
+    client = TestClient(app)
+
+    response = client.get("/some/unknown/route")
+    assert response.status_code == 404
