@@ -316,36 +316,6 @@ export default function App() {
         </ErrorBoundary>
       </section>
 
-      <details className="demo-info">
-        <summary>デモ構成／本番化時に追加する事項</summary>
-        <div className="demo-info__body">
-          <div>
-            <h3>デモで実装済み</h3>
-            <ul>
-              <li>複数サービスの合成データ統合（EC・QR決済・カード・ネット銀行・過去施策・問い合わせ）</li>
-              <li>customer_idで統合した顧客360</li>
-              <li>ベースラインの休眠予測（単純で説明可能な分類モデル）</li>
-              <li>実LLMを主経路とし、事前生成済み回答・ルールベース生成をフォールバックに持つ根拠付きアクション候補</li>
-              <li>人間による承認・修正・見送りの判断</li>
-              <li>判断のフィードバック記録</li>
-            </ul>
-          </div>
-          <div>
-            <h3>本番化時に追加</h3>
-            <ul>
-              <li>実際の業務システム・Databricks SQL/Unity Catalogへの接続</li>
-              <li>サービス間の高度なID解決・PIIマスキング・行列レベルアクセス制御</li>
-              <li>モデルの継続的な監視・自動再学習</li>
-              <li>外部施策配信システムとの本番連携（本デモは自動配信を行わない）</li>
-              <li>Databricks側の判断保存先（Delta テーブル等）への接続</li>
-            </ul>
-          </div>
-        </div>
-      </details>
-
-      <footer className="footer">
-        判断・施策結果を次の分析・モデル・施策改善へ戻す設計です。実際の自動再学習は本番化時に追加します。
-      </footer>
     </div>
   );
 }

@@ -118,14 +118,6 @@
   max-width: 28em;
 }
 
-.footer {
-  padding: var(--space-md) var(--space-lg);
-  background: var(--color-bg);
-  border-top: 1px solid var(--color-border-subtle);
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-}
-
 .panel__status {
   color: var(--color-text-secondary);
   font-size: 0.9rem;
@@ -579,43 +571,4 @@
   margin: 0;
   font-size: 0.85rem;
   font-weight: 600;
-}
-
-/* デモ構成／本番化時に追加する事項（折りたたみ） */
-.demo-info {
-  margin: 0 var(--space-lg) var(--space-lg) var(--space-lg);
-  background: var(--color-bg-subtle);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
-  padding: var(--space-md) var(--space-lg);
-}
-
-.demo-info > summary {
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-}
-
-.demo-info__body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-lg);
-  margin-top: var(--space-md);
-}
-
-.demo-info__body h3 {
-  margin: 0 0 var(--space-xs) 0;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.demo-info__body ul {
-  margin: 0;
-  padding-left: 1.2em;
-  font-size: 0.8rem;
-  color: var(--color-text-secondary);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
