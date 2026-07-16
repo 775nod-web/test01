@@ -1,0 +1,52 @@
+/*
+ * デザイントークン：Google流プレゼンテーションを想起させる、淡く鮮やかな配色。
+ * 白基調の背景に、青・緑・黄・赤紫を淡いトーンで使う。色だけで状態を伝えないため、
+ * 各トークンはラベル・アイコンと併用する前提で用意する。
+ */
+:root {
+  /* ベース */
+  --color-bg: #ffffff;
+  --color-bg-subtle: #f8f9fa;
+  --color-bg-elevated: #ffffff;
+  --color-border: #dadce0;
+  --color-border-subtle: #e8eaed;
+
+  /* テキスト */
+  --color-text-primary: #202124;
+  --color-text-secondary: #5f6368;
+  --color-text-disabled: #9aa0a6;
+
+  /* 青（情報・既定アクション） */
+  --color-blue-50: #e8f0fe;
+  --color-blue-600: #1a73e8;
+  --color-blue-700: #174ea6;
+
+  /* 緑（低リスク・良好） */
+  --color-green-50: #e6f4ea;
+  --color-green-600: #188038;
+  --color-green-700: #0d652d;
+
+  /* 黄（中リスク・注意） */
+  --color-yellow-50: #fef7e0;
+  --color-yellow-600: #f9ab00;
+  --color-yellow-700: #b06000;
+
+  /* 赤紫（高リスク・警告） */
+  --color-magenta-50: #fce8f3;
+  --color-magenta-600: #b0289b;
+  --color-magenta-700: #8a1b78;
+
+  /* 余白・角丸 */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+
+  /* フォント：日本語対応のシステムフォント */
+  --font-family-base:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+}

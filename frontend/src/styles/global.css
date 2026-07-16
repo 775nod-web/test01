@@ -1,0 +1,22 @@
+@import "./tokens.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-base);
+}
+
+button {
+  font-family: inherit;
+}

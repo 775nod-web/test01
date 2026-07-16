@@ -1,0 +1,112 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.header__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.header__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.badge--demo {
+  background: var(--color-yellow-50);
+  color: var(--color-yellow-700);
+}
+
+.badge--databricks {
+  background: var(--color-blue-50);
+  color: var(--color-blue-700);
+}
+
+.badge--error {
+  background: var(--color-magenta-50);
+  color: var(--color-magenta-700);
+}
+
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 280px 1fr 320px;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  align-items: start;
+}
+
+.panel {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  min-height: 320px;
+}
+
+.panel--stacked {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.panel__title {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-sm);
+  padding: var(--space-xl) var(--space-md);
+  color: var(--color-text-secondary);
+  min-height: 200px;
+}
+
+.empty-state__icon {
+  font-size: 2rem;
+}
+
+.empty-state__text {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  max-width: 28em;
+}
+
+.footer {
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
