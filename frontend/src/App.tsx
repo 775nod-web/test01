@@ -1,10 +1,25 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { fetchCustomerDetail, fetchCustomers, fetchHealth, fetchMetadata } from "./api/client";
+import {
+  fetchCustomerDetail,
+  fetchCustomers,
+  fetchFeedbackSummary,
+  fetchHealth,
+  fetchMetadata,
+  fetchRecommendation,
+} from "./api/client";
 import { CustomerListPanel } from "./components/CustomerListPanel";
 import { Customer360Panel } from "./components/Customer360Panel";
+import { FeedbackSummaryPanel } from "./components/FeedbackSummaryPanel";
+import { RecommendationPanel } from "./components/RecommendationPanel";
 import { RiskPanel } from "./components/RiskPanel";
-import type { CustomerDetailResponse, CustomerSummary, MetadataResponse } from "./types";
+import type {
+  CustomerDetailResponse,
+  CustomerSummary,
+  FeedbackSummaryResponse,
+  MetadataResponse,
+  RecommendationResponse,
+} from "./types";
 
 type HeaderState =
   | { status: "loading" }
@@ -20,6 +35,17 @@ type CustomerDetailState =
   | { status: "idle" }
   | { status: "loading" }
   | { status: "ready"; detail: CustomerDetailResponse }
+  | { status: "error"; message: string };
+
+type RecommendationState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "ready"; recommendation: RecommendationResponse }
+  | { status: "error"; message: string };
+
+type FeedbackSummaryState =
+  | { status: "loading" }
+  | { status: "ready"; summary: FeedbackSummaryResponse }
   | { status: "error"; message: string };
 
 const DATA_MODE_LABEL: Record<string, string> = {
@@ -63,6 +89,11 @@ export default function App() {
   const [listState, setListState] = useState<CustomerListState>({ status: "loading" });
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [detailState, setDetailState] = useState<CustomerDetailState>({ status: "idle" });
+  const [recommendationState, setRecommendationState] = useState<RecommendationState>({
+    status: "idle",
+  });
+  const [feedbackState, setFeedbackState] = useState<FeedbackSummaryState>({ status: "loading" });
+  const [feedbackRefreshKey, setFeedbackRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -121,8 +152,9 @@ export default function App() {
     }
     let cancelled = false;
     setDetailState({ status: "loading" });
+    setRecommendationState({ status: "loading" });
 
-    async function load() {
+    async function loadDetail() {
       try {
         const detail = await fetchCustomerDetail(selectedCustomerId!);
         if (!cancelled) {
@@ -136,11 +168,49 @@ export default function App() {
       }
     }
 
-    void load();
+    async function loadRecommendation() {
+      try {
+        const recommendation = await fetchRecommendation(selectedCustomerId!);
+        if (!cancelled) {
+          setRecommendationState({ status: "ready", recommendation });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          const message = error instanceof Error ? error.message : "不明なエラー";
+          setRecommendationState({ status: "error", message });
+        }
+      }
+    }
+
+    void loadDetail();
+    void loadRecommendation();
     return () => {
       cancelled = true;
     };
   }, [selectedCustomerId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const summary = await fetchFeedbackSummary();
+        if (!cancelled) {
+          setFeedbackState({ status: "ready", summary });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          const message = error instanceof Error ? error.message : "不明なエラー";
+          setFeedbackState({ status: "error", message });
+        }
+      }
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [feedbackRefreshKey]);
 
   return (
     <div className="app">
@@ -192,19 +262,39 @@ export default function App() {
 
         <section className="panel" aria-label="次のアクション">
           <h2 className="panel__title">次のアクション</h2>
-          <div className="empty-state">
-            <span className="empty-state__icon" aria-hidden="true">
-              💡
-            </span>
-            <p className="empty-state__text">
-              推奨アクション、根拠、参照元、承認・修正・見送りの操作はLayer 3実装後に表示されます。
-            </p>
-          </div>
+          {recommendationState.status === "idle" && (
+            <p className="panel__status">左の一覧から顧客を選択してください。</p>
+          )}
+          {recommendationState.status === "loading" && (
+            <p className="panel__status">読み込み中...</p>
+          )}
+          {recommendationState.status === "error" && (
+            <p className="panel__status panel__status--error">{recommendationState.message}</p>
+          )}
+          {recommendationState.status === "ready" && selectedCustomerId && (
+            <RecommendationPanel
+              key={selectedCustomerId}
+              customerId={selectedCustomerId}
+              recommendation={recommendationState.recommendation}
+              onDecisionSaved={() => setFeedbackRefreshKey((key) => key + 1)}
+            />
+          )}
         </section>
       </main>
 
+      <section className="feedback-section" aria-label="フィードバック概要">
+        <h2 className="panel__title">フィードバック概要</h2>
+        {feedbackState.status === "loading" && <p className="panel__status">読み込み中...</p>}
+        {feedbackState.status === "error" && (
+          <p className="panel__status panel__status--error">{feedbackState.message}</p>
+        )}
+        {feedbackState.status === "ready" && (
+          <FeedbackSummaryPanel summary={feedbackState.summary} />
+        )}
+      </section>
+
       <footer className="footer">
-        フィードバックループと本番化時の追加事項は、Step 6実装時にこの領域へ表示します。
+        判断・施策結果を次の分析・モデル・施策改善へ戻す設計です。実際の自動再学習は本番化時に追加します。
       </footer>
     </div>
   );

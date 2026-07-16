@@ -13,5 +13,8 @@ frontend/dist/
 .env.*
 !.env.example
 
+# 実行時に生成される判断保存データ（デモセッションの状態。静的フィクスチャのdata/やartifacts/とは異なる）
+runtime/
+
 # エディタ・OS
 .DS_Store

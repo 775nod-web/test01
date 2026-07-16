@@ -83,3 +83,71 @@ export interface CustomerDetailResponse {
   customer: CustomerDetail;
   prediction: Prediction;
 }
+
+export type GenerationMode = "llm" | "pre_generated" | "rule_based";
+
+export interface ActionCandidate {
+  title: string;
+  reason: string;
+}
+
+export interface ReferenceItem {
+  doc_id: string;
+  title: string;
+  type: string;
+}
+
+export interface RecommendationResponse {
+  customer_id: string;
+  generation_mode: GenerationMode;
+  generation_mode_label: string;
+  model_version: string;
+  generated_at: string;
+  summary: string;
+  actions: ActionCandidate[];
+  cautions: string[];
+  references: ReferenceItem[];
+}
+
+export type DecisionType = "approved" | "modified" | "skipped";
+
+export interface DecisionRequest {
+  decision: DecisionType;
+  selected_action?: string | null;
+  modified_text?: string | null;
+  comment?: string | null;
+  generation_mode?: string | null;
+  model_version?: string | null;
+}
+
+export interface DecisionRecord {
+  decision_id: string;
+  customer_id: string;
+  decision: DecisionType;
+  selected_action: string | null;
+  modified_text: string | null;
+  comment: string | null;
+  decided_at: string;
+  generation_mode: string | null;
+  model_version: string | null;
+}
+
+export interface RecentDecision {
+  customer_id: string;
+  display_name: string;
+  decision: DecisionType;
+  selected_action: string | null;
+  decided_at: string;
+  generation_mode_label: string;
+}
+
+export interface FeedbackSummaryResponse {
+  total_decisions: number;
+  approved_count: number;
+  modified_count: number;
+  skipped_count: number;
+  by_generation_mode: Record<string, number>;
+  recent_decisions: RecentDecision[];
+  updated_at: string;
+  note: string;
+}

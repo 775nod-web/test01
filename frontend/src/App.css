@@ -336,3 +336,218 @@
   font-size: 0.72rem;
   color: var(--color-text-disabled);
 }
+
+/* 次のアクション（推奨） */
+.recommendation-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.recommendation-panel__summary {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.recommendation-panel__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.recommendation-panel__action {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+  cursor: pointer;
+}
+
+.recommendation-panel__action input {
+  margin-top: 4px;
+}
+
+.recommendation-panel__action-title {
+  display: block;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.recommendation-panel__action-reason {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.recommendation-panel__cautions {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 0.78rem;
+  color: var(--color-yellow-700);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.recommendation-panel__references {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+}
+
+.recommendation-panel__footnote {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--color-text-disabled);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+.recommendation-panel__decision {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: var(--space-md);
+}
+
+.recommendation-panel__decision-buttons {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.decision-button {
+  flex: 1;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.decision-button--selected {
+  background: var(--color-blue-50);
+  border-color: var(--color-blue-600);
+  color: var(--color-blue-700);
+  font-weight: 600;
+}
+
+.recommendation-panel__textarea {
+  width: 100%;
+  min-height: 60px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+  font-family: inherit;
+  font-size: 0.85rem;
+  resize: vertical;
+}
+
+.recommendation-panel__save-button {
+  align-self: flex-start;
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-blue-600);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.recommendation-panel__save-button:disabled {
+  background: var(--color-border);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.recommendation-panel__saved {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  background: var(--color-green-50);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+}
+
+.recommendation-panel__saved-title {
+  margin: 0 0 4px 0;
+  font-weight: 600;
+  color: var(--color-green-700);
+}
+
+.recommendation-panel__saved-sub {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+/* フィードバック概要 */
+.feedback-section {
+  margin: 0 var(--space-lg) var(--space-lg) var(--space-lg);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+}
+
+.feedback-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.feedback-summary__counts {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+.feedback-summary__count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-lg);
+  min-width: 80px;
+}
+
+.feedback-summary__count-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.feedback-summary__count-label {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+}
+
+.feedback-summary__explanation {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.feedback-summary__recent {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.feedback-summary__production-note {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-disabled);
+}

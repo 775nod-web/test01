@@ -8,6 +8,7 @@ Databricks Apps / ローカル開発の両方で、ホスト・ポート・デ�
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from datetime import datetime, timezone
 
 DEFAULT_HOST = "0.0.0.0"
@@ -68,3 +69,61 @@ def resolve_app_env(env: "os._Environ[str] | dict[str, str] | None" = None) -> s
 def current_timestamp() -> str:
     """UTCのISO8601形式で現在時刻を返す（データ更新時刻表示用）。"""
     return datetime.now(timezone.utc).isoformat()
+
+
+# 生成方式（Layer 3）。内部値とUI表示名はCLAUDE.md/DEMO_SPEC.mdの定義に従う。
+GENERATION_MODE_LLM = "llm"
+GENERATION_MODE_PRE_GENERATED = "pre_generated"
+GENERATION_MODE_RULE_BASED = "rule_based"
+
+GENERATION_MODE_LABEL = {
+    GENERATION_MODE_LLM: "LLM生成",
+    GENERATION_MODE_PRE_GENERATED: "事前生成済みLLM回答",
+    GENERATION_MODE_RULE_BASED: "デモ用ルールベース生成",
+}
+
+DEFAULT_LLM_TIMEOUT_SECONDS = 8.0
+DEFAULT_LLM_MAX_RETRIES = 1
+
+
+@dataclass(frozen=True)
+class LLMConfig:
+    endpoint_url: str
+    api_key: str
+    model: str | None
+    timeout_seconds: float
+    max_retries: int
+
+
+def resolve_llm_config(env: "os._Environ[str] | dict[str, str] | None" = None) -> LLMConfig | None:
+    """LLM接続設定を環境変数から解決する。
+
+    エンドポイントURLと認証情報が両方とも設定されている場合のみ設定済みとみなし、
+    LLMConfigを返す。未設定の場合はNoneを返し、呼び出し側は次の生成方式へ進む。
+    接続情報・モデル名・認証情報はコードへ直接記載せず、すべて環境変数から取得する。
+    """
+    source = env if env is not None else os.environ
+    endpoint_url = source.get("LLM_ENDPOINT_URL") or ""
+    api_key = source.get("LLM_API_KEY") or ""
+    if not endpoint_url or not api_key:
+        return None
+
+    timeout_raw = source.get("LLM_TIMEOUT_SECONDS")
+    try:
+        timeout_seconds = float(timeout_raw) if timeout_raw else DEFAULT_LLM_TIMEOUT_SECONDS
+    except ValueError:
+        timeout_seconds = DEFAULT_LLM_TIMEOUT_SECONDS
+
+    retries_raw = source.get("LLM_MAX_RETRIES")
+    try:
+        max_retries = int(retries_raw) if retries_raw else DEFAULT_LLM_MAX_RETRIES
+    except ValueError:
+        max_retries = DEFAULT_LLM_MAX_RETRIES
+
+    return LLMConfig(
+        endpoint_url=endpoint_url,
+        api_key=api_key,
+        model=source.get("LLM_MODEL") or None,
+        timeout_seconds=timeout_seconds,
+        max_retries=max_retries,
+    )

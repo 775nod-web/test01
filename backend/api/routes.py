@@ -2,8 +2,9 @@
 
 Phase 1: `/api/health`, `/api/metadata`
 Phase 2: `/api/customers`, `/api/customers/{customer_id}`（顧客360＋休眠予測）
-
-推奨アクション・判断保存・フィードバック概要は後続フェーズで追加する。
+Phase 3: `/api/customers/{customer_id}/recommendation`（次アクション候補）、
+         `/api/customers/{customer_id}/decision`（判断保存）、
+         `/api/feedback-summary`（フィードバック概要）
 """
 
 from __future__ import annotations
@@ -13,20 +14,35 @@ import logging
 from fastapi import APIRouter, HTTPException
 
 from backend.config import current_timestamp, resolve_data_mode
-from backend.models.schemas import CustomerDetailResponse, CustomersListResponse
+from backend.models.schemas import (
+    CustomerDetailResponse,
+    CustomersListResponse,
+    DecisionRecord,
+    DecisionRequest,
+    FeedbackSummaryResponse,
+    RecommendationResponse,
+)
 from backend.services.customer_service import (
     CustomerNotFoundError,
     get_customer_detail,
     list_customers,
 )
 from backend.services.data_source import load_customer_dataset
+from backend.services.decision_service import save_decision
+from backend.services.feedback_service import build_feedback_summary
+from backend.services.recommendation_service import get_recommendation
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 APP_NAME = "顧客休眠予兆・次アクション支援デモ"
-API_VERSION = "0.2.0"
+API_VERSION = "0.3.0"
+
+DATA_NOT_READY_DETAIL = (
+    "顧客データが未生成です。scripts/generate_demo_data.py → "
+    "scripts/prepare_customer360.py → scripts/train_model.py を実行してください。"
+)
 
 
 @router.get("/health")
@@ -61,13 +77,7 @@ def get_customers() -> dict:
     try:
         return list_customers()
     except FileNotFoundError as exc:
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                "顧客データが未生成です。scripts/generate_demo_data.py → "
-                "scripts/prepare_customer360.py → scripts/train_model.py を実行してください。"
-            ),
-        ) from exc
+        raise HTTPException(status_code=503, detail=DATA_NOT_READY_DETAIL) from exc
 
 
 @router.get("/customers/{customer_id}", response_model=CustomerDetailResponse)
@@ -77,10 +87,32 @@ def get_customer(customer_id: str) -> dict:
     except CustomerNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except FileNotFoundError as exc:
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                "顧客データが未生成です。scripts/generate_demo_data.py → "
-                "scripts/prepare_customer360.py → scripts/train_model.py を実行してください。"
-            ),
-        ) from exc
+        raise HTTPException(status_code=503, detail=DATA_NOT_READY_DETAIL) from exc
+
+
+@router.get("/customers/{customer_id}/recommendation", response_model=RecommendationResponse)
+def get_customer_recommendation(customer_id: str) -> dict:
+    try:
+        return get_recommendation(customer_id)
+    except CustomerNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=DATA_NOT_READY_DETAIL) from exc
+
+
+@router.post("/customers/{customer_id}/decision", response_model=DecisionRecord)
+def post_customer_decision(customer_id: str, body: DecisionRequest) -> dict:
+    try:
+        return save_decision(customer_id, body.model_dump())
+    except CustomerNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=DATA_NOT_READY_DETAIL) from exc
+
+
+@router.get("/feedback-summary", response_model=FeedbackSummaryResponse)
+def get_feedback_summary() -> dict:
+    try:
+        return build_feedback_summary()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=DATA_NOT_READY_DETAIL) from exc

@@ -15,7 +15,7 @@ Databricks Free EditionとDatabricks Appsを使い、次の一連の業務を日
 
 > この顧客へ今対応すべきか。対応するなら、どのアクションが妥当か。
 
-## 2. 現在の実装状況（Phase 1 + Phase 2）
+## 2. 現在の実装状況（Phase 1 + Phase 2 + Phase 3）
 
 ### Phase 1（土台）
 - React + TypeScript + Vite のフロントエンド骨格（1画面、日本語ベースレイアウト）
@@ -35,6 +35,13 @@ Databricks Free EditionとDatabricks Appsを使い、次の一連の業務を日
 - Databricks利用時とデモデータ利用時の差し替え境界（`backend/services/data_source.py`）
 - データ品質の自動チェック（生成スクリプト内 + `backend/tests/test_data_quality.py`）
 - 左「本日の優先顧客」リスト、中央「顧客360」利用推移グラフ・「休眠リスク」表示のUI実装
+
+### Phase 3（Layer 3: GenAI・RAG相当 / Layer 4: 判断・フィードバック）
+- 社内ナレッジ文書6件（過去施策の説明・サービス情報・顧客対応方針）と、顧客360・予測を統合するコンテキスト作成（`backend/services/recommendation_context.py`）
+- 実LLMエンドポイント → 事前生成済みLLM回答 → ルールベース生成の3段フォールバック（`backend/services/recommendation_service.py`）。実LLM呼び出しにはタイムアウト・再試行上限・出力スキーマ検証（ハルシネーション参照元の拒否を含む）を実装
+- `GET /api/customers/{customer_id}/recommendation`、`POST /api/customers/{customer_id}/decision`、`GET /api/feedback-summary` の実装
+- 判断（承認・修正・見送り）をファイルへ保存し、Databricks側の保存先が設定されている場合に差し替えられる設計（`backend/services/decision_store.py`）
+- 右「次のアクション」パネル（要約・候補・理由・注意事項・参照元・生成方式・承認/修正/見送り）と、下部「フィードバック概要」のUI実装
 
 ## 3. 技術構成
 
@@ -68,47 +75,66 @@ Node.jsはReactのビルドにのみ使用します。Databricks Apps起動時�
 ├── requirements.txt
 ├── .gitignore
 ├── scripts/
-│   ├── prepare_deploy.sh          # デプロイ前ビルド・テストの一括実行スクリプト
-│   ├── requirements-scripts.txt    # 合成データ生成・モデル学習専用の依存関係（backendには不要）
-│   ├── generate_demo_data.py       # 固定シードの合成データ生成 → data/
-│   ├── prepare_customer360.py      # data/ → artifacts/customer360.json（顧客360統合）
-│   └── train_model.py              # artifacts/customer360.json → artifacts/predictions.json, model_metadata.json
-├── data/                            # 合成データ（生データ）。コミット対象
+│   ├── prepare_deploy.sh              # デプロイ前ビルド・テストの一括実行スクリプト
+│   ├── requirements-scripts.txt        # 合成データ生成・モデル学習専用の依存関係（backendには不要）
+│   ├── generate_demo_data.py           # 固定シードの合成データ生成 → data/
+│   ├── prepare_customer360.py          # data/ → artifacts/customer360.json（顧客360統合）
+│   ├── train_model.py                  # artifacts/customer360.json → artifacts/predictions.json, model_metadata.json
+│   └── generate_pregenerated_recommendations.py  # → artifacts/pre_generated_recommendations.json
+├── data/                                # 合成データ（生データ）。コミット対象
 │   ├── customers.csv
 │   ├── ec_transactions.csv
 │   ├── payment_transactions.csv
 │   ├── bank_transactions.csv
 │   ├── campaigns.csv
 │   ├── customer_support.json
-│   └── generation_meta.json
-├── artifacts/                       # 統合済みデータ・事前計算済み予測。コミット対象（フォールバック用）
+│   ├── generation_meta.json
+│   └── knowledge/
+│       └── knowledge_base.json         # 過去施策の説明・サービス情報・顧客対応方針（計6件）
+├── artifacts/                           # 統合済みデータ・事前計算済み結果。コミット対象（フォールバック用）
 │   ├── customer360.json
 │   ├── predictions.json
-│   └── model_metadata.json
+│   ├── model_metadata.json
+│   └── pre_generated_recommendations.json
+├── runtime/                              # 判断保存など実行時state。Git管理外（.gitignore）
+│   └── decisions.json                    # POST /api/customers/{id}/decision で生成される
 ├── backend/
-│   ├── main.py                     # FastAPIエントリーポイント（起動モード判定・Reactビルドの配信を含む）
-│   ├── config.py                    # ホスト・ポート・データモード・起動モード解決ロジック
+│   ├── main.py                         # FastAPIエントリーポイント（起動モード判定・Reactビルドの配信を含む）
+│   ├── config.py                        # ホスト・ポート・データモード・起動モード・LLM接続解決ロジック
 │   ├── api/
-│   │   └── routes.py                # /api/health, /api/metadata, /api/customers, /api/customers/{id}
+│   │   └── routes.py                    # /api/health 〜 /api/feedback-summary 全エンドポイント
 │   ├── models/
-│   │   └── schemas.py               # APIレスポンスのPydanticスキーマ
+│   │   └── schemas.py                   # APIレスポンスのPydanticスキーマ
 │   ├── services/
-│   │   ├── data_source.py           # Databricks/demoデータ取得の差し替え境界
-│   │   └── customer_service.py      # 顧客360と予測の結合ロジック
+│   │   ├── data_source.py               # Databricks/demoデータ取得の差し替え境界
+│   │   ├── customer_service.py          # 顧客360と予測の結合ロジック
+│   │   ├── knowledge_base.py            # 社内ナレッジ文書の読み込み
+│   │   ├── recommendation_context.py    # 顧客360＋予測＋ナレッジのコンテキスト作成
+│   │   ├── llm_client.py                # 実LLM呼び出し（タイムアウト・再試行・出力検証）
+│   │   ├── pre_generated_store.py       # 事前生成済み回答フィクスチャの読み込み
+│   │   ├── rule_based_generator.py      # 決定論的ルールベース生成（最終フォールバック）
+│   │   ├── recommendation_service.py    # llm→pre_generated→rule_basedの切り替え
+│   │   ├── decision_store.py            # 判断保存（ファイル／Databricks差し替え境界）
+│   │   ├── decision_service.py          # 判断保存の入力検証・組み立て
+│   │   └── feedback_service.py          # フィードバック概要の集計
 │   └── tests/
 │       ├── test_config.py
 │       ├── test_api.py
-│       ├── test_deploy_modes.py     # development/productionモードの起動挙動テスト
-│       ├── test_customers_api.py    # /api/customers, /api/customers/{id} の疎通テスト
-│       ├── test_data_source.py      # Databricks/demo差し替え境界のテスト
-│       └── test_data_quality.py     # DEMO_SPECのデータ品質要件の自動チェック
+│       ├── test_deploy_modes.py         # development/productionモードの起動挙動テスト
+│       ├── test_customers_api.py        # /api/customers, /api/customers/{id} の疎通テスト
+│       ├── test_data_source.py          # Databricks/demo差し替え境界のテスト
+│       ├── test_data_quality.py         # DEMO_SPECのデータ品質要件の自動チェック
+│       ├── test_llm_client.py           # LLM呼び出しのタイムアウト・再試行・出力検証テスト
+│       ├── test_recommendation_service.py  # llm→pre_generated→rule_based切り替えテスト
+│       ├── test_recommendation_api.py   # /api/customers/{id}/recommendation の疎通テスト
+│       └── test_decision_and_feedback.py   # 判断保存・フィードバック概要のテスト
 ├── frontend/
 │   ├── package.json
 │   ├── package-lock.json
 │   ├── tsconfig.json
 │   ├── vite.config.ts
 │   ├── index.html
-│   ├── dist/                       # npm run build で生成（Git管理外）
+│   ├── dist/                           # npm run build で生成（Git管理外）
 │   └── src/
 │       ├── main.tsx
 │       ├── App.tsx
@@ -120,7 +146,9 @@ Node.jsはReactのビルドにのみ使用します。Databricks Apps起動時�
 │       │   ├── Customer360Panel.tsx
 │       │   ├── RiskPanel.tsx
 │       │   ├── UsageTrendChart.tsx
-│       │   └── RiskBadge.tsx
+│       │   ├── RiskBadge.tsx
+│       │   ├── RecommendationPanel.tsx  # 次のアクション（要約・候補・承認/修正/見送り）
+│       │   └── FeedbackSummaryPanel.tsx # フィードバック概要
 │       └── styles/
 │           ├── tokens.css
 │           └── global.css
@@ -177,9 +205,71 @@ python scripts/train_model.py              # artifacts/predictions.json, model_m
 
 - `generate_demo_data.py` は同一シード・同一コードであれば何度実行しても同一の `data/` を生成する（wall-clockに依存する値を持たない）。実行結果は差分なしで確認済み。
 - `prepare_customer360.py` と `train_model.py` の出力も、タイムスタンプ系フィールド（`generated_at`, `trained_at`, `inference_at`, `checked_at`）を除けば再実行時に完全一致することを確認済み。
-- DEMO_SPEC.mdの「データ品質の必須検証」は、生成スクリプト内の即時チェック（違反時は非0終了）と `backend/tests/test_data_quality.py` の両方でカバーしている（本README 17節「データ品質」参照）。
+- DEMO_SPEC.mdの「データ品質の必須検証」は、生成スクリプト内の即時チェック（違反時は非0終了）と `backend/tests/test_data_quality.py` の両方でカバーしている（本README 18節「データ品質」参照）。
 
-## 6. ローカル開発
+## 6. 推奨アクション生成パイプライン（Layer 3 / GenAI・RAG相当）
+
+顧客360・休眠予測・社内ナレッジを統合し、次アクション候補を生成する。実行優先順位は次のとおり。
+
+```text
+1. 設定済みの実LLMエンドポイント（backend/services/llm_client.py）
+2. 事前生成済みLLM回答（artifacts/pre_generated_recommendations.json）
+3. 決定論的なルールベース生成（backend/services/rule_based_generator.py、常に成功する）
+```
+
+`backend/services/recommendation_service.py` がこの優先順位で順に試行し、いずれかが成功した時点で結果を返す。ルールベース生成は入力データのみから決定論的に組み立てるため、原理上必ず成功し、Step 1〜6のデモフローがLLM未設定・未接続でも必ず完走できる。
+
+### 社内ナレッジ文書（`data/knowledge/knowledge_base.json`）
+
+過去施策の説明4件、サービス情報1件、顧客対応方針1件の計6件を、`doc_id` / `title` / `category` / `updated_at` / `body` を持つJSONとして保持する。件数が少ないため事前フィルタリングはせず、全件を生成方式へ候補として渡し、実際に根拠として使った文書のみを「参照元」としてAPI・UIへ返す（`backend/services/knowledge_base.py`）。
+
+### コンテキスト構築（`backend/services/recommendation_context.py`）
+
+`customer_id` から顧客360（`artifacts/customer360.json`）・休眠予測（`artifacts/predictions.json`）・社内ナレッジ全件を1つのコンテキストへ統合する。LLM・事前生成済み回答・ルールベースのいずれの生成方式も、同じコンテキストを入力として受け取ることで、方式が変わっても参照データの一貫性を保つ。
+
+### 実LLM呼び出し（`backend/services/llm_client.py`）
+
+- 接続情報は環境変数からのみ取得し、コードへ直接記載しない。
+
+  ```text
+  LLM_ENDPOINT_URL       LLMエンドポイントのURL（未設定なら実LLMは使わない）
+  LLM_API_KEY            認証情報（Bearerトークンとして送信）
+  LLM_MODEL              任意。モデル識別子（未設定でも動作する）
+  LLM_TIMEOUT_SECONDS    任意。既定8秒
+  LLM_MAX_RETRIES        任意。既定1回（＝最大2回試行）
+  ```
+
+- `LLM_ENDPOINT_URL` と `LLM_API_KEY` が両方設定されている場合のみ実LLMを試行する（`backend/config.py` の `resolve_llm_config()`）。
+- リクエストはOpenAI互換のchat completions形式（`messages` に system/user、レスポンスは `choices[0].message.content` がJSON文字列）を想定している。Databricks Model Serving等、実際に利用するエンドポイントの形式に合わせて `_call_endpoint` を調整する必要がある（本README 16節「実装上の仮定」参照）。
+- 出力は必ずスキーマ検証する：`summary`（1〜400字）、`actions`（1〜3件、各titleとreason）、`cautions`（文字列配列）、`references`（コンテキストで渡した`doc_id`のみ許可。それ以外を含む出力＝ハルシネーションとして拒否する）。
+- 通信エラー・タイムアウトは最大 `LLM_MAX_RETRIES` 回まで再試行する。出力形式の不正は再試行しても解決しないため、検証失敗時は即座に打ち切る。
+- 失敗時は例外（`LLMRequestError` / `LLMOutputInvalidError`）を送出するのみで、リクエストヘッダー・レスポンス本文・秘密情報はログへ出力しない（例外の型名のみを記録する）。呼び出し元（`recommendation_service`）が捕捉し、次の方式へフォールバックする。
+
+### 事前生成済みLLM回答（`artifacts/pre_generated_recommendations.json`）
+
+高・中・低リスクから2件ずつ、計6顧客（C059, C017, C015, C045, C010, C031）分の回答を `scripts/generate_pregenerated_recommendations.py` で保存している。本文は開発時にLLM（Claude Code）が実際の顧客360・予測結果・社内ナレッジを踏まえて作成したものであり、「事前生成済みLLM回答」という表示に偽りはない。対象外の54顧客は自動的にルールベース生成へフォールバックする。
+
+### ルールベース生成（`backend/services/rule_based_generator.py`）
+
+- 候補アクションはDEMO_SPEC.mdの5種類（EC再利用の案内／QR決済の利用メリット案内／カード利用特典の案内／複数サービスをまたぐ軽量なポイント施策／施策を行わず経過観察）のみを使う。
+- EC・QR決済・カードそれぞれの前期比低下、利用サービス数の減少を根拠に対象アクションを選び、寄与度順に**最大2件**に絞る。残り1枠は必ず「施策を行わず経過観察」に確保し、高リスクでも一律に施策を実施するロジックにしない。
+- 直近30日以内に施策を配信済みの顧客には「効果を見極める期間として経過観察も選択肢」という理由を、減少要因が無い顧客には「安定しているため経過観察」という理由を出し分ける。
+- 理由文は `compute_dormancy_score` 相当の重み付けで算出した寄与度順に並べるため、休眠リスクのグラフ・理由と矛盾しない。
+- 参照元は実際に選んだアクションに対応する社内ナレッジ文書のみを返す（例：QR決済の施策を選んだ場合は `kb-qr-incentive` のみ）。
+
+### 生成方式の表示
+
+APIレスポンスの `generation_mode`（内部値）と `generation_mode_label`（表示名）は必ず一致する。
+
+| generation_mode | generation_mode_label |
+| --- | --- |
+| `llm` | LLM生成 |
+| `pre_generated` | 事前生成済みLLM回答 |
+| `rule_based` | デモ用ルールベース生成 |
+
+ルールベース生成を「LLM実行済み」「生成AI実行済み」と表示することはない。
+
+## 7. ローカル開発
 
 Phase 1〜2の開発中は、フロントエンドをビルドせずにAPIとVite開発サーバーを別々に起動して作業できます（development モード、既定）。
 
@@ -212,7 +302,7 @@ npm run typecheck
 
 developmentモードでは `frontend/dist` の有無にかかわらずPython APIが起動するため、`npm run dev` の開発サーバーと `python -m backend.main` を並行起動して開発できます。
 
-## 7. デプロイ前ビルド（Production Build）
+## 8. デプロイ前ビルド（Production Build）
 
 このデモは **デプロイ前ビルド方式** を採用しています。Databricks Apps起動時にNode.js/npm buildを実行することはありません。本番のアプリプロセスは常にPythonのみです。デプロイ前に、ローカル環境またはCI環境でReactをProduction Buildし、生成された `frontend/dist` をデプロイ対象フォルダーへ含めます。
 
@@ -252,7 +342,7 @@ frontend/dist/index.html
 
 `frontend/dist/assets/` 配下にJS・CSSが生成されていることも確認してください。
 
-## 8. Databricks Appsへの配置方法
+## 9. Databricks Appsへの配置方法
 
 `frontend/dist` は通常の開発コミットでは引き続きGit管理外（`.gitignore`）とします。ただし、**Databricks Appsへ配置する際は、ビルド済みの `frontend/dist` を必ず含めてください。**
 
@@ -271,7 +361,7 @@ GitリポジトリのURLから直接デプロイする方式は、`frontend/dist
 
 フロントエンドのコードを変更した場合は、**必ず `scripts/prepare_deploy.sh`（または手動ビルド）を再実行してから**、ビルド済みフォルダーを同期・再デプロイしてください。古い `frontend/dist` のまま再デプロイすると、変更が反映されません。
 
-## 9. 起動モード（development / production）
+## 10. 起動モード（development / production）
 
 `backend/config.py` の `resolve_app_env()` が `APP_ENV` 環境変数を読み、`production`（大文字小文字を区別しない）の場合のみproductionモードとして扱い、それ以外（未設定を含む）はdevelopmentモードとして扱います。
 
@@ -291,7 +381,7 @@ scripts/prepare_deploy.sh を実行してから再デプロイしてください
 
 既存のAPIパス・ポート解決優先順位（`DATABRICKS_APP_PORT` → `UVICORN_PORT` → `PORT` → `8000`）は変更していません。
 
-## 10. ポート・ホスト解決
+## 11. ポート・ホスト解決
 
 Pythonサーバーは次の優先順位で起動設定を解決します（`backend/config.py`）。
 
@@ -305,7 +395,7 @@ Port: DATABRICKS_APP_PORT → UVICORN_PORT → PORT → 8000
 - `app.yaml` 側では固定ポートを指定しません（起動コマンドと `APP_ENV` のみ定義）。
 - 優先順位はホスト・ポートとも `backend/tests/test_config.py` で単体テスト済みです。
 
-## 11. データモードの解決
+## 12. データモードの解決
 
 `backend/config.py` の `resolve_data_mode()` が、以下3つのDatabricks SQL接続用環境変数がすべて設定されている場合のみ `databricks` モードを返し、それ以外は `demo` モードにフォールバックします。
 
@@ -315,14 +405,14 @@ Port: DATABRICKS_APP_PORT → UVICORN_PORT → PORT → 8000
 
 Phase 1では実際のDatabricks SQL接続は行わず、モード判定のみを実装しています。実データ接続はPhase 2以降で追加します。
 
-## 12. Databricks Appsへのデプロイ手順
+## 13. Databricks Appsへのデプロイ手順
 
 正確な操作はワークスペースUIと利用可能な機能に合わせて確認してください。完成条件は、ローカル起動ではなくDatabricks Apps上で表示できることです。
 
 基本手順：
 
-1. `bash scripts/prepare_deploy.sh` を実行し、`frontend/dist` を生成する（本README 7節）。
-2. ビルド済みの `frontend/dist` を含むフォルダーを、Databricksワークスペースのフォルダーまたは同期先へ配置する（本README 8節。GitリポジトリのURLから直接デプロイする方式は `frontend/dist` が欠落するため避ける）。
+1. `bash scripts/prepare_deploy.sh` を実行し、`frontend/dist` を生成する（本README 8節）。
+2. ビルド済みの `frontend/dist` を含むフォルダーを、Databricksワークスペースのフォルダーまたは同期先へ配置する（本README 9節。GitリポジトリのURLから直接デプロイする方式は `frontend/dist` が欠落するため避ける）。
 3. Databricks Appsでカスタムアプリを作成する。
 4. アプリのソースとして、ビルド済みフォルダーを選ぶ。
 5. Databricks SQLに接続する場合は、必要なDatabricksリソース（SQLウェアハウス等）をアプリへ追加し、`DATABRICKS_SERVER_HOSTNAME` / `DATABRICKS_HTTP_PATH` / `DATABRICKS_TOKEN` に相当する接続情報を設定する。未設定の場合はdemoモードで起動する。
@@ -333,7 +423,7 @@ Phase 1では実際のDatabricks SQL接続は行わず、モード判定のみ�
 10. `/api/metadata` で `data_mode` が想定通り（`demo` または `databricks`）であることを確認する。
 11. **`/api/health` だけでなく、ブラウザでアプリを開いてUI（日本語ヘッダーと3カラムの空状態レイアウト）が実際に表示されることを確認する。**
 
-## 13. API一覧
+## 14. API一覧
 
 | メソッド・パス | 内容 | 備考 |
 | --- | --- | --- |
@@ -341,23 +431,26 @@ Phase 1では実際のDatabricks SQL接続は行わず、モード判定のみ�
 | `GET /api/metadata` | アプリ全体のメタ情報 | `data_mode`, `model_mode`, `customer_count`, `updated_at` を含む |
 | `GET /api/customers` | 本日の優先顧客一覧 | 顧客360と予測をcustomer_idで結合し、休眠確率の降順で返す |
 | `GET /api/customers/{customer_id}` | 顧客360＋休眠予測の詳細 | 該当顧客が無ければ404（Japanese `detail` メッセージ） |
+| `GET /api/customers/{customer_id}/recommendation` | 次アクション候補 | 要約・候補（最大3件）・理由・注意事項・参照元・生成方式を返す |
+| `POST /api/customers/{customer_id}/decision` | 判断（承認／修正／見送り）の保存 | `decision_id`, `decided_at` を付与して返す |
+| `GET /api/feedback-summary` | フィードバック概要 | 承認/修正/見送り件数、生成方式別件数、直近の判断一覧 |
 
 `/api/customers` と `/api/customers/{customer_id}` は共通のレスポンス envelope（`data_mode`, `model_mode`, `updated_at`）を持つ。合成データ・予測結果が未生成の場合は503を返し、`scripts/generate_demo_data.py` → `scripts/prepare_customer360.py` → `scripts/train_model.py` の実行を促すメッセージを含む。
 
-推奨アクション（`GET /api/customers/{customer_id}/recommendation`）、判断保存（`POST /api/customers/{customer_id}/decision`）、フィードバック概要（`GET /api/feedback-summary`）はLayer 3（Phase 3）以降で追加する。
+`recommendation` エンドポイントは `generation_mode` / `generation_mode_label`（本README 6節）を必ず含む。`decision` エンドポイントのリクエストボディは `decision`（`approved` / `modified` / `skipped`）、`selected_action`、`modified_text`、`comment`、`generation_mode`、`model_version` を受け付ける（いずれも `selected_action` 以降は任意）。
 
-## 14. アプリの使い方（Phase 1 + Phase 2時点）
+## 15. アプリの使い方（Phase 1〜3時点）
 
-Phase 2までで、Layer 1（データ基盤）・Layer 2（予測型ML）を含む業務フローの前半が完成しています。画面を開くと以下が表示されます。
+Phase 3までで、Layer 1〜4の一連の業務フロー（Step 1〜6）が一通り完成しています。画面を開くと以下が表示されます。
 
 - ヘッダー：アプリ名、データモード（`合成データ（demo）` / `Databricks接続`）、最終更新時刻
 - 左：「本日の優先顧客」リスト（休眠確率降順、リスク帯ラベル付き、クリックで選択）
 - 中央上：選択顧客の「顧客360」（EC・QR・カードの利用推移グラフ、利用サービス数、最終利用日、問い合わせ概要、データソース）
 - 中央下：「休眠リスク」（リスク帯、休眠確率、主要理由、モデルバージョン・推論日時・生成方式）
-- 右：「次のアクション」の空状態（Layer 3実装後に表示予定）
-- 下部：フィードバックループと本番化時の追加事項を表示する予定の領域
+- 右：「次のアクション」（顧客状況の要約、アクション候補とその理由、注意事項、参照元、生成方式、承認／修正／見送りとコメント入力、保存完了表示）
+- 下部：「フィードバック概要」（承認・修正・見送りの件数、直近の判断一覧、本番化時に追加する事項の明記）
 
-## 15. 実装上の仮定
+## 16. 実装上の仮定
 
 - 仮定：フロントエンドのビルド成果物（`frontend/dist`）は通常の開発コミットではGit管理対象外とし、デプロイ前に `scripts/prepare_deploy.sh`（または手動の `npm run build`）を実行して生成し、デプロイ時のみビルド済みフォルダーとして同期する。
 - 理由：ビルド成果物を常にリポジトリへコミットすると、ソースとの差分管理が煩雑になり、依存関係の更新時に不整合が生じやすいため。一方でGit URLから直接デプロイするとビルド成果物が欠落するため、デプロイ時は「ビルド済みフォルダーを配置」という別の同期方式を用いる。
@@ -391,7 +484,23 @@ Phase 2までで、Layer 1（データ基盤）・Layer 2（予測型ML）を含
 - 理由：DEMO_SPEC.mdの必須データソースがEC・QR決済・カードであり、銀行は任意データソースであるため、モデルの説明可能性を優先し必須ソースに絞った。
 - 本番で確認する事項：銀行データの重要性が高いと判断された場合、スコアリング式へ銀行の特徴量を追加し、再学習・再検証する。
 
-## 16. 失敗時の対処
+- 仮定：実LLMエンドポイントのリクエスト・レスポンス形式は、OpenAI互換のchat completions形式（`messages` 配列、レスポンスは `choices[0].message.content` にJSON文字列）であると仮定している。
+- 理由：利用するLLMエンドポイントの実装がこの時点で確定していないため、多くのLLMサービス・Databricks Model Servingの一部構成でも採用される一般的な形式を仮の契約とした。
+- 本番で確認する事項：実際に接続するLLMエンドポイント（Databricks Model Serving等）のリクエスト・レスポンス形式を確認し、`backend/services/llm_client.py` の `_call_endpoint` を実際の形式に合わせて調整する。
+
+- 仮定：事前生成済みLLM回答（`artifacts/pre_generated_recommendations.json`）は60顧客中6顧客（高・中・低リスクから2件ずつ）のみを用意し、対象外の顧客はルールベース生成にフォールバックする。
+- 理由：全60顧客分の事前生成済み回答を用意することは本フェーズの検証目的（3方式の切り替えが正しく動くことの実証）に対して過剰であり、ルールベース生成が全顧客をカバーする最終フォールバックとして機能するため、6件で切り替えロジックの実証は十分と判断した。
+- 本番で確認する事項：デモで見せたい顧客が6件に含まれない場合、`scripts/generate_pregenerated_recommendations.py` の `PRE_GENERATED_CONTENT` へ対象顧客を追加する。
+
+- 仮定：判断保存は既定でリポジトリ直下の `runtime/decisions.json`（Git管理外）へのファイル書き込みとする。Databricksデータモード（`DATABRICKS_SERVER_HOSTNAME` 等が設定済み）の場合でも、Databricks側の保存先接続は未実装のため、警告ログを出したうえで同じファイルストレージへフォールバックする。
+- 理由：DEMO_SPEC.mdの要件は「永続ストレージが未設定でも動くこと」であり、Databricks Free Edition環境での確実な動作を優先した。Databricks側の実装（Delta テーブルへの書き込み等）は接続方式の検証が必要なため、本フェーズのスコープ外とした。
+- 本番で確認する事項：Databricks側の判断保存先（Delta テーブル等）を用意し、`backend/services/decision_store.py` の `_get_databricks_store` を実装に置き換える。
+
+- 仮定：ルールベース生成が提案するアクションは、DEMO_SPEC.mdが例示する5種類（EC再利用の案内／QR決済の利用メリット案内／カード利用特典の案内／複数サービスをまたぐ軽量なポイント施策／施策を行わず経過観察）に固定し、それ以外の自由記述アクションは生成しない。
+- 理由：推奨アクションが業務方針から逸脱しないことを構造的に保証するため（自由記述だと過度なインセンティブ等が紛れ込むリスクがある）。
+- 本番で確認する事項：実際の施策カタログが追加・変更された場合、`backend/services/rule_based_generator.py` のアクション定数とナレッジ文書（`data/knowledge/knowledge_base.json`）を合わせて更新する。
+
+## 17. 失敗時の対処
 
 `frontend/dist/index.html` が見つからずproductionモードで起動が失敗した場合：
 
@@ -400,7 +509,7 @@ Phase 2までで、Layer 1（データ基盤）・Layer 2（予測型ML）を含
 3. 生成された `frontend/dist` を含むフォルダーを、Databricksワークスペースの配置先へ再同期する。
 4. Databricks Appsを再デプロイし、アプリログと `/api/health`・画面表示の両方を再確認する。
 
-## 17. デモ前チェック・データ品質テスト結果（Phase 1 + Phase 2時点で確認済みの項目）
+## 18. デモ前チェック・データ品質テスト結果（Phase 1〜3時点で確認済みの項目）
 
 ### 起動・デプロイ関連（Phase 1）
 
@@ -432,7 +541,23 @@ Phase 2までで、Layer 1（データ基盤）・Layer 2（予測型ML）を含
 - [x] `GET /api/customers`, `GET /api/customers/{customer_id}` の疎通・404応答（`backend/tests/test_customers_api.py`）
 - [x] Databricksモード設定時に未実装のためdemoへフォールバックすること（`backend/tests/test_data_source.py`）
 
-## 18. 伝えること・伝えないこと
+### 推奨アクション・判断・フィードバック（Phase 3）
+
+- [x] `GET /api/customers/{customer_id}/recommendation` が顧客360と予測結果を参照した結果を返す（`backend/tests/test_recommendation_api.py`）
+- [x] ナレッジ文書の参照元（`references`）が返り、実在する`doc_id`のみで構成される（ハルシネーション拒否を含む、`backend/tests/test_llm_client.py`）
+- [x] LLM設定済み・成功時は実LLMが主経路になる（モックで検証、`test_uses_llm_when_configured_and_successful`）
+- [x] LLM失敗時は事前生成済み回答へ移行する（`test_falls_back_to_pre_generated_when_llm_fails`）
+- [x] 事前生成済み回答が無い場合はルールベースへ移行する（`test_falls_back_to_rule_based_when_llm_fails_and_no_pre_generated_fixture`）
+- [x] 不正なLLM出力（空文字・4件超のactions・許可されない参照元）は安全にフォールバックする（`test_generate_rejects_*`）
+- [x] LLM未設定でも動く（既定状態で全テストがLLM未設定のまま成功）
+- [x] 生成モードがAPI（`generation_mode`）とUI（バッジ表示）で一致する
+- [x] 高リスク顧客でも「施策を行わず経過観察」が候補から排除されない（`test_recommendation_never_forces_action_for_high_risk`）
+- [x] 判断（承認／修正／見送り）を保存できる。404（存在しない顧客）・422（不正な`decision`値）を確認済み
+- [x] 保存後にフィードバック概要（件数・生成方式別内訳・直近一覧）が変化する（`test_feedback_summary_reflects_saved_decisions`）
+- [x] 自動配信・自動再学習を実装しておらず、フィードバック概要に「本番化時に追加」と明記している
+- [x] ブラウザでStep 1〜6（顧客選択→顧客360→休眠リスク→次アクション→承認/修正/見送り→フィードバック概要反映）を実行できることをPlaywrightで確認済み
+
+## 19. 伝えること・伝えないこと
 
 ### 伝えること
 - 部門別データを一人の顧客像へ統合する設計であること
