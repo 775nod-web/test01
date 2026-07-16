@@ -29,6 +29,26 @@ DOC_TITLES = {
     "kb-support-policy": "顧客対応方針",
 }
 
+# 各アクションに対応する過去施策の種類（campaigns.csv / customer360.jsonのcampaign_type）。
+# 同じ種類の施策に過去「反応なし」があった場合、そのアクションの優先度を下げ、
+# 「過去に反応がなかった」ことを注意事項として明示することで、推奨と過去の反応が
+# 矛盾しないようにする。
+ACTION_TITLE_TO_CAMPAIGN_TYPE = {
+    ACTION_EC_REVISIT: "EC再訪促進メール",
+    ACTION_QR_BENEFIT: "QR決済ポイント還元",
+    ACTION_CARD_BENEFIT: "カード利用特典案内",
+    ACTION_CROSS_SERVICE: "複数サービス横断ポイント施策",
+}
+
+NO_RESPONSE = "反応なし"
+
+
+def _has_no_response_history(customer: dict, campaign_type: str) -> bool:
+    return any(
+        c["campaign_type"] == campaign_type and c["response"] == NO_RESPONSE
+        for c in customer.get("campaigns", [])
+    )
+
 
 def _reference(doc_id: str) -> dict:
     return {"doc_id": doc_id, "title": DOC_TITLES.get(doc_id, doc_id), "type": "knowledge"}
@@ -110,10 +130,20 @@ def generate_rule_based(context: dict) -> dict:
             )
         )
 
+    # 過去に同種の施策へ「反応なし」だった場合は優先度を下げ、繰り返し案内にならないようにする。
+    no_response_titles: set[str] = set()
+    adjusted_candidates: list[tuple[float, str, str, str]] = []
+    for magnitude, title, reason, doc_id in candidates:
+        campaign_type = ACTION_TITLE_TO_CAMPAIGN_TYPE.get(title)
+        if campaign_type and _has_no_response_history(customer, campaign_type):
+            no_response_titles.add(title)
+            magnitude *= 0.5
+        adjusted_candidates.append((magnitude, title, reason, doc_id))
+
     # 高リスクでも一律に施策を行うロジックにしないため、対象アクションは最大2件に絞り、
     # 残り1枠は必ず「施策を行わず経過観察」に確保する。
-    candidates.sort(key=lambda c: c[0], reverse=True)
-    top_candidates = candidates[:2]
+    adjusted_candidates.sort(key=lambda c: c[0], reverse=True)
+    top_candidates = adjusted_candidates[:2]
 
     actions = [{"title": title, "reason": reason} for _, title, reason, _ in top_candidates]
     reference_doc_ids = [doc_id for _, _, _, doc_id in top_candidates]
@@ -132,6 +162,16 @@ def generate_rule_based(context: dict) -> dict:
         "本推奨は過去データに基づく参考情報であり、効果を保証するものではありません。",
         "実施の可否は担当者の判断に基づき、自動配信は行いません。",
     ]
+
+    selected_titles_with_no_response = [
+        title for _, title, _, _ in top_candidates if title in no_response_titles
+    ]
+    for title in selected_titles_with_no_response:
+        campaign_type = ACTION_TITLE_TO_CAMPAIGN_TYPE[title]
+        cautions.append(
+            f"「{campaign_type}」は過去に反応が確認できなかったため、"
+            "同じ案内を繰り返す前に別のアプローチや経過観察も検討してください。"
+        )
 
     seen: set[str] = set()
     references = []

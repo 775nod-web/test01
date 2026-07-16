@@ -132,6 +132,7 @@ export function RecommendationPanel({ customerId, recommendation, onDecisionSave
       </p>
 
       <div className="recommendation-panel__decision">
+        <h3 className="recommendation-panel__decision-title">⑤ 承認・修正・見送り</h3>
         <div className="recommendation-panel__decision-buttons">
           {(Object.keys(DECISION_LABEL) as DecisionType[]).map((type) => (
             <button
@@ -152,6 +153,7 @@ export function RecommendationPanel({ customerId, recommendation, onDecisionSave
         {decisionType === "modified" && (
           <textarea
             className="recommendation-panel__textarea"
+            aria-label="修正後のアクション内容"
             placeholder="修正後のアクション内容を入力してください"
             value={modifiedText}
             onChange={(e) => setModifiedText(e.target.value)}
@@ -160,6 +162,7 @@ export function RecommendationPanel({ customerId, recommendation, onDecisionSave
 
         <textarea
           className="recommendation-panel__textarea"
+          aria-label="コメント"
           placeholder="コメント（任意）"
           value={comment}
           onChange={(e) => setComment(e.target.value)}

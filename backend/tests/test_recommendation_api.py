@@ -5,9 +5,17 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 
 from backend.main import app
+from backend.services.data_source import load_customer_dataset
 from backend.services.knowledge_base import load_knowledge_docs
 
 client = TestClient(app)
+
+CAMPAIGN_TYPE_TO_ACTION_TITLE = {
+    "QR決済ポイント還元": "QR決済の利用メリット案内",
+    "カード利用特典案内": "カード利用特典の案内",
+    "EC再訪促進メール": "EC再利用の案内",
+    "複数サービス横断ポイント施策": "複数サービスをまたぐ軽量なポイント施策",
+}
 
 
 def test_recommendation_returns_200_with_expected_fields() -> None:
@@ -60,3 +68,33 @@ def test_recommendation_never_forces_action_for_high_risk() -> None:
     # 高リスク顧客の推奨に「経過観察」が一度も現れない設計は禁止されているため、
     # 全高リスク顧客の推奨結果を見て少なくとも1件は含まれることを確認する。
     assert watch_option_present_count > 0
+
+
+def test_recommendation_acknowledges_past_no_response_for_same_channel() -> None:
+    """過去に同じ種類の施策へ「反応なし」だった場合、推奨がそれを踏まえていることを確認する
+    （推奨アクションが過去の反応と矛盾しないための回帰テスト）。"""
+    dataset = load_customer_dataset()
+    checked_any = False
+
+    for customer_id, customer in dataset.customers_by_id.items():
+        for campaign in customer.get("campaigns", []):
+            if campaign["response"] != "反応なし":
+                continue
+            action_title = CAMPAIGN_TYPE_TO_ACTION_TITLE.get(campaign["campaign_type"])
+            if action_title is None:
+                continue
+
+            response = client.get(f"/api/customers/{customer_id}/recommendation")
+            body = response.json()
+            recommended_titles = [a["title"] for a in body["actions"]]
+            if action_title not in recommended_titles:
+                continue
+
+            checked_any = True
+            caution_text = " ".join(body["cautions"])
+            assert campaign["campaign_type"] in caution_text, (
+                f"{customer_id}: '{action_title}' recommended despite past "
+                f"'反応なし' on '{campaign['campaign_type']}', but no caution mentions it"
+            )
+
+    assert checked_any, "no customer exercised the no-response contradiction path"
