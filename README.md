@@ -361,7 +361,7 @@ Step 6を結果確認だけで終わらせず、「続ける施策・見直す�
 - 同じ入力に対しては常に同じ結果を返す（乱数・外部呼び出しなし）。未知の値・欠損値が渡された場合も例外を送出せず、安全な既定値へフォールバックする。
 - `GET /api/feedback-summary`のレスポンスへ、各`sample_outcomes`要素に`recommended_next_action`（`type`/`label`/`reason`/`next_review_timing`）を追加した。既存フィールドは変更していない（後方互換）。
 - UIでは各サンプルカードに「次の推奨判断」（色だけでなく文字で表示する青系バッジ）・「理由」・「次回確認」を追加した。
-- Step 6の最後に「担当者の判断と施策結果を基に、続ける施策、見直す施策、次に検証する内容を決定します。」という文章を一度だけ表示する。
+- 追加当初は、Step 6の最後に「担当者の判断と施策結果を基に、続ける施策、見直す施策、次に検証する内容を決定します。」という締めくくり文を一度だけ表示していたが、利用者の依頼により削除した。現時点では、このような全体を総括する文章はStep 6に表示されていない。
 
 ### 全体改善サマリー（今回の改善ポイント）の削除について
 
@@ -966,9 +966,9 @@ DEMO_SPEC.md「13. 説明のみとする本番機能」「15. 画面に表示す
 - [x] `GET /api/feedback-summary`の`sample_outcomes`各要素に`recommended_next_action`が含まれる（`test_sample_outcomes_include_recommended_next_action`）
 - [x] 判断保存後、対象顧客の`recommended_next_action`が更新される（`test_skipped_decision_updates_recommended_next_action_to_review_targeting`）
 - [x] フロントエンドで次の推奨判断・理由・次回確認が表示される（`FeedbackSummaryPanel.test.tsx`）
-- [x] Step 6末尾の締めくくり文が重複なく1回だけ表示される
+- [x] Step 6末尾の締めくくり文（「担当者の判断と施策結果を基に...」）は、追加当初は重複なく1回だけ表示されていたが、その後利用者の依頼により削除した
 - [x] Playwrightで、顧客選択→承認保存→サンプル行への担当者判断反映→次の推奨判断・理由・次回確認の表示、までの一連の流れを確認（幅375pxのモバイル表示でも崩れないことをスクリーンショットで確認）
-- [x] `python -m pytest backend/tests`（85件成功・1件スキップ）、`npm run typecheck`、`npm run test`（18件成功）、`npm run build`、`bash scripts/prepare_deploy.sh` が全件成功
+- [x] `python -m pytest backend/tests`（85件成功・1件スキップ）、`npm run typecheck`、`npm run test`（17件成功）、`npm run build`、`bash scripts/prepare_deploy.sh` が全件成功
 - [x] 全体改善サマリー（今回の改善ポイント）は、顧客の帰属が不明・カード内表示との重複という利用者からの指摘を受けて削除した（本README 6節「全体改善サマリー（今回の改善ポイント）の削除について」参照）
 
 ## 27. 最終受け入れチェック（Phase 6）

@@ -157,11 +157,4 @@ describe("FeedbackSummaryPanel", () => {
     expect(screen.getByText(/14日後に反応を再確認/)).toBeInTheDocument();
   });
 
-  it("Step6の締めくくり文を一度だけ表示する", () => {
-    render(<FeedbackSummaryPanel summary={makeSummary({ sample_outcomes: [makeOutcome()] })} />);
-    expect(
-      screen.getAllByText("担当者の判断と施策結果を基に、続ける施策、見直す施策、次に検証する内容を決定します。"),
-    ).toHaveLength(1);
-  });
-
 });

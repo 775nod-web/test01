@@ -638,12 +638,6 @@
   color: var(--color-blue-700);
 }
 
-.feedback-summary__closing {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-}
-
 .badge--model-mode {
   background: var(--color-green-50);
   color: var(--color-green-700);

@@ -121,10 +121,6 @@ export function FeedbackSummaryPanel({ summary }: { summary: FeedbackSummaryResp
           </ul>
         </div>
       )}
-
-      <p className="feedback-summary__closing">
-        担当者の判断と施策結果を基に、続ける施策、見直す施策、次に検証する内容を決定します。
-      </p>
     </div>
   );
 }
