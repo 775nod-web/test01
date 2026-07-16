@@ -1,0 +1,12 @@
+# scripts/配下の合成データ生成・モデル学習でのみ使用する依存関係。
+# backend（Databricks Apps上で実行される本番プロセス）は artifacts/ 配下の
+# 事前計算済みJSONのみを読み込むため、これらのライブラリを必要としない。
+#
+# 使い方:
+#   pip install -r scripts/requirements-scripts.txt
+#   python scripts/generate_demo_data.py
+#   python scripts/prepare_customer360.py
+#   python scripts/train_model.py
+
+scikit-learn==1.6.0
+numpy==2.2.1

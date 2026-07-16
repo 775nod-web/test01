@@ -1,0 +1,19 @@
+{
+  "seed": 42,
+  "as_of_date": "2026-07-16",
+  "customer_count": 60,
+  "period_buckets": 4,
+  "bucket_length_days": 30,
+  "risk_counts": {
+    "high": 15,
+    "medium": 20,
+    "low": 25
+  },
+  "data_sources": [
+    "ec_transactions.csv",
+    "payment_transactions.csv",
+    "bank_transactions.csv",
+    "campaigns.csv",
+    "customer_support.json"
+  ]
+}

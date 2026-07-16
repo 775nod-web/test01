@@ -52,6 +52,21 @@
   color: var(--color-magenta-700);
 }
 
+.badge--risk-high {
+  background: var(--color-magenta-50);
+  color: var(--color-magenta-700);
+}
+
+.badge--risk-medium {
+  background: var(--color-yellow-50);
+  color: var(--color-yellow-700);
+}
+
+.badge--risk-low {
+  background: var(--color-green-50);
+  color: var(--color-green-700);
+}
+
 .layout {
   flex: 1;
   display: grid;
@@ -109,4 +124,215 @@
   border-top: 1px solid var(--color-border-subtle);
   font-size: 0.85rem;
   color: var(--color-text-secondary);
+}
+
+.panel__status {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.panel__status--error {
+  color: var(--color-magenta-700);
+}
+
+/* 本日の優先顧客リスト */
+.customer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-height: 640px;
+  overflow-y: auto;
+}
+
+.customer-list__item {
+  width: 100%;
+  text-align: left;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.customer-list__item:hover {
+  border-color: var(--color-blue-600);
+}
+
+.customer-list__item--selected {
+  background: var(--color-blue-50);
+  border-color: var(--color-blue-600);
+}
+
+.customer-list__item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.customer-list__name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.customer-list__item-meta {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+}
+
+.customer-list__item-reason {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 顧客360 */
+.customer360 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.customer360__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.customer360__name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.customer360__service-count {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.customer360__service-count-prev {
+  color: var(--color-yellow-700);
+}
+
+.customer360__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+.customer360__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+}
+
+.customer360__metric-label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.customer360__metric-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.customer360__metric-sub {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.customer360__sources {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-disabled);
+}
+
+/* 利用推移グラフ */
+.usage-trend-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.usage-trend-chart__svg {
+  width: 100%;
+  height: auto;
+}
+
+.usage-trend-chart__axis {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.usage-trend-chart__x-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  padding: 0 12px;
+}
+
+.usage-trend-chart__legend {
+  display: flex;
+  gap: var(--space-md);
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+}
+
+.usage-trend-chart__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.usage-trend-chart__legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+/* 休眠リスクパネル */
+.risk-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.risk-panel__headline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.risk-panel__probability {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.risk-panel__reasons {
+  margin: 0;
+  padding-left: 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.88rem;
+}
+
+.risk-panel__footnote {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--color-text-disabled);
 }

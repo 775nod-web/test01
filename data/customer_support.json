@@ -1,0 +1,247 @@
+[
+  {
+    "inquiry_id": "SUP0002",
+    "customer_id": "C001",
+    "inquiry_date": "2026-04-06",
+    "category": "退会・解約に関する相談",
+    "summary": "退会・解約に関する相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0001",
+    "customer_id": "C001",
+    "inquiry_date": "2026-04-19",
+    "category": "キャンペーン内容の確認",
+    "summary": "キャンペーン内容の確認について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0003",
+    "customer_id": "C004",
+    "inquiry_date": "2026-05-20",
+    "category": "キャンペーン内容の確認",
+    "summary": "キャンペーン内容の確認について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0004",
+    "customer_id": "C006",
+    "inquiry_date": "2026-01-23",
+    "category": "決済エラーの相談",
+    "summary": "決済エラーの相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0005",
+    "customer_id": "C006",
+    "inquiry_date": "2026-03-08",
+    "category": "キャンペーン内容の確認",
+    "summary": "キャンペーン内容の確認について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0006",
+    "customer_id": "C007",
+    "inquiry_date": "2026-03-22",
+    "category": "利用方法の問い合わせ",
+    "summary": "利用方法の問い合わせについて問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0007",
+    "customer_id": "C007",
+    "inquiry_date": "2026-05-08",
+    "category": "利用方法の問い合わせ",
+    "summary": "利用方法の問い合わせについて問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0008",
+    "customer_id": "C010",
+    "inquiry_date": "2026-06-26",
+    "category": "キャンペーン内容の確認",
+    "summary": "キャンペーン内容の確認について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0009",
+    "customer_id": "C017",
+    "inquiry_date": "2026-03-12",
+    "category": "利用方法の問い合わせ",
+    "summary": "利用方法の問い合わせについて問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0010",
+    "customer_id": "C018",
+    "inquiry_date": "2026-04-13",
+    "category": "退会・解約に関する相談",
+    "summary": "退会・解約に関する相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0011",
+    "customer_id": "C019",
+    "inquiry_date": "2026-03-18",
+    "category": "決済エラーの相談",
+    "summary": "決済エラーの相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0012",
+    "customer_id": "C020",
+    "inquiry_date": "2026-05-02",
+    "category": "キャンペーン内容の確認",
+    "summary": "キャンペーン内容の確認について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0014",
+    "customer_id": "C021",
+    "inquiry_date": "2026-03-11",
+    "category": "決済エラーの相談",
+    "summary": "決済エラーの相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0013",
+    "customer_id": "C021",
+    "inquiry_date": "2026-05-03",
+    "category": "決済エラーの相談",
+    "summary": "決済エラーの相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0015",
+    "customer_id": "C024",
+    "inquiry_date": "2026-01-27",
+    "category": "キャンペーン内容の確認",
+    "summary": "キャンペーン内容の確認について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0016",
+    "customer_id": "C026",
+    "inquiry_date": "2026-02-20",
+    "category": "決済エラーの相談",
+    "summary": "決済エラーの相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0017",
+    "customer_id": "C026",
+    "inquiry_date": "2026-06-13",
+    "category": "退会・解約に関する相談",
+    "summary": "退会・解約に関する相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0018",
+    "customer_id": "C027",
+    "inquiry_date": "2026-02-28",
+    "category": "退会・解約に関する相談",
+    "summary": "退会・解約に関する相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0019",
+    "customer_id": "C028",
+    "inquiry_date": "2026-05-03",
+    "category": "退会・解約に関する相談",
+    "summary": "退会・解約に関する相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0020",
+    "customer_id": "C029",
+    "inquiry_date": "2026-07-06",
+    "category": "利用方法の問い合わせ",
+    "summary": "利用方法の問い合わせについて問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0021",
+    "customer_id": "C030",
+    "inquiry_date": "2026-06-14",
+    "category": "決済エラーの相談",
+    "summary": "決済エラーの相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0023",
+    "customer_id": "C031",
+    "inquiry_date": "2025-12-30",
+    "category": "決済エラーの相談",
+    "summary": "決済エラーの相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0022",
+    "customer_id": "C031",
+    "inquiry_date": "2026-05-08",
+    "category": "決済エラーの相談",
+    "summary": "決済エラーの相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0024",
+    "customer_id": "C032",
+    "inquiry_date": "2026-02-26",
+    "category": "利用方法の問い合わせ",
+    "summary": "利用方法の問い合わせについて問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0025",
+    "customer_id": "C035",
+    "inquiry_date": "2026-02-20",
+    "category": "キャンペーン内容の確認",
+    "summary": "キャンペーン内容の確認について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0026",
+    "customer_id": "C036",
+    "inquiry_date": "2026-07-11",
+    "category": "キャンペーン内容の確認",
+    "summary": "キャンペーン内容の確認について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0027",
+    "customer_id": "C040",
+    "inquiry_date": "2026-05-08",
+    "category": "退会・解約に関する相談",
+    "summary": "退会・解約に関する相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0028",
+    "customer_id": "C041",
+    "inquiry_date": "2026-02-01",
+    "category": "キャンペーン内容の確認",
+    "summary": "キャンペーン内容の確認について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0029",
+    "customer_id": "C042",
+    "inquiry_date": "2026-02-07",
+    "category": "退会・解約に関する相談",
+    "summary": "退会・解約に関する相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0031",
+    "customer_id": "C053",
+    "inquiry_date": "2026-06-15",
+    "category": "決済エラーの相談",
+    "summary": "決済エラーの相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0030",
+    "customer_id": "C053",
+    "inquiry_date": "2026-07-07",
+    "category": "利用方法の問い合わせ",
+    "summary": "利用方法の問い合わせについて問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0033",
+    "customer_id": "C055",
+    "inquiry_date": "2026-03-28",
+    "category": "利用方法の問い合わせ",
+    "summary": "利用方法の問い合わせについて問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0032",
+    "customer_id": "C055",
+    "inquiry_date": "2026-05-20",
+    "category": "キャンペーン内容の確認",
+    "summary": "キャンペーン内容の確認について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0035",
+    "customer_id": "C057",
+    "inquiry_date": "2026-01-09",
+    "category": "決済エラーの相談",
+    "summary": "決済エラーの相談について問い合わせ"
+  },
+  {
+    "inquiry_id": "SUP0034",
+    "customer_id": "C057",
+    "inquiry_date": "2026-02-21",
+    "category": "キャンペーン内容の確認",
+    "summary": "キャンペーン内容の確認について問い合わせ"
+  }
+]

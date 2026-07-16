@@ -1,0 +1,6005 @@
+{
+  "generated_at": "2026-07-16T05:23:55.540456+00:00",
+  "as_of_date": "2026-07-16",
+  "customer_count": 60,
+  "data_sources": [
+    "ec_transactions.csv",
+    "payment_transactions.csv",
+    "bank_transactions.csv",
+    "campaigns.csv",
+    "customer_support.json"
+  ],
+  "customers": [
+    {
+      "customer_id": "C001",
+      "display_name": "顧客 001",
+      "signup_date": "2022-06-20",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            38682,
+            41610,
+            40647,
+            40817
+          ],
+          "monthly_frequency": [
+            11,
+            12,
+            12,
+            12
+          ],
+          "last_used_date": "2026-07-05",
+          "days_since_last_used": 11,
+          "period_change_pct": 0.4
+        },
+        "qr": {
+          "monthly_amount": [
+            29656,
+            30003,
+            31963,
+            32752
+          ],
+          "monthly_frequency": [
+            29,
+            29,
+            31,
+            32
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 2.5
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 2,
+      "combined_qr_card": {
+        "monthly_amount": [
+          29656,
+          30003,
+          31963,
+          32752
+        ],
+        "monthly_frequency": [
+          29,
+          29,
+          31,
+          32
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": 2.5
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 2,
+        "last_inquiry_date": "2026-04-19",
+        "recent_categories": [
+          "キャンペーン内容の確認",
+          "退会・解約に関する相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C002",
+      "display_name": "顧客 002",
+      "signup_date": "2023-12-01",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            46024,
+            39682,
+            35913,
+            31085
+          ],
+          "monthly_frequency": [
+            11,
+            9,
+            9,
+            7
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -13.4
+        },
+        "qr": {
+          "monthly_amount": [
+            34245,
+            28944,
+            24944,
+            22314
+          ],
+          "monthly_frequency": [
+            25,
+            21,
+            18,
+            16
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -10.5
+        },
+        "card": {
+          "monthly_amount": [
+            41486,
+            37590,
+            32044,
+            27356
+          ],
+          "monthly_frequency": [
+            8,
+            7,
+            6,
+            5
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": -14.6
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          75731,
+          66534,
+          56988,
+          49670
+        ],
+        "monthly_frequency": [
+          33,
+          28,
+          24,
+          21
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": -12.8
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-05-21",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応なし",
+          "cost": 200
+        },
+        {
+          "sent_date": "2026-04-20",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応あり",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C003",
+      "display_name": "顧客 003",
+      "signup_date": "2023-09-29",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            41869,
+            46119,
+            46910,
+            50113
+          ],
+          "monthly_frequency": [
+            6,
+            6,
+            6,
+            7
+          ],
+          "last_used_date": "2026-07-11",
+          "days_since_last_used": 5,
+          "period_change_pct": 6.8
+        },
+        "qr": {
+          "monthly_amount": [
+            34177,
+            34416,
+            36282,
+            36624
+          ],
+          "monthly_frequency": [
+            25,
+            25,
+            26,
+            26
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": 0.9
+        },
+        "card": {
+          "monthly_amount": [
+            46692,
+            48088,
+            48228,
+            53999
+          ],
+          "monthly_frequency": [
+            8,
+            9,
+            9,
+            10
+          ],
+          "last_used_date": "2026-07-11",
+          "days_since_last_used": 5,
+          "period_change_pct": 12.0
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          80869,
+          82504,
+          84510,
+          90623
+        ],
+        "monthly_frequency": [
+          33,
+          34,
+          35,
+          36
+        ],
+        "last_used_date": "2026-07-12",
+        "days_since_last_used": 4,
+        "period_change_pct": 7.2
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-04-14",
+          "campaign_type": "カード利用特典案内",
+          "response": "開封のみ",
+          "cost": 300
+        },
+        {
+          "sent_date": "2026-04-09",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応あり",
+          "cost": 100
+        },
+        {
+          "sent_date": "2026-03-16",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応なし",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C004",
+      "display_name": "顧客 004",
+      "signup_date": "2023-02-19",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            47892,
+            36623,
+            27979,
+            19918
+          ],
+          "monthly_frequency": [
+            10,
+            7,
+            6,
+            4
+          ],
+          "last_used_date": "2026-06-28",
+          "days_since_last_used": 18,
+          "period_change_pct": -28.8
+        },
+        "qr": {
+          "monthly_amount": [
+            36918,
+            27869,
+            20198,
+            0
+          ],
+          "monthly_frequency": [
+            20,
+            15,
+            11,
+            0
+          ],
+          "last_used_date": "2026-06-14",
+          "days_since_last_used": 32,
+          "period_change_pct": -100.0
+        },
+        "card": {
+          "monthly_amount": [
+            48606,
+            33611,
+            23690,
+            16657
+          ],
+          "monthly_frequency": [
+            20,
+            14,
+            10,
+            7
+          ],
+          "last_used_date": "2026-07-10",
+          "days_since_last_used": 6,
+          "period_change_pct": -29.7
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          85524,
+          61480,
+          43888,
+          16657
+        ],
+        "monthly_frequency": [
+          40,
+          29,
+          21,
+          7
+        ],
+        "last_used_date": "2026-07-10",
+        "days_since_last_used": 6,
+        "period_change_pct": -62.0
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-22",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応あり",
+          "cost": 0
+        },
+        {
+          "sent_date": "2026-05-25",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応なし",
+          "cost": 100
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-05-20",
+        "recent_categories": [
+          "キャンペーン内容の確認"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C005",
+      "display_name": "顧客 005",
+      "signup_date": "2024-02-01",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            45018,
+            37959,
+            32215,
+            28721
+          ],
+          "monthly_frequency": [
+            12,
+            10,
+            8,
+            7
+          ],
+          "last_used_date": "2026-07-11",
+          "days_since_last_used": 5,
+          "period_change_pct": -10.8
+        },
+        "qr": {
+          "monthly_amount": [
+            43253,
+            38456,
+            33274,
+            28862
+          ],
+          "monthly_frequency": [
+            16,
+            14,
+            12,
+            11
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": -13.3
+        },
+        "card": {
+          "monthly_amount": [
+            38057,
+            33193,
+            28398,
+            24786
+          ],
+          "monthly_frequency": [
+            8,
+            7,
+            6,
+            5
+          ],
+          "last_used_date": "2026-07-10",
+          "days_since_last_used": 6,
+          "period_change_pct": -12.7
+        },
+        "bank": {
+          "monthly_amount": [
+            20034,
+            18203,
+            15380,
+            13050
+          ],
+          "monthly_frequency": [
+            2,
+            2,
+            2,
+            1
+          ],
+          "last_used_date": "2026-06-21",
+          "days_since_last_used": 25,
+          "period_change_pct": -15.1
+        }
+      },
+      "service_count": 4,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          81310,
+          71649,
+          61672,
+          53648
+        ],
+        "monthly_frequency": [
+          24,
+          21,
+          18,
+          16
+        ],
+        "last_used_date": "2026-07-13",
+        "days_since_last_used": 3,
+        "period_change_pct": -13.0
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions"
+      ]
+    },
+    {
+      "customer_id": "C006",
+      "display_name": "顧客 006",
+      "signup_date": "2024-04-08",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            59340,
+            53673,
+            46095,
+            39312
+          ],
+          "monthly_frequency": [
+            10,
+            9,
+            8,
+            7
+          ],
+          "last_used_date": "2026-07-09",
+          "days_since_last_used": 7,
+          "period_change_pct": -14.7
+        },
+        "qr": {
+          "monthly_amount": [
+            27515,
+            23215,
+            20857,
+            18210
+          ],
+          "monthly_frequency": [
+            12,
+            10,
+            9,
+            8
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": -12.7
+        },
+        "card": {
+          "monthly_amount": [
+            47132,
+            39826,
+            34138,
+            29415
+          ],
+          "monthly_frequency": [
+            8,
+            7,
+            6,
+            5
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -13.8
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          74647,
+          63041,
+          54995,
+          47625
+        ],
+        "monthly_frequency": [
+          20,
+          17,
+          15,
+          13
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": -13.4
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 2,
+        "last_inquiry_date": "2026-03-08",
+        "recent_categories": [
+          "キャンペーン内容の確認",
+          "決済エラーの相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C007",
+      "display_name": "顧客 007",
+      "signup_date": "2024-03-30",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            31921,
+            35269,
+            36600,
+            36862
+          ],
+          "monthly_frequency": [
+            10,
+            11,
+            12,
+            12
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": 0.7
+        },
+        "qr": {
+          "monthly_amount": [
+            36078,
+            35036,
+            37706,
+            36908
+          ],
+          "monthly_frequency": [
+            17,
+            17,
+            18,
+            18
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -2.1
+        },
+        "card": {
+          "monthly_amount": [
+            36348,
+            37060,
+            38805,
+            39263
+          ],
+          "monthly_frequency": [
+            17,
+            17,
+            18,
+            18
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 1.2
+        },
+        "bank": {
+          "monthly_amount": [
+            49125,
+            52981,
+            58405,
+            61701
+          ],
+          "monthly_frequency": [
+            4,
+            4,
+            4,
+            5
+          ],
+          "last_used_date": "2026-07-09",
+          "days_since_last_used": 7,
+          "period_change_pct": 5.6
+        }
+      },
+      "service_count": 4,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          72426,
+          72096,
+          76511,
+          76171
+        ],
+        "monthly_frequency": [
+          34,
+          34,
+          36,
+          36
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": -0.4
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-04-11",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応なし",
+          "cost": 300
+        },
+        {
+          "sent_date": "2026-03-19",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応なし",
+          "cost": 500
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 2,
+        "last_inquiry_date": "2026-05-08",
+        "recent_categories": [
+          "利用方法の問い合わせ",
+          "利用方法の問い合わせ"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C008",
+      "display_name": "顧客 008",
+      "signup_date": "2024-08-18",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            44011,
+            43329,
+            44829,
+            46335
+          ],
+          "monthly_frequency": [
+            7,
+            7,
+            7,
+            7
+          ],
+          "last_used_date": "2026-07-07",
+          "days_since_last_used": 9,
+          "period_change_pct": 3.4
+        },
+        "bank": {
+          "monthly_amount": [
+            60402,
+            59484,
+            61290,
+            62570
+          ],
+          "monthly_frequency": [
+            3,
+            3,
+            3,
+            3
+          ],
+          "last_used_date": "2026-07-03",
+          "days_since_last_used": 13,
+          "period_change_pct": 2.1
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 2,
+      "combined_qr_card": {
+        "monthly_amount": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "monthly_frequency": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "last_used_date": null,
+        "days_since_last_used": null,
+        "period_change_pct": null
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-04-15",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応なし",
+          "cost": 0
+        },
+        {
+          "sent_date": "2026-03-30",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応あり",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C009",
+      "display_name": "顧客 009",
+      "signup_date": "2025-05-19",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            57698,
+            50803,
+            45241,
+            40377
+          ],
+          "monthly_frequency": [
+            11,
+            10,
+            9,
+            8
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -10.8
+        },
+        "qr": {
+          "monthly_amount": [
+            42227,
+            38279,
+            32156,
+            27380
+          ],
+          "monthly_frequency": [
+            21,
+            19,
+            16,
+            14
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -14.9
+        },
+        "card": {
+          "monthly_amount": [
+            54380,
+            46256,
+            41552,
+            36402
+          ],
+          "monthly_frequency": [
+            10,
+            8,
+            7,
+            6
+          ],
+          "last_used_date": "2026-07-11",
+          "days_since_last_used": 5,
+          "period_change_pct": -12.4
+        },
+        "bank": {
+          "monthly_amount": [
+            32825,
+            29736,
+            26270,
+            22094
+          ],
+          "monthly_frequency": [
+            3,
+            3,
+            2,
+            2
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": -15.9
+        }
+      },
+      "service_count": 4,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          96607,
+          84535,
+          73708,
+          63782
+        ],
+        "monthly_frequency": [
+          31,
+          27,
+          23,
+          20
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": -13.5
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions"
+      ]
+    },
+    {
+      "customer_id": "C010",
+      "display_name": "顧客 010",
+      "signup_date": "2024-07-03",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            49856,
+            42936,
+            36879,
+            31539
+          ],
+          "monthly_frequency": [
+            9,
+            8,
+            7,
+            6
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -14.5
+        },
+        "bank": {
+          "monthly_amount": [
+            31394,
+            28440,
+            24415,
+            22114
+          ],
+          "monthly_frequency": [
+            4,
+            3,
+            3,
+            3
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": -9.4
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 2,
+      "combined_qr_card": {
+        "monthly_amount": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "monthly_frequency": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "last_used_date": null,
+        "days_since_last_used": null,
+        "period_change_pct": null
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-06-26",
+        "recent_categories": [
+          "キャンペーン内容の確認"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "bank_transactions",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C011",
+      "display_name": "顧客 011",
+      "signup_date": "2024-03-26",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            32403,
+            22511,
+            17203,
+            11766
+          ],
+          "monthly_frequency": [
+            8,
+            6,
+            4,
+            3
+          ],
+          "last_used_date": "2026-07-09",
+          "days_since_last_used": 7,
+          "period_change_pct": -31.6
+        },
+        "qr": {
+          "monthly_amount": [
+            36901,
+            27915,
+            21439,
+            0
+          ],
+          "monthly_frequency": [
+            16,
+            12,
+            9,
+            0
+          ],
+          "last_used_date": "2026-06-14",
+          "days_since_last_used": 32,
+          "period_change_pct": -100.0
+        },
+        "card": {
+          "monthly_amount": [
+            39924,
+            28670,
+            21160,
+            15271
+          ],
+          "monthly_frequency": [
+            9,
+            7,
+            5,
+            3
+          ],
+          "last_used_date": "2026-07-10",
+          "days_since_last_used": 6,
+          "period_change_pct": -27.8
+        },
+        "bank": {
+          "monthly_amount": [
+            51367,
+            39018,
+            27641,
+            20901
+          ],
+          "monthly_frequency": [
+            3,
+            2,
+            1,
+            1
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -24.4
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          76825,
+          56585,
+          42599,
+          15271
+        ],
+        "monthly_frequency": [
+          25,
+          19,
+          14,
+          3
+        ],
+        "last_used_date": "2026-07-10",
+        "days_since_last_used": 6,
+        "period_change_pct": -64.2
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-04-28",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応あり",
+          "cost": 300
+        },
+        {
+          "sent_date": "2026-03-08",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応なし",
+          "cost": 300
+        },
+        {
+          "sent_date": "2026-03-05",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応なし",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C012",
+      "display_name": "顧客 012",
+      "signup_date": "2023-10-10",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            48635,
+            53955,
+            59908,
+            58196
+          ],
+          "monthly_frequency": [
+            8,
+            9,
+            10,
+            10
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -2.9
+        },
+        "qr": {
+          "monthly_amount": [
+            27000,
+            28239,
+            27953,
+            28576
+          ],
+          "monthly_frequency": [
+            14,
+            14,
+            14,
+            14
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": 2.2
+        },
+        "card": {
+          "monthly_amount": [
+            36376,
+            36838,
+            38155,
+            40119
+          ],
+          "monthly_frequency": [
+            12,
+            12,
+            13,
+            13
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 5.1
+        },
+        "bank": {
+          "monthly_amount": [
+            38151,
+            41627,
+            43679,
+            46743
+          ],
+          "monthly_frequency": [
+            2,
+            2,
+            2,
+            2
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 7.0
+        }
+      },
+      "service_count": 4,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          63376,
+          65077,
+          66108,
+          68695
+        ],
+        "monthly_frequency": [
+          26,
+          26,
+          27,
+          27
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": 3.9
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-05-15",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応なし",
+          "cost": 100
+        },
+        {
+          "sent_date": "2026-04-28",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応あり",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C013",
+      "display_name": "顧客 013",
+      "signup_date": "2022-11-19",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            46597,
+            41965,
+            37851,
+            34160
+          ],
+          "monthly_frequency": [
+            11,
+            10,
+            9,
+            8
+          ],
+          "last_used_date": "2026-07-10",
+          "days_since_last_used": 6,
+          "period_change_pct": -9.8
+        },
+        "qr": {
+          "monthly_amount": [
+            37097,
+            33227,
+            28761,
+            25641
+          ],
+          "monthly_frequency": [
+            16,
+            14,
+            12,
+            11
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": -10.8
+        },
+        "card": {
+          "monthly_amount": [
+            44771,
+            38091,
+            34415,
+            30296
+          ],
+          "monthly_frequency": [
+            8,
+            7,
+            6,
+            5
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -12.0
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          81868,
+          71318,
+          63176,
+          55937
+        ],
+        "monthly_frequency": [
+          24,
+          21,
+          18,
+          16
+        ],
+        "last_used_date": "2026-07-13",
+        "days_since_last_used": 3,
+        "period_change_pct": -11.5
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions"
+      ]
+    },
+    {
+      "customer_id": "C014",
+      "display_name": "顧客 014",
+      "signup_date": "2024-06-10",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            51170,
+            57157,
+            56829,
+            58892
+          ],
+          "monthly_frequency": [
+            9,
+            10,
+            10,
+            10
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 3.6
+        },
+        "qr": {
+          "monthly_amount": [
+            27237,
+            29245,
+            29022,
+            28308
+          ],
+          "monthly_frequency": [
+            9,
+            10,
+            10,
+            10
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -2.5
+        },
+        "card": {
+          "monthly_amount": [
+            42384,
+            43847,
+            42808,
+            43864
+          ],
+          "monthly_frequency": [
+            10,
+            10,
+            10,
+            10
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 2.5
+        },
+        "bank": {
+          "monthly_amount": [
+            75985,
+            74162,
+            75917,
+            81403
+          ],
+          "monthly_frequency": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": 7.2
+        }
+      },
+      "service_count": 4,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          69621,
+          73092,
+          71830,
+          72172
+        ],
+        "monthly_frequency": [
+          19,
+          20,
+          20,
+          20
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": 0.5
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-05-16",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応あり",
+          "cost": 0
+        },
+        {
+          "sent_date": "2026-05-01",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応なし",
+          "cost": 100
+        },
+        {
+          "sent_date": "2026-03-31",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応なし",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C015",
+      "display_name": "顧客 015",
+      "signup_date": "2025-06-01",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            37102,
+            31233,
+            26784,
+            22636
+          ],
+          "monthly_frequency": [
+            10,
+            8,
+            7,
+            6
+          ],
+          "last_used_date": "2026-07-10",
+          "days_since_last_used": 6,
+          "period_change_pct": -15.5
+        },
+        "qr": {
+          "monthly_amount": [
+            40998,
+            36123,
+            32417,
+            27403
+          ],
+          "monthly_frequency": [
+            34,
+            30,
+            27,
+            23
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": -15.5
+        },
+        "card": {
+          "monthly_amount": [
+            50648,
+            43714,
+            37530,
+            33498
+          ],
+          "monthly_frequency": [
+            14,
+            12,
+            10,
+            9
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -10.7
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          91646,
+          79837,
+          69947,
+          60901
+        ],
+        "monthly_frequency": [
+          48,
+          42,
+          37,
+          32
+        ],
+        "last_used_date": "2026-07-15",
+        "days_since_last_used": 1,
+        "period_change_pct": -12.9
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-05",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応なし",
+          "cost": 500
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C016",
+      "display_name": "顧客 016",
+      "signup_date": "2025-02-05",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            43809,
+            48137,
+            48300,
+            52768
+          ],
+          "monthly_frequency": [
+            10,
+            11,
+            11,
+            12
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 9.3
+        },
+        "card": {
+          "monthly_amount": [
+            50907,
+            49558,
+            49507,
+            50459
+          ],
+          "monthly_frequency": [
+            17,
+            17,
+            17,
+            17
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": 1.9
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 2,
+      "combined_qr_card": {
+        "monthly_amount": [
+          50907,
+          49558,
+          49507,
+          50459
+        ],
+        "monthly_frequency": [
+          17,
+          17,
+          17,
+          17
+        ],
+        "last_used_date": "2026-07-15",
+        "days_since_last_used": 1,
+        "period_change_pct": 1.9
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-05-25",
+          "campaign_type": "カード利用特典案内",
+          "response": "開封のみ",
+          "cost": 500
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C017",
+      "display_name": "顧客 017",
+      "signup_date": "2025-08-08",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            58177,
+            43051,
+            29356,
+            21322
+          ],
+          "monthly_frequency": [
+            16,
+            12,
+            8,
+            6
+          ],
+          "last_used_date": "2026-07-11",
+          "days_since_last_used": 5,
+          "period_change_pct": -27.4
+        },
+        "qr": {
+          "monthly_amount": [
+            44408,
+            30362,
+            22875,
+            0
+          ],
+          "monthly_frequency": [
+            37,
+            25,
+            19,
+            0
+          ],
+          "last_used_date": "2026-06-16",
+          "days_since_last_used": 30,
+          "period_change_pct": -100.0
+        },
+        "card": {
+          "monthly_amount": [
+            43691,
+            32707,
+            23528,
+            17149
+          ],
+          "monthly_frequency": [
+            9,
+            7,
+            5,
+            3
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": -27.1
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          88099,
+          63069,
+          46403,
+          17149
+        ],
+        "monthly_frequency": [
+          46,
+          32,
+          24,
+          3
+        ],
+        "last_used_date": "2026-07-13",
+        "days_since_last_used": 3,
+        "period_change_pct": -63.0
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-03-23",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "開封のみ",
+          "cost": 0
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-03-12",
+        "recent_categories": [
+          "利用方法の問い合わせ"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C018",
+      "display_name": "顧客 018",
+      "signup_date": "2023-11-01",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            50606,
+            44508,
+            38880,
+            33187
+          ],
+          "monthly_frequency": [
+            7,
+            6,
+            5,
+            4
+          ],
+          "last_used_date": "2026-07-04",
+          "days_since_last_used": 12,
+          "period_change_pct": -14.6
+        },
+        "card": {
+          "monthly_amount": [
+            49741,
+            43762,
+            36918,
+            31217
+          ],
+          "monthly_frequency": [
+            18,
+            16,
+            13,
+            11
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -15.4
+        },
+        "bank": {
+          "monthly_amount": [
+            57389,
+            51725,
+            43811,
+            38313
+          ],
+          "monthly_frequency": [
+            4,
+            3,
+            3,
+            3
+          ],
+          "last_used_date": "2026-07-08",
+          "days_since_last_used": 8,
+          "period_change_pct": -12.5
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          49741,
+          43762,
+          36918,
+          31217
+        ],
+        "monthly_frequency": [
+          18,
+          16,
+          13,
+          11
+        ],
+        "last_used_date": "2026-07-15",
+        "days_since_last_used": 1,
+        "period_change_pct": -15.4
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-04-18",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応あり",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-04-13",
+        "recent_categories": [
+          "退会・解約に関する相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C019",
+      "display_name": "顧客 019",
+      "signup_date": "2023-09-14",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            52444,
+            52381,
+            56036,
+            57542
+          ],
+          "monthly_frequency": [
+            14,
+            14,
+            14,
+            15
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": 2.7
+        },
+        "qr": {
+          "monthly_amount": [
+            36382,
+            39842,
+            40464,
+            40526
+          ],
+          "monthly_frequency": [
+            21,
+            24,
+            24,
+            24
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 0.2
+        },
+        "card": {
+          "monthly_amount": [
+            50715,
+            51643,
+            53515,
+            57334
+          ],
+          "monthly_frequency": [
+            11,
+            12,
+            12,
+            13
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": 7.1
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          87097,
+          91485,
+          93979,
+          97860
+        ],
+        "monthly_frequency": [
+          32,
+          36,
+          36,
+          37
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": 4.1
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-03-18",
+        "recent_categories": [
+          "決済エラーの相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C020",
+      "display_name": "顧客 020",
+      "signup_date": "2023-02-16",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            48988,
+            37378,
+            28839,
+            21006
+          ],
+          "monthly_frequency": [
+            10,
+            8,
+            6,
+            4
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -27.2
+        },
+        "qr": {
+          "monthly_amount": [
+            41368,
+            29483,
+            22335,
+            0
+          ],
+          "monthly_frequency": [
+            17,
+            12,
+            9,
+            0
+          ],
+          "last_used_date": "2026-06-14",
+          "days_since_last_used": 32,
+          "period_change_pct": -100.0
+        },
+        "card": {
+          "monthly_amount": [
+            35489,
+            25995,
+            18067,
+            13961
+          ],
+          "monthly_frequency": [
+            12,
+            9,
+            6,
+            5
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -22.7
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          76857,
+          55478,
+          40402,
+          13961
+        ],
+        "monthly_frequency": [
+          29,
+          21,
+          15,
+          5
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": -65.4
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-15",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応なし",
+          "cost": 300
+        },
+        {
+          "sent_date": "2026-03-05",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応なし",
+          "cost": 500
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-05-02",
+        "recent_categories": [
+          "キャンペーン内容の確認"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C021",
+      "display_name": "顧客 021",
+      "signup_date": "2023-09-02",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            50629,
+            44710,
+            39435,
+            35481
+          ],
+          "monthly_frequency": [
+            7,
+            6,
+            5,
+            5
+          ],
+          "last_used_date": "2026-07-11",
+          "days_since_last_used": 5,
+          "period_change_pct": -10.0
+        },
+        "card": {
+          "monthly_amount": [
+            52209,
+            44665,
+            39961,
+            34113
+          ],
+          "monthly_frequency": [
+            9,
+            8,
+            7,
+            6
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -14.6
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 2,
+      "combined_qr_card": {
+        "monthly_amount": [
+          52209,
+          44665,
+          39961,
+          34113
+        ],
+        "monthly_frequency": [
+          9,
+          8,
+          7,
+          6
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": -14.6
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-04-25",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応なし",
+          "cost": 0
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 2,
+        "last_inquiry_date": "2026-05-03",
+        "recent_categories": [
+          "決済エラーの相談",
+          "決済エラーの相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C022",
+      "display_name": "顧客 022",
+      "signup_date": "2023-02-02",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            45934,
+            35273,
+            27041,
+            19834
+          ],
+          "monthly_frequency": [
+            8,
+            6,
+            5,
+            3
+          ],
+          "last_used_date": "2026-07-07",
+          "days_since_last_used": 9,
+          "period_change_pct": -26.7
+        },
+        "qr": {
+          "monthly_amount": [
+            31346,
+            23061,
+            16109,
+            0
+          ],
+          "monthly_frequency": [
+            13,
+            9,
+            7,
+            0
+          ],
+          "last_used_date": "2026-06-15",
+          "days_since_last_used": 31,
+          "period_change_pct": -100.0
+        },
+        "card": {
+          "monthly_amount": [
+            43535,
+            32016,
+            24462,
+            16974
+          ],
+          "monthly_frequency": [
+            8,
+            6,
+            4,
+            3
+          ],
+          "last_used_date": "2026-06-27",
+          "days_since_last_used": 19,
+          "period_change_pct": -30.6
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          74881,
+          55077,
+          40571,
+          16974
+        ],
+        "monthly_frequency": [
+          21,
+          15,
+          11,
+          3
+        ],
+        "last_used_date": "2026-06-27",
+        "days_since_last_used": 19,
+        "period_change_pct": -58.2
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-05-04",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応あり",
+          "cost": 300
+        },
+        {
+          "sent_date": "2026-04-27",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応あり",
+          "cost": 500
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C023",
+      "display_name": "顧客 023",
+      "signup_date": "2023-06-21",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            38238,
+            41484,
+            43484,
+            46268
+          ],
+          "monthly_frequency": [
+            11,
+            12,
+            13,
+            14
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": 6.4
+        },
+        "qr": {
+          "monthly_amount": [
+            30715,
+            31267,
+            32862,
+            32557
+          ],
+          "monthly_frequency": [
+            22,
+            22,
+            24,
+            23
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -0.9
+        },
+        "card": {
+          "monthly_amount": [
+            39625,
+            42637,
+            41769,
+            43069
+          ],
+          "monthly_frequency": [
+            8,
+            9,
+            9,
+            9
+          ],
+          "last_used_date": "2026-07-10",
+          "days_since_last_used": 6,
+          "period_change_pct": 3.1
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          70340,
+          73904,
+          74631,
+          75626
+        ],
+        "monthly_frequency": [
+          30,
+          31,
+          33,
+          32
+        ],
+        "last_used_date": "2026-07-15",
+        "days_since_last_used": 1,
+        "period_change_pct": 1.3
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-07-01",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応あり",
+          "cost": 0
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C024",
+      "display_name": "顧客 024",
+      "signup_date": "2022-12-13",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            30586,
+            26998,
+            23114,
+            19502
+          ],
+          "monthly_frequency": [
+            4,
+            4,
+            3,
+            3
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -15.6
+        },
+        "qr": {
+          "monthly_amount": [
+            36514,
+            30818,
+            27400,
+            24187
+          ],
+          "monthly_frequency": [
+            20,
+            17,
+            15,
+            13
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": -11.7
+        },
+        "card": {
+          "monthly_amount": [
+            52833,
+            46086,
+            39567,
+            33792
+          ],
+          "monthly_frequency": [
+            10,
+            9,
+            7,
+            6
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -14.6
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          89347,
+          76904,
+          66967,
+          57979
+        ],
+        "monthly_frequency": [
+          30,
+          26,
+          22,
+          19
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": -13.4
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-18",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応なし",
+          "cost": 100
+        },
+        {
+          "sent_date": "2026-04-22",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応あり",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-01-27",
+        "recent_categories": [
+          "キャンペーン内容の確認"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C025",
+      "display_name": "顧客 025",
+      "signup_date": "2024-10-03",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            51725,
+            53189,
+            56929,
+            62034
+          ],
+          "monthly_frequency": [
+            7,
+            7,
+            8,
+            9
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": 9.0
+        },
+        "qr": {
+          "monthly_amount": [
+            43391,
+            45565,
+            50398,
+            53362
+          ],
+          "monthly_frequency": [
+            15,
+            15,
+            17,
+            18
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 5.9
+        },
+        "card": {
+          "monthly_amount": [
+            48260,
+            49915,
+            54910,
+            54761
+          ],
+          "monthly_frequency": [
+            21,
+            21,
+            24,
+            23
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": -0.3
+        },
+        "bank": {
+          "monthly_amount": [
+            35609,
+            36970,
+            37732,
+            41578
+          ],
+          "monthly_frequency": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "last_used_date": "2026-07-02",
+          "days_since_last_used": 14,
+          "period_change_pct": 10.2
+        }
+      },
+      "service_count": 4,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          91651,
+          95480,
+          105308,
+          108123
+        ],
+        "monthly_frequency": [
+          36,
+          36,
+          41,
+          41
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": 2.7
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-04-19",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応なし",
+          "cost": 300
+        },
+        {
+          "sent_date": "2026-04-08",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "開封のみ",
+          "cost": 100
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C026",
+      "display_name": "顧客 026",
+      "signup_date": "2024-06-07",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            59997,
+            54255,
+            49300,
+            43000
+          ],
+          "monthly_frequency": [
+            13,
+            11,
+            10,
+            9
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": -12.8
+        },
+        "bank": {
+          "monthly_amount": [
+            59009,
+            51007,
+            43725,
+            36886
+          ],
+          "monthly_frequency": [
+            4,
+            3,
+            3,
+            2
+          ],
+          "last_used_date": "2026-06-19",
+          "days_since_last_used": 27,
+          "period_change_pct": -15.6
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 2,
+      "combined_qr_card": {
+        "monthly_amount": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "monthly_frequency": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "last_used_date": null,
+        "days_since_last_used": null,
+        "period_change_pct": null
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 2,
+        "last_inquiry_date": "2026-06-13",
+        "recent_categories": [
+          "退会・解約に関する相談",
+          "決済エラーの相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "bank_transactions",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C027",
+      "display_name": "顧客 027",
+      "signup_date": "2024-11-15",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            43951,
+            32199,
+            24744,
+            16956
+          ],
+          "monthly_frequency": [
+            10,
+            8,
+            6,
+            4
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -31.5
+        },
+        "card": {
+          "monthly_amount": [
+            42378,
+            28970,
+            20515,
+            14404
+          ],
+          "monthly_frequency": [
+            10,
+            7,
+            5,
+            3
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -29.8
+        },
+        "bank": {
+          "monthly_amount": [
+            29826,
+            21537,
+            14800,
+            0
+          ],
+          "monthly_frequency": [
+            3,
+            2,
+            2,
+            0
+          ],
+          "last_used_date": "2026-06-11",
+          "days_since_last_used": 35,
+          "period_change_pct": -100.0
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          42378,
+          28970,
+          20515,
+          14404
+        ],
+        "monthly_frequency": [
+          10,
+          7,
+          5,
+          3
+        ],
+        "last_used_date": "2026-07-15",
+        "days_since_last_used": 1,
+        "period_change_pct": -29.8
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-04-08",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応なし",
+          "cost": 0
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-02-28",
+        "recent_categories": [
+          "退会・解約に関する相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C028",
+      "display_name": "顧客 028",
+      "signup_date": "2023-11-21",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            53174,
+            57088,
+            60746,
+            59853
+          ],
+          "monthly_frequency": [
+            7,
+            8,
+            8,
+            8
+          ],
+          "last_used_date": "2026-07-07",
+          "days_since_last_used": 9,
+          "period_change_pct": -1.5
+        },
+        "qr": {
+          "monthly_amount": [
+            37008,
+            41360,
+            44976,
+            45968
+          ],
+          "monthly_frequency": [
+            35,
+            39,
+            42,
+            43
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 2.2
+        },
+        "bank": {
+          "monthly_amount": [
+            45703,
+            47800,
+            48815,
+            53573
+          ],
+          "monthly_frequency": [
+            4,
+            5,
+            5,
+            5
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 9.7
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          37008,
+          41360,
+          44976,
+          45968
+        ],
+        "monthly_frequency": [
+          35,
+          39,
+          42,
+          43
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": 2.2
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-05-03",
+        "recent_categories": [
+          "退会・解約に関する相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C029",
+      "display_name": "顧客 029",
+      "signup_date": "2023-03-31",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            52014,
+            44316,
+            38131,
+            33539
+          ],
+          "monthly_frequency": [
+            7,
+            6,
+            5,
+            4
+          ],
+          "last_used_date": "2026-07-05",
+          "days_since_last_used": 11,
+          "period_change_pct": -12.0
+        },
+        "qr": {
+          "monthly_amount": [
+            30402,
+            26519,
+            23236,
+            20436
+          ],
+          "monthly_frequency": [
+            12,
+            10,
+            9,
+            8
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -12.1
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 2,
+      "combined_qr_card": {
+        "monthly_amount": [
+          30402,
+          26519,
+          23236,
+          20436
+        ],
+        "monthly_frequency": [
+          12,
+          10,
+          9,
+          8
+        ],
+        "last_used_date": "2026-07-15",
+        "days_since_last_used": 1,
+        "period_change_pct": -12.1
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-05-21",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応あり",
+          "cost": 200
+        },
+        {
+          "sent_date": "2026-04-26",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "開封のみ",
+          "cost": 200
+        },
+        {
+          "sent_date": "2026-03-17",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応なし",
+          "cost": 100
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-07-06",
+        "recent_categories": [
+          "利用方法の問い合わせ"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C030",
+      "display_name": "顧客 030",
+      "signup_date": "2022-09-02",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            43941,
+            43194,
+            47610,
+            47922
+          ],
+          "monthly_frequency": [
+            7,
+            7,
+            8,
+            8
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": 0.7
+        },
+        "qr": {
+          "monthly_amount": [
+            32580,
+            35760,
+            35662,
+            35727
+          ],
+          "monthly_frequency": [
+            38,
+            41,
+            41,
+            41
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 0.2
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 2,
+      "combined_qr_card": {
+        "monthly_amount": [
+          32580,
+          35760,
+          35662,
+          35727
+        ],
+        "monthly_frequency": [
+          38,
+          41,
+          41,
+          41
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": 0.2
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-14",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応なし",
+          "cost": 0
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-06-14",
+        "recent_categories": [
+          "決済エラーの相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C031",
+      "display_name": "顧客 031",
+      "signup_date": "2024-07-17",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            32568,
+            29009,
+            26377,
+            22254
+          ],
+          "monthly_frequency": [
+            5,
+            4,
+            4,
+            3
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -15.6
+        },
+        "qr": {
+          "monthly_amount": [
+            34772,
+            29963,
+            25912,
+            22688
+          ],
+          "monthly_frequency": [
+            14,
+            12,
+            10,
+            9
+          ],
+          "last_used_date": "2026-07-10",
+          "days_since_last_used": 6,
+          "period_change_pct": -12.4
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 2,
+      "combined_qr_card": {
+        "monthly_amount": [
+          34772,
+          29963,
+          25912,
+          22688
+        ],
+        "monthly_frequency": [
+          14,
+          12,
+          10,
+          9
+        ],
+        "last_used_date": "2026-07-10",
+        "days_since_last_used": 6,
+        "period_change_pct": -12.4
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-07-01",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応あり",
+          "cost": 200
+        },
+        {
+          "sent_date": "2026-05-31",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "開封のみ",
+          "cost": 300
+        },
+        {
+          "sent_date": "2026-05-17",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応なし",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 2,
+        "last_inquiry_date": "2026-05-08",
+        "recent_categories": [
+          "決済エラーの相談",
+          "決済エラーの相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C032",
+      "display_name": "顧客 032",
+      "signup_date": "2025-11-23",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            45928,
+            40811,
+            35479,
+            31111
+          ],
+          "monthly_frequency": [
+            9,
+            8,
+            7,
+            6
+          ],
+          "last_used_date": "2026-07-10",
+          "days_since_last_used": 6,
+          "period_change_pct": -12.3
+        },
+        "qr": {
+          "monthly_amount": [
+            39919,
+            34362,
+            30618,
+            27324
+          ],
+          "monthly_frequency": [
+            26,
+            22,
+            20,
+            18
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -10.8
+        },
+        "card": {
+          "monthly_amount": [
+            37413,
+            33732,
+            29429,
+            25209
+          ],
+          "monthly_frequency": [
+            14,
+            12,
+            11,
+            9
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -14.3
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          77332,
+          68094,
+          60047,
+          52533
+        ],
+        "monthly_frequency": [
+          40,
+          34,
+          31,
+          27
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": -12.5
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-04-21",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応あり",
+          "cost": 0
+        },
+        {
+          "sent_date": "2026-04-02",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応あり",
+          "cost": 100
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-02-26",
+        "recent_categories": [
+          "利用方法の問い合わせ"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C033",
+      "display_name": "顧客 033",
+      "signup_date": "2024-12-14",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            59415,
+            62885,
+            68167,
+            72225
+          ],
+          "monthly_frequency": [
+            8,
+            9,
+            10,
+            10
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": 6.0
+        },
+        "qr": {
+          "monthly_amount": [
+            30925,
+            31398,
+            33792,
+            33421
+          ],
+          "monthly_frequency": [
+            19,
+            20,
+            21,
+            21
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": -1.1
+        },
+        "bank": {
+          "monthly_amount": [
+            22731,
+            23045,
+            25618,
+            27300
+          ],
+          "monthly_frequency": [
+            4,
+            4,
+            4,
+            5
+          ],
+          "last_used_date": "2026-07-02",
+          "days_since_last_used": 14,
+          "period_change_pct": 6.6
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          30925,
+          31398,
+          33792,
+          33421
+        ],
+        "monthly_frequency": [
+          19,
+          20,
+          21,
+          21
+        ],
+        "last_used_date": "2026-07-14",
+        "days_since_last_used": 2,
+        "period_change_pct": -1.1
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-09",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応あり",
+          "cost": 200
+        },
+        {
+          "sent_date": "2026-04-28",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応なし",
+          "cost": 500
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C034",
+      "display_name": "顧客 034",
+      "signup_date": "2023-03-29",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            37574,
+            32934,
+            29184,
+            24585
+          ],
+          "monthly_frequency": [
+            5,
+            5,
+            4,
+            3
+          ],
+          "last_used_date": "2026-07-06",
+          "days_since_last_used": 10,
+          "period_change_pct": -15.8
+        },
+        "qr": {
+          "monthly_amount": [
+            27282,
+            23888,
+            20772,
+            17905
+          ],
+          "monthly_frequency": [
+            29,
+            25,
+            22,
+            19
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -13.8
+        },
+        "card": {
+          "monthly_amount": [
+            38035,
+            32086,
+            29005,
+            25890
+          ],
+          "monthly_frequency": [
+            7,
+            6,
+            6,
+            5
+          ],
+          "last_used_date": "2026-07-10",
+          "days_since_last_used": 6,
+          "period_change_pct": -10.7
+        },
+        "bank": {
+          "monthly_amount": [
+            53484,
+            46440,
+            40252,
+            34444
+          ],
+          "monthly_frequency": [
+            5,
+            4,
+            4,
+            3
+          ],
+          "last_used_date": "2026-07-08",
+          "days_since_last_used": 8,
+          "period_change_pct": -14.4
+        }
+      },
+      "service_count": 4,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          65317,
+          55974,
+          49777,
+          43795
+        ],
+        "monthly_frequency": [
+          36,
+          31,
+          28,
+          24
+        ],
+        "last_used_date": "2026-07-15",
+        "days_since_last_used": 1,
+        "period_change_pct": -12.0
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-05-13",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応なし",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C035",
+      "display_name": "顧客 035",
+      "signup_date": "2023-11-10",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            48289,
+            54011,
+            54866,
+            58333
+          ],
+          "monthly_frequency": [
+            7,
+            8,
+            8,
+            9
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": 6.3
+        },
+        "qr": {
+          "monthly_amount": [
+            43952,
+            44027,
+            47068,
+            46765
+          ],
+          "monthly_frequency": [
+            35,
+            35,
+            37,
+            37
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -0.6
+        },
+        "card": {
+          "monthly_amount": [
+            38476,
+            37337,
+            38742,
+            41031
+          ],
+          "monthly_frequency": [
+            17,
+            16,
+            17,
+            18
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": 5.9
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          82428,
+          81364,
+          85810,
+          87796
+        ],
+        "monthly_frequency": [
+          52,
+          51,
+          54,
+          55
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": 2.3
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-02-20",
+        "recent_categories": [
+          "キャンペーン内容の確認"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C036",
+      "display_name": "顧客 036",
+      "signup_date": "2024-05-11",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            37937,
+            26328,
+            20349,
+            15398
+          ],
+          "monthly_frequency": [
+            5,
+            4,
+            3,
+            2
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -24.3
+        },
+        "qr": {
+          "monthly_amount": [
+            36796,
+            27972,
+            21496,
+            0
+          ],
+          "monthly_frequency": [
+            14,
+            11,
+            8,
+            0
+          ],
+          "last_used_date": "2026-06-14",
+          "days_since_last_used": 32,
+          "period_change_pct": -100.0
+        },
+        "card": {
+          "monthly_amount": [
+            37980,
+            29085,
+            22514,
+            15777
+          ],
+          "monthly_frequency": [
+            12,
+            9,
+            7,
+            5
+          ],
+          "last_used_date": "2026-07-11",
+          "days_since_last_used": 5,
+          "period_change_pct": -29.9
+        },
+        "bank": {
+          "monthly_amount": [
+            55703,
+            38318,
+            28208,
+            20682
+          ],
+          "monthly_frequency": [
+            3,
+            2,
+            2,
+            1
+          ],
+          "last_used_date": "2026-07-01",
+          "days_since_last_used": 15,
+          "period_change_pct": -26.7
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          74776,
+          57057,
+          44010,
+          15777
+        ],
+        "monthly_frequency": [
+          26,
+          20,
+          15,
+          5
+        ],
+        "last_used_date": "2026-07-11",
+        "days_since_last_used": 5,
+        "period_change_pct": -64.2
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-14",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応なし",
+          "cost": 300
+        },
+        {
+          "sent_date": "2026-05-08",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応あり",
+          "cost": 300
+        },
+        {
+          "sent_date": "2026-03-13",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応なし",
+          "cost": 300
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-07-11",
+        "recent_categories": [
+          "キャンペーン内容の確認"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C037",
+      "display_name": "顧客 037",
+      "signup_date": "2024-04-15",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            42961,
+            44855,
+            44052,
+            42995
+          ],
+          "monthly_frequency": [
+            9,
+            10,
+            10,
+            9
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -2.4
+        },
+        "qr": {
+          "monthly_amount": [
+            30007,
+            33437,
+            36627,
+            38688
+          ],
+          "monthly_frequency": [
+            30,
+            33,
+            37,
+            39
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": 5.6
+        },
+        "bank": {
+          "monthly_amount": [
+            77047,
+            82502,
+            83365,
+            81370
+          ],
+          "monthly_frequency": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "last_used_date": "2026-07-11",
+          "days_since_last_used": 5,
+          "period_change_pct": -2.4
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          30007,
+          33437,
+          36627,
+          38688
+        ],
+        "monthly_frequency": [
+          30,
+          33,
+          37,
+          39
+        ],
+        "last_used_date": "2026-07-15",
+        "days_since_last_used": 1,
+        "period_change_pct": 5.6
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-05-12",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応あり",
+          "cost": 100
+        },
+        {
+          "sent_date": "2026-03-06",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応あり",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C038",
+      "display_name": "顧客 038",
+      "signup_date": "2025-01-04",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            44752,
+            44626,
+            47204,
+            50283
+          ],
+          "monthly_frequency": [
+            13,
+            13,
+            14,
+            15
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": 6.5
+        },
+        "qr": {
+          "monthly_amount": [
+            31959,
+            34212,
+            37587,
+            38319
+          ],
+          "monthly_frequency": [
+            21,
+            22,
+            25,
+            25
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": 1.9
+        },
+        "card": {
+          "monthly_amount": [
+            48873,
+            54338,
+            59337,
+            62455
+          ],
+          "monthly_frequency": [
+            16,
+            17,
+            19,
+            20
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": 5.3
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          80832,
+          88550,
+          96924,
+          100774
+        ],
+        "monthly_frequency": [
+          37,
+          39,
+          44,
+          45
+        ],
+        "last_used_date": "2026-07-14",
+        "days_since_last_used": 2,
+        "period_change_pct": 4.0
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions"
+      ]
+    },
+    {
+      "customer_id": "C039",
+      "display_name": "顧客 039",
+      "signup_date": "2023-06-11",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            30035,
+            25707,
+            21835,
+            18609
+          ],
+          "monthly_frequency": [
+            4,
+            3,
+            3,
+            3
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -14.8
+        },
+        "qr": {
+          "monthly_amount": [
+            34240,
+            29915,
+            25919,
+            22684
+          ],
+          "monthly_frequency": [
+            37,
+            33,
+            28,
+            25
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -12.5
+        },
+        "card": {
+          "monthly_amount": [
+            43841,
+            39075,
+            35200,
+            31324
+          ],
+          "monthly_frequency": [
+            20,
+            18,
+            16,
+            14
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": -11.0
+        },
+        "bank": {
+          "monthly_amount": [
+            72851,
+            66149,
+            57275,
+            48919
+          ],
+          "monthly_frequency": [
+            6,
+            5,
+            5,
+            4
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -14.6
+        }
+      },
+      "service_count": 4,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          78081,
+          68990,
+          61119,
+          54008
+        ],
+        "monthly_frequency": [
+          57,
+          51,
+          44,
+          39
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": -11.6
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-03-28",
+          "campaign_type": "カード利用特典案内",
+          "response": "開封のみ",
+          "cost": 0
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C040",
+      "display_name": "顧客 040",
+      "signup_date": "2025-02-07",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            58412,
+            58628,
+            64271,
+            63435
+          ],
+          "monthly_frequency": [
+            9,
+            9,
+            10,
+            10
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": -1.3
+        },
+        "qr": {
+          "monthly_amount": [
+            28079,
+            28467,
+            30626,
+            31617
+          ],
+          "monthly_frequency": [
+            10,
+            10,
+            11,
+            11
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 3.2
+        },
+        "card": {
+          "monthly_amount": [
+            44650,
+            46369,
+            45985,
+            45918
+          ],
+          "monthly_frequency": [
+            11,
+            12,
+            12,
+            12
+          ],
+          "last_used_date": "2026-07-08",
+          "days_since_last_used": 8,
+          "period_change_pct": -0.1
+        },
+        "bank": {
+          "monthly_amount": [
+            55963,
+            55431,
+            54351,
+            59018
+          ],
+          "monthly_frequency": [
+            3,
+            3,
+            3,
+            4
+          ],
+          "last_used_date": "2026-07-04",
+          "days_since_last_used": 12,
+          "period_change_pct": 8.6
+        }
+      },
+      "service_count": 4,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          72729,
+          74836,
+          76611,
+          77535
+        ],
+        "monthly_frequency": [
+          21,
+          22,
+          23,
+          23
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": 1.2
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-03-05",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応あり",
+          "cost": 0
+        },
+        {
+          "sent_date": "2026-02-25",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応あり",
+          "cost": 0
+        },
+        {
+          "sent_date": "2026-02-18",
+          "campaign_type": "EC再訪促進メール",
+          "response": "開封のみ",
+          "cost": 300
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-05-08",
+        "recent_categories": [
+          "退会・解約に関する相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C041",
+      "display_name": "顧客 041",
+      "signup_date": "2023-09-01",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            47398,
+            36956,
+            26145,
+            18205
+          ],
+          "monthly_frequency": [
+            8,
+            6,
+            4,
+            3
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -30.4
+        },
+        "qr": {
+          "monthly_amount": [
+            42305,
+            30950,
+            23111,
+            0
+          ],
+          "monthly_frequency": [
+            24,
+            17,
+            13,
+            0
+          ],
+          "last_used_date": "2026-06-16",
+          "days_since_last_used": 30,
+          "period_change_pct": -100.0
+        },
+        "bank": {
+          "monthly_amount": [
+            42633,
+            29544,
+            20148,
+            15233
+          ],
+          "monthly_frequency": [
+            2,
+            2,
+            1,
+            1
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -24.4
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          42305,
+          30950,
+          23111,
+          0
+        ],
+        "monthly_frequency": [
+          24,
+          17,
+          13,
+          0
+        ],
+        "last_used_date": "2026-06-16",
+        "days_since_last_used": 30,
+        "period_change_pct": -100.0
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-04-17",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応なし",
+          "cost": 0
+        },
+        {
+          "sent_date": "2026-04-11",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応あり",
+          "cost": 300
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-02-01",
+        "recent_categories": [
+          "キャンペーン内容の確認"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C042",
+      "display_name": "顧客 042",
+      "signup_date": "2023-11-05",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            41582,
+            44980,
+            48389,
+            52826
+          ],
+          "monthly_frequency": [
+            7,
+            7,
+            8,
+            8
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": 9.2
+        },
+        "qr": {
+          "monthly_amount": [
+            41415,
+            43250,
+            42194,
+            44107
+          ],
+          "monthly_frequency": [
+            14,
+            15,
+            14,
+            15
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": 4.5
+        },
+        "bank": {
+          "monthly_amount": [
+            55411,
+            61013,
+            63213,
+            66305
+          ],
+          "monthly_frequency": [
+            3,
+            3,
+            4,
+            4
+          ],
+          "last_used_date": "2026-07-09",
+          "days_since_last_used": 7,
+          "period_change_pct": 4.9
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          41415,
+          43250,
+          42194,
+          44107
+        ],
+        "monthly_frequency": [
+          14,
+          15,
+          14,
+          15
+        ],
+        "last_used_date": "2026-07-12",
+        "days_since_last_used": 4,
+        "period_change_pct": 4.5
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-05-27",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応なし",
+          "cost": 100
+        },
+        {
+          "sent_date": "2026-04-21",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応なし",
+          "cost": 0
+        },
+        {
+          "sent_date": "2026-02-16",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応あり",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 1,
+        "last_inquiry_date": "2026-02-07",
+        "recent_categories": [
+          "退会・解約に関する相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C043",
+      "display_name": "顧客 043",
+      "signup_date": "2023-06-07",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            37951,
+            42334,
+            41541,
+            45165
+          ],
+          "monthly_frequency": [
+            6,
+            7,
+            7,
+            7
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": 8.7
+        },
+        "qr": {
+          "monthly_amount": [
+            32950,
+            33586,
+            35974,
+            37773
+          ],
+          "monthly_frequency": [
+            34,
+            34,
+            37,
+            39
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": 5.0
+        },
+        "card": {
+          "monthly_amount": [
+            54083,
+            59659,
+            62233,
+            65419
+          ],
+          "monthly_frequency": [
+            12,
+            13,
+            14,
+            15
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": 5.1
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          87033,
+          93245,
+          98207,
+          103192
+        ],
+        "monthly_frequency": [
+          46,
+          47,
+          51,
+          54
+        ],
+        "last_used_date": "2026-07-15",
+        "days_since_last_used": 1,
+        "period_change_pct": 5.1
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-04-09",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応なし",
+          "cost": 100
+        },
+        {
+          "sent_date": "2026-03-19",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応あり",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C044",
+      "display_name": "顧客 044",
+      "signup_date": "2022-07-13",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            32953,
+            22418,
+            15811,
+            11646
+          ],
+          "monthly_frequency": [
+            5,
+            4,
+            3,
+            2
+          ],
+          "last_used_date": "2026-07-06",
+          "days_since_last_used": 10,
+          "period_change_pct": -26.3
+        },
+        "qr": {
+          "monthly_amount": [
+            42452,
+            30166,
+            20806,
+            0
+          ],
+          "monthly_frequency": [
+            24,
+            17,
+            12,
+            0
+          ],
+          "last_used_date": "2026-06-12",
+          "days_since_last_used": 34,
+          "period_change_pct": -100.0
+        },
+        "card": {
+          "monthly_amount": [
+            50923,
+            37810,
+            28939,
+            21036
+          ],
+          "monthly_frequency": [
+            16,
+            12,
+            9,
+            7
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -27.3
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          93375,
+          67976,
+          49745,
+          21036
+        ],
+        "monthly_frequency": [
+          40,
+          29,
+          21,
+          7
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": -57.7
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-06",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応あり",
+          "cost": 200
+        },
+        {
+          "sent_date": "2026-05-08",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応あり",
+          "cost": 200
+        },
+        {
+          "sent_date": "2026-04-07",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応なし",
+          "cost": 100
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C045",
+      "display_name": "顧客 045",
+      "signup_date": "2022-10-26",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            44930,
+            38968,
+            34416,
+            29672
+          ],
+          "monthly_frequency": [
+            8,
+            7,
+            6,
+            5
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": -13.8
+        },
+        "qr": {
+          "monthly_amount": [
+            29644,
+            26021,
+            22464,
+            19028
+          ],
+          "monthly_frequency": [
+            13,
+            12,
+            10,
+            9
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": -15.3
+        },
+        "card": {
+          "monthly_amount": [
+            44305,
+            38621,
+            34943,
+            29485
+          ],
+          "monthly_frequency": [
+            14,
+            12,
+            11,
+            9
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": -15.6
+        },
+        "bank": {
+          "monthly_amount": [
+            79259,
+            66792,
+            57550,
+            50528
+          ],
+          "monthly_frequency": [
+            8,
+            7,
+            6,
+            5
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": -12.2
+        }
+      },
+      "service_count": 4,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          73949,
+          64642,
+          57407,
+          48513
+        ],
+        "monthly_frequency": [
+          27,
+          24,
+          21,
+          18
+        ],
+        "last_used_date": "2026-07-14",
+        "days_since_last_used": 2,
+        "period_change_pct": -15.5
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-11",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応なし",
+          "cost": 200
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C046",
+      "display_name": "顧客 046",
+      "signup_date": "2024-04-19",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            59781,
+            60116,
+            63469,
+            67038
+          ],
+          "monthly_frequency": [
+            13,
+            13,
+            14,
+            15
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": 5.6
+        },
+        "qr": {
+          "monthly_amount": [
+            44559,
+            45058,
+            47531,
+            50993
+          ],
+          "monthly_frequency": [
+            20,
+            20,
+            21,
+            23
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 7.3
+        },
+        "card": {
+          "monthly_amount": [
+            49893,
+            52937,
+            55292,
+            61134
+          ],
+          "monthly_frequency": [
+            23,
+            24,
+            25,
+            28
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 10.6
+        },
+        "bank": {
+          "monthly_amount": [
+            37172,
+            39443,
+            40342,
+            42985
+          ],
+          "monthly_frequency": [
+            2,
+            2,
+            2,
+            3
+          ],
+          "last_used_date": "2026-07-11",
+          "days_since_last_used": 5,
+          "period_change_pct": 6.6
+        }
+      },
+      "service_count": 4,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          94452,
+          97995,
+          102823,
+          112127
+        ],
+        "monthly_frequency": [
+          43,
+          44,
+          46,
+          51
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": 9.0
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions"
+      ]
+    },
+    {
+      "customer_id": "C047",
+      "display_name": "顧客 047",
+      "signup_date": "2022-07-06",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            48824,
+            34758,
+            26633,
+            20516
+          ],
+          "monthly_frequency": [
+            15,
+            11,
+            8,
+            6
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": -23.0
+        },
+        "qr": {
+          "monthly_amount": [
+            40772,
+            30314,
+            23248,
+            0
+          ],
+          "monthly_frequency": [
+            47,
+            35,
+            27,
+            0
+          ],
+          "last_used_date": "2026-06-16",
+          "days_since_last_used": 30,
+          "period_change_pct": -100.0
+        },
+        "card": {
+          "monthly_amount": [
+            41534,
+            31562,
+            22138,
+            15326
+          ],
+          "monthly_frequency": [
+            11,
+            9,
+            6,
+            4
+          ],
+          "last_used_date": "2026-07-09",
+          "days_since_last_used": 7,
+          "period_change_pct": -30.8
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          82306,
+          61876,
+          45386,
+          15326
+        ],
+        "monthly_frequency": [
+          58,
+          44,
+          33,
+          4
+        ],
+        "last_used_date": "2026-07-09",
+        "days_since_last_used": 7,
+        "period_change_pct": -66.2
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-21",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応なし",
+          "cost": 300
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C048",
+      "display_name": "顧客 048",
+      "signup_date": "2023-12-10",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            54195,
+            48342,
+            41199,
+            36099
+          ],
+          "monthly_frequency": [
+            8,
+            7,
+            6,
+            5
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -12.4
+        },
+        "qr": {
+          "monthly_amount": [
+            31774,
+            26773,
+            24101,
+            20301
+          ],
+          "monthly_frequency": [
+            30,
+            25,
+            23,
+            19
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -15.8
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 2,
+      "combined_qr_card": {
+        "monthly_amount": [
+          31774,
+          26773,
+          24101,
+          20301
+        ],
+        "monthly_frequency": [
+          30,
+          25,
+          23,
+          19
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": -15.8
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions"
+      ]
+    },
+    {
+      "customer_id": "C049",
+      "display_name": "顧客 049",
+      "signup_date": "2023-10-07",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            43644,
+            47510,
+            46184,
+            48514
+          ],
+          "monthly_frequency": [
+            7,
+            7,
+            7,
+            8
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": 5.0
+        },
+        "bank": {
+          "monthly_amount": [
+            60340,
+            65976,
+            73302,
+            72294
+          ],
+          "monthly_frequency": [
+            4,
+            5,
+            5,
+            5
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -1.4
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 2,
+      "combined_qr_card": {
+        "monthly_amount": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "monthly_frequency": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "last_used_date": null,
+        "days_since_last_used": null,
+        "period_change_pct": null
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-18",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応あり",
+          "cost": 500
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C050",
+      "display_name": "顧客 050",
+      "signup_date": "2024-09-06",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            49062,
+            50004,
+            53080,
+            56642
+          ],
+          "monthly_frequency": [
+            9,
+            9,
+            10,
+            11
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": 6.7
+        },
+        "qr": {
+          "monthly_amount": [
+            39022,
+            38534,
+            37640,
+            36719
+          ],
+          "monthly_frequency": [
+            18,
+            17,
+            17,
+            16
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -2.4
+        },
+        "card": {
+          "monthly_amount": [
+            54919,
+            55204,
+            57999,
+            59642
+          ],
+          "monthly_frequency": [
+            22,
+            22,
+            24,
+            24
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": 2.8
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          93941,
+          93738,
+          95639,
+          96361
+        ],
+        "monthly_frequency": [
+          40,
+          39,
+          41,
+          40
+        ],
+        "last_used_date": "2026-07-15",
+        "days_since_last_used": 1,
+        "period_change_pct": 0.8
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions"
+      ]
+    },
+    {
+      "customer_id": "C051",
+      "display_name": "顧客 051",
+      "signup_date": "2023-11-30",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            42447,
+            31330,
+            22110,
+            16906
+          ],
+          "monthly_frequency": [
+            12,
+            9,
+            6,
+            5
+          ],
+          "last_used_date": "2026-07-10",
+          "days_since_last_used": 6,
+          "period_change_pct": -23.5
+        },
+        "qr": {
+          "monthly_amount": [
+            34787,
+            23822,
+            18503,
+            0
+          ],
+          "monthly_frequency": [
+            20,
+            14,
+            11,
+            0
+          ],
+          "last_used_date": "2026-06-12",
+          "days_since_last_used": 34,
+          "period_change_pct": -100.0
+        },
+        "card": {
+          "monthly_amount": [
+            43868,
+            30466,
+            23460,
+            16692
+          ],
+          "monthly_frequency": [
+            8,
+            5,
+            4,
+            3
+          ],
+          "last_used_date": "2026-07-05",
+          "days_since_last_used": 11,
+          "period_change_pct": -28.8
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          78655,
+          54288,
+          41963,
+          16692
+        ],
+        "monthly_frequency": [
+          28,
+          19,
+          15,
+          3
+        ],
+        "last_used_date": "2026-07-05",
+        "days_since_last_used": 11,
+        "period_change_pct": -60.2
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-21",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応なし",
+          "cost": 300
+        },
+        {
+          "sent_date": "2026-06-04",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応あり",
+          "cost": 500
+        },
+        {
+          "sent_date": "2026-04-29",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応あり",
+          "cost": 100
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C052",
+      "display_name": "顧客 052",
+      "signup_date": "2022-12-09",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            54726,
+            55350,
+            61725,
+            68659
+          ],
+          "monthly_frequency": [
+            16,
+            16,
+            18,
+            20
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 11.2
+        },
+        "card": {
+          "monthly_amount": [
+            39242,
+            43782,
+            42801,
+            43657
+          ],
+          "monthly_frequency": [
+            9,
+            10,
+            9,
+            10
+          ],
+          "last_used_date": "2026-07-09",
+          "days_since_last_used": 7,
+          "period_change_pct": 2.0
+        },
+        "bank": {
+          "monthly_amount": [
+            79329,
+            79393,
+            86889,
+            91506
+          ],
+          "monthly_frequency": [
+            5,
+            5,
+            5,
+            5
+          ],
+          "last_used_date": "2026-07-06",
+          "days_since_last_used": 10,
+          "period_change_pct": 5.3
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          39242,
+          43782,
+          42801,
+          43657
+        ],
+        "monthly_frequency": [
+          9,
+          10,
+          9,
+          10
+        ],
+        "last_used_date": "2026-07-09",
+        "days_since_last_used": 7,
+        "period_change_pct": 2.0
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-05",
+          "campaign_type": "EC再訪促進メール",
+          "response": "開封のみ",
+          "cost": 100
+        },
+        {
+          "sent_date": "2026-05-19",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応なし",
+          "cost": 0
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C053",
+      "display_name": "顧客 053",
+      "signup_date": "2022-09-15",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            55752,
+            42662,
+            29432,
+            22948
+          ],
+          "monthly_frequency": [
+            15,
+            11,
+            8,
+            6
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -22.0
+        },
+        "qr": {
+          "monthly_amount": [
+            27600,
+            21048,
+            15025,
+            0
+          ],
+          "monthly_frequency": [
+            20,
+            16,
+            11,
+            0
+          ],
+          "last_used_date": "2026-06-15",
+          "days_since_last_used": 31,
+          "period_change_pct": -100.0
+        },
+        "bank": {
+          "monthly_amount": [
+            20892,
+            15798,
+            11812,
+            9008
+          ],
+          "monthly_frequency": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "last_used_date": "2026-07-01",
+          "days_since_last_used": 15,
+          "period_change_pct": -23.7
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          27600,
+          21048,
+          15025,
+          0
+        ],
+        "monthly_frequency": [
+          20,
+          16,
+          11,
+          0
+        ],
+        "last_used_date": "2026-06-15",
+        "days_since_last_used": 31,
+        "period_change_pct": -100.0
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-16",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応あり",
+          "cost": 300
+        },
+        {
+          "sent_date": "2026-04-23",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "開封のみ",
+          "cost": 100
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 2,
+        "last_inquiry_date": "2026-07-07",
+        "recent_categories": [
+          "利用方法の問い合わせ",
+          "決済エラーの相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C054",
+      "display_name": "顧客 054",
+      "signup_date": "2025-09-12",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            47810,
+            36986,
+            27190,
+            20224
+          ],
+          "monthly_frequency": [
+            9,
+            7,
+            5,
+            4
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -25.6
+        },
+        "qr": {
+          "monthly_amount": [
+            29431,
+            20817,
+            14345,
+            0
+          ],
+          "monthly_frequency": [
+            14,
+            10,
+            7,
+            0
+          ],
+          "last_used_date": "2026-06-11",
+          "days_since_last_used": 35,
+          "period_change_pct": -100.0
+        },
+        "card": {
+          "monthly_amount": [
+            41033,
+            31878,
+            21682,
+            15075
+          ],
+          "monthly_frequency": [
+            9,
+            7,
+            5,
+            3
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -30.5
+        },
+        "bank": {
+          "monthly_amount": [
+            45576,
+            32305,
+            23764,
+            16398
+          ],
+          "monthly_frequency": [
+            7,
+            5,
+            4,
+            2
+          ],
+          "last_used_date": "2026-06-19",
+          "days_since_last_used": 27,
+          "period_change_pct": -31.0
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          70464,
+          52695,
+          36027,
+          15075
+        ],
+        "monthly_frequency": [
+          23,
+          17,
+          12,
+          3
+        ],
+        "last_used_date": "2026-07-12",
+        "days_since_last_used": 4,
+        "period_change_pct": -58.2
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-02-16",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応あり",
+          "cost": 300
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C055",
+      "display_name": "顧客 055",
+      "signup_date": "2024-03-09",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            59839,
+            51802,
+            45154,
+            40062
+          ],
+          "monthly_frequency": [
+            11,
+            9,
+            8,
+            7
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -11.3
+        },
+        "qr": {
+          "monthly_amount": [
+            34074,
+            30773,
+            26493,
+            22527
+          ],
+          "monthly_frequency": [
+            16,
+            14,
+            12,
+            11
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": -15.0
+        },
+        "card": {
+          "monthly_amount": [
+            48018,
+            41272,
+            36936,
+            32446
+          ],
+          "monthly_frequency": [
+            9,
+            8,
+            7,
+            6
+          ],
+          "last_used_date": "2026-07-14",
+          "days_since_last_used": 2,
+          "period_change_pct": -12.2
+        },
+        "bank": {
+          "monthly_amount": [
+            33710,
+            29607,
+            26081,
+            23560
+          ],
+          "monthly_frequency": [
+            3,
+            3,
+            3,
+            2
+          ],
+          "last_used_date": "2026-07-02",
+          "days_since_last_used": 14,
+          "period_change_pct": -9.7
+        }
+      },
+      "service_count": 4,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          82092,
+          72045,
+          63429,
+          54973
+        ],
+        "monthly_frequency": [
+          25,
+          22,
+          19,
+          17
+        ],
+        "last_used_date": "2026-07-14",
+        "days_since_last_used": 2,
+        "period_change_pct": -13.3
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-05-31",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応あり",
+          "cost": 500
+        },
+        {
+          "sent_date": "2026-03-18",
+          "campaign_type": "カード利用特典案内",
+          "response": "反応あり",
+          "cost": 500
+        },
+        {
+          "sent_date": "2026-02-24",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応なし",
+          "cost": 300
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 2,
+        "last_inquiry_date": "2026-05-20",
+        "recent_categories": [
+          "キャンペーン内容の確認",
+          "利用方法の問い合わせ"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C056",
+      "display_name": "顧客 056",
+      "signup_date": "2023-08-07",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            32561,
+            28064,
+            24606,
+            22236
+          ],
+          "monthly_frequency": [
+            6,
+            5,
+            5,
+            4
+          ],
+          "last_used_date": "2026-07-07",
+          "days_since_last_used": 9,
+          "period_change_pct": -9.6
+        },
+        "qr": {
+          "monthly_amount": [
+            39892,
+            35939,
+            32552,
+            27442
+          ],
+          "monthly_frequency": [
+            25,
+            22,
+            20,
+            17
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": -15.7
+        },
+        "card": {
+          "monthly_amount": [
+            46234,
+            40741,
+            34583,
+            29192
+          ],
+          "monthly_frequency": [
+            10,
+            9,
+            7,
+            6
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -15.6
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          86126,
+          76680,
+          67135,
+          56634
+        ],
+        "monthly_frequency": [
+          35,
+          31,
+          27,
+          23
+        ],
+        "last_used_date": "2026-07-16",
+        "days_since_last_used": 0,
+        "period_change_pct": -15.6
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-01",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応あり",
+          "cost": 0
+        },
+        {
+          "sent_date": "2026-04-28",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "開封のみ",
+          "cost": 500
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C057",
+      "display_name": "顧客 057",
+      "signup_date": "2023-08-15",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            36382,
+            38569,
+            39446,
+            41683
+          ],
+          "monthly_frequency": [
+            6,
+            6,
+            6,
+            7
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": 5.7
+        }
+      },
+      "service_count": 1,
+      "previous_service_count": 1,
+      "combined_qr_card": {
+        "monthly_amount": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "monthly_frequency": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "last_used_date": null,
+        "days_since_last_used": null,
+        "period_change_pct": null
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-04-29",
+          "campaign_type": "EC再訪促進メール",
+          "response": "反応なし",
+          "cost": 300
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 2,
+        "last_inquiry_date": "2026-02-21",
+        "recent_categories": [
+          "キャンペーン内容の確認",
+          "決済エラーの相談"
+        ]
+      },
+      "data_sources": [
+        "ec_transactions",
+        "campaigns",
+        "customer_support"
+      ]
+    },
+    {
+      "customer_id": "C058",
+      "display_name": "顧客 058",
+      "signup_date": "2024-09-25",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            42873,
+            32948,
+            24781,
+            18770
+          ],
+          "monthly_frequency": [
+            7,
+            6,
+            4,
+            3
+          ],
+          "last_used_date": "2026-07-07",
+          "days_since_last_used": 9,
+          "period_change_pct": -24.3
+        },
+        "qr": {
+          "monthly_amount": [
+            40349,
+            28748,
+            20824,
+            0
+          ],
+          "monthly_frequency": [
+            19,
+            13,
+            10,
+            0
+          ],
+          "last_used_date": "2026-06-15",
+          "days_since_last_used": 31,
+          "period_change_pct": -100.0
+        },
+        "card": {
+          "monthly_amount": [
+            48157,
+            37423,
+            28167,
+            19821
+          ],
+          "monthly_frequency": [
+            10,
+            8,
+            6,
+            4
+          ],
+          "last_used_date": "2026-07-13",
+          "days_since_last_used": 3,
+          "period_change_pct": -29.6
+        }
+      },
+      "service_count": 2,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          88506,
+          66171,
+          48991,
+          19821
+        ],
+        "monthly_frequency": [
+          29,
+          21,
+          16,
+          4
+        ],
+        "last_used_date": "2026-07-13",
+        "days_since_last_used": 3,
+        "period_change_pct": -59.5
+      },
+      "campaigns": [],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions"
+      ]
+    },
+    {
+      "customer_id": "C059",
+      "display_name": "顧客 059",
+      "signup_date": "2024-02-02",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            59154,
+            42254,
+            32665,
+            23058
+          ],
+          "monthly_frequency": [
+            17,
+            12,
+            9,
+            7
+          ],
+          "last_used_date": "2026-07-07",
+          "days_since_last_used": 9,
+          "period_change_pct": -29.4
+        },
+        "qr": {
+          "monthly_amount": [
+            35610,
+            26159,
+            19991,
+            0
+          ],
+          "monthly_frequency": [
+            22,
+            16,
+            12,
+            0
+          ],
+          "last_used_date": "2026-06-15",
+          "days_since_last_used": 31,
+          "period_change_pct": -100.0
+        },
+        "card": {
+          "monthly_amount": [
+            41488,
+            29888,
+            20673,
+            15803
+          ],
+          "monthly_frequency": [
+            7,
+            5,
+            4,
+            3
+          ],
+          "last_used_date": "2026-07-12",
+          "days_since_last_used": 4,
+          "period_change_pct": -23.6
+        },
+        "bank": {
+          "monthly_amount": [
+            65266,
+            50372,
+            37058,
+            27333
+          ],
+          "monthly_frequency": [
+            11,
+            9,
+            6,
+            5
+          ],
+          "last_used_date": "2026-07-07",
+          "days_since_last_used": 9,
+          "period_change_pct": -26.2
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 4,
+      "combined_qr_card": {
+        "monthly_amount": [
+          77098,
+          56047,
+          40664,
+          15803
+        ],
+        "monthly_frequency": [
+          29,
+          21,
+          16,
+          3
+        ],
+        "last_used_date": "2026-07-12",
+        "days_since_last_used": 4,
+        "period_change_pct": -61.1
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-03",
+          "campaign_type": "EC再訪促進メール",
+          "response": "開封のみ",
+          "cost": 0
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "bank_transactions",
+        "campaigns"
+      ]
+    },
+    {
+      "customer_id": "C060",
+      "display_name": "顧客 060",
+      "signup_date": "2022-08-03",
+      "services": {
+        "ec": {
+          "monthly_amount": [
+            50355,
+            49705,
+            51417,
+            52062
+          ],
+          "monthly_frequency": [
+            9,
+            9,
+            9,
+            10
+          ],
+          "last_used_date": "2026-07-16",
+          "days_since_last_used": 0,
+          "period_change_pct": 1.3
+        },
+        "qr": {
+          "monthly_amount": [
+            38343,
+            39466,
+            41832,
+            40624
+          ],
+          "monthly_frequency": [
+            43,
+            44,
+            46,
+            45
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": -2.9
+        },
+        "card": {
+          "monthly_amount": [
+            41028,
+            40643,
+            40979,
+            41767
+          ],
+          "monthly_frequency": [
+            14,
+            14,
+            14,
+            15
+          ],
+          "last_used_date": "2026-07-15",
+          "days_since_last_used": 1,
+          "period_change_pct": 1.9
+        }
+      },
+      "service_count": 3,
+      "previous_service_count": 3,
+      "combined_qr_card": {
+        "monthly_amount": [
+          79371,
+          80109,
+          82811,
+          82391
+        ],
+        "monthly_frequency": [
+          57,
+          58,
+          60,
+          60
+        ],
+        "last_used_date": "2026-07-15",
+        "days_since_last_used": 1,
+        "period_change_pct": -0.5
+      },
+      "campaigns": [
+        {
+          "sent_date": "2026-06-28",
+          "campaign_type": "複数サービス横断ポイント施策",
+          "response": "反応あり",
+          "cost": 100
+        },
+        {
+          "sent_date": "2026-03-09",
+          "campaign_type": "QR決済ポイント還元",
+          "response": "反応あり",
+          "cost": 0
+        }
+      ],
+      "support_summary": {
+        "inquiry_count": 0,
+        "last_inquiry_date": null,
+        "recent_categories": []
+      },
+      "data_sources": [
+        "ec_transactions",
+        "payment_transactions",
+        "campaigns"
+      ]
+    }
+  ],
+  "data_quality": {
+    "negative_amount_found": false,
+    "all_zero_customer_count": 0,
+    "duplicate_customer_id_count": 0,
+    "future_dated_transaction_count": 0,
+    "amount_min": 0,
+    "amount_max": 91506,
+    "checked_at": "2026-07-16T05:23:55.540439+00:00"
+  }
+}

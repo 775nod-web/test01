@@ -15,11 +15,10 @@ Databricks Free EditionとDatabricks Appsを使い、次の一連の業務を日
 
 > この顧客へ今対応すべきか。対応するなら、どのアクションが妥当か。
 
-## 2. 現在の実装状況（Phase 1）
+## 2. 現在の実装状況（Phase 1 + Phase 2）
 
-Phase 1では、以下のみを実装しています。詳細な業務ロジック（顧客一覧・予測・推奨・判断保存等）はPhase 2以降で追加します。
-
-- React + TypeScript + Vite のフロントエンド骨格（1画面、日本語ベースレイアウト、空状態表示）
+### Phase 1（土台）
+- React + TypeScript + Vite のフロントエンド骨格（1画面、日本語ベースレイアウト）
 - FastAPI + Uvicorn のPythonバックエンド骨格
 - `/api/health`、`/api/metadata` の実装
 - Databricks接続未設定でも起動する `demo` モードの設定層
@@ -27,6 +26,15 @@ Phase 1では、以下のみを実装しています。詳細な業務ロジッ�
 - デプロイ前準備を一括実行する `scripts/prepare_deploy.sh`
 - Databricks Apps向け `app.yaml`
 - ホスト・ポート解決、データモード判定、起動モード判定の単体テスト
+
+### Phase 2（Layer 1: データ基盤 / Layer 2: 予測型ML）
+- 固定シードで再現可能な合成データ生成（EC・QR決済・カード・銀行・過去施策・問い合わせ履歴）
+- `customer_id` で統合した顧客360（`scripts/prepare_customer360.py` → `artifacts/customer360.json`）
+- 単純で説明可能な休眠予測モデル（ロジスティック回帰）と、事前計算済み予測（`scripts/train_model.py` → `artifacts/predictions.json`）
+- `GET /api/customers`、`GET /api/customers/{customer_id}` の実装（顧客360と予測結果をcustomer_idで結合して返す）
+- Databricks利用時とデモデータ利用時の差し替え境界（`backend/services/data_source.py`）
+- データ品質の自動チェック（生成スクリプト内 + `backend/tests/test_data_quality.py`）
+- 左「本日の優先顧客」リスト、中央「顧客360」利用推移グラフ・「休眠リスク」表示のUI実装
 
 ## 3. 技術構成
 
@@ -60,29 +68,59 @@ Node.jsはReactのビルドにのみ使用します。Databricks Apps起動時�
 ├── requirements.txt
 ├── .gitignore
 ├── scripts/
-│   └── prepare_deploy.sh     # デプロイ前ビルド・テストの一括実行スクリプト
+│   ├── prepare_deploy.sh          # デプロイ前ビルド・テストの一括実行スクリプト
+│   ├── requirements-scripts.txt    # 合成データ生成・モデル学習専用の依存関係（backendには不要）
+│   ├── generate_demo_data.py       # 固定シードの合成データ生成 → data/
+│   ├── prepare_customer360.py      # data/ → artifacts/customer360.json（顧客360統合）
+│   └── train_model.py              # artifacts/customer360.json → artifacts/predictions.json, model_metadata.json
+├── data/                            # 合成データ（生データ）。コミット対象
+│   ├── customers.csv
+│   ├── ec_transactions.csv
+│   ├── payment_transactions.csv
+│   ├── bank_transactions.csv
+│   ├── campaigns.csv
+│   ├── customer_support.json
+│   └── generation_meta.json
+├── artifacts/                       # 統合済みデータ・事前計算済み予測。コミット対象（フォールバック用）
+│   ├── customer360.json
+│   ├── predictions.json
+│   └── model_metadata.json
 ├── backend/
-│   ├── main.py                # FastAPIエントリーポイント（起動モード判定・Reactビルドの配信を含む）
-│   ├── config.py               # ホスト・ポート・データモード・起動モード解決ロジック
+│   ├── main.py                     # FastAPIエントリーポイント（起動モード判定・Reactビルドの配信を含む）
+│   ├── config.py                    # ホスト・ポート・データモード・起動モード解決ロジック
 │   ├── api/
-│   │   └── routes.py           # /api/health, /api/metadata
+│   │   └── routes.py                # /api/health, /api/metadata, /api/customers, /api/customers/{id}
+│   ├── models/
+│   │   └── schemas.py               # APIレスポンスのPydanticスキーマ
+│   ├── services/
+│   │   ├── data_source.py           # Databricks/demoデータ取得の差し替え境界
+│   │   └── customer_service.py      # 顧客360と予測の結合ロジック
 │   └── tests/
 │       ├── test_config.py
 │       ├── test_api.py
-│       └── test_deploy_modes.py  # development/productionモードの起動挙動テスト
+│       ├── test_deploy_modes.py     # development/productionモードの起動挙動テスト
+│       ├── test_customers_api.py    # /api/customers, /api/customers/{id} の疎通テスト
+│       ├── test_data_source.py      # Databricks/demo差し替え境界のテスト
+│       └── test_data_quality.py     # DEMO_SPECのデータ品質要件の自動チェック
 ├── frontend/
 │   ├── package.json
 │   ├── package-lock.json
 │   ├── tsconfig.json
 │   ├── vite.config.ts
 │   ├── index.html
-│   ├── dist/                   # npm run build で生成（Git管理外）
+│   ├── dist/                       # npm run build で生成（Git管理外）
 │   └── src/
 │       ├── main.tsx
 │       ├── App.tsx
 │       ├── App.css
 │       ├── types.ts
 │       ├── api/client.ts
+│       ├── components/
+│       │   ├── CustomerListPanel.tsx
+│       │   ├── Customer360Panel.tsx
+│       │   ├── RiskPanel.tsx
+│       │   ├── UsageTrendChart.tsx
+│       │   └── RiskBadge.tsx
 │       └── styles/
 │           ├── tokens.css
 │           └── global.css
@@ -90,9 +128,58 @@ Node.jsはReactのビルドにのみ使用します。Databricks Apps起動時�
 └── save_bronze_delta_tables.py         # Databricksノートブック用（Phase 1以前から存在）
 ```
 
-`data/`、`artifacts/` はPhase 2以降、合成データ生成・顧客360構築・モデル学習を実装する際に追加します。
+## 5. データ生成・顧客360・モデル学習パイプライン（Layer 1 / Layer 2）
 
-## 5. ローカル開発
+`data/` と `artifacts/` はどちらも**コミット対象**です。「アプリ停止後に再起動してもデモできるよう、必要データと事前計算結果をリポジトリに含める」というDatabricks Free Edition向けの方針（本ファイル参照元READMEテンプレート）に従い、生成済みの合成データと予測結果をフォールバック用としてリポジトリへ保存しています。
+
+### 実行順序
+
+```bash
+python3 -m venv .venv-scripts
+source .venv-scripts/bin/activate
+pip install -r requirements.txt -r scripts/requirements-scripts.txt
+
+python scripts/generate_demo_data.py       # data/ に合成データを生成
+python scripts/prepare_customer360.py      # artifacts/customer360.json を生成（顧客360統合）
+python scripts/train_model.py              # artifacts/predictions.json, model_metadata.json を生成
+```
+
+`scripts/requirements-scripts.txt`（scikit-learn, numpy）は**この3スクリプトの実行時のみ**必要です。backend（Databricks Apps上で実行される本番プロセス）は `artifacts/` 配下の生成済みJSONを読むだけなので、`requirements.txt`（backendの依存関係）にはscikit-learn等を含めていません。
+
+### Layer 1: 合成データと顧客360
+
+- `scripts/generate_demo_data.py` は固定シード（`SEED = 42`）と固定の基準日（`AS_OF_DATE = 2026-07-16`）を使い、60人分の匿名顧客について、EC・QR決済・カード（必須データソース）、ネット銀行・過去施策・問い合わせ履歴（任意データソース）の取引明細をランダムだが常識的な範囲で生成する。
+- 生成するのは取引明細のみで、月次集計・最終利用日・利用サービス数などの派生値は一切含めない。これにより「最終利用日と利用履歴が矛盾しない」というデータ品質要件を、二重管理ではなく構造的に満たしている（`scripts/prepare_customer360.py` が生データから毎回計算し直す）。
+- `scripts/prepare_customer360.py` は `customer_id` をキーに、直近4期間（各30日）のEC・QR決済・カード・銀行の利用額・頻度・最終利用日・前期比、利用サービス数（現在・前期）、QR・カード合算の利用推移、過去施策と反応、問い合わせ概要を1顧客1レコードへ統合し、`artifacts/customer360.json` に書き出す。
+- 同スクリプトは書き出し前に構造的なデータ品質チェック（負の金額、全期間ゼロ、customer_id重複、未来日付の取引）を実行し、違反があれば非0終了コードで処理を止める（不正なデータをartifacts/へ出力しない）。
+
+### Layer 2: 休眠リスク予測
+
+- **ラベル生成ルール**（`scripts/train_model.py` 内に実装）：実際の解約フラグは存在しない合成データのため、以下の重み付け合成スコアを「経済的な休眠傾向」の目安として定義し、これを成功確率とみなしたベルヌーイ試行で教師ラベルを生成する。
+
+  ```text
+  dormancy_score =
+        0.25 × EC利用額の累積低下（最初期間→直近期間、-50%以上で成分1.0に飽和）
+      + 0.30 × QR・カード合算利用額の累積低下（-60%以上で成分1.0に飽和）
+      + 0.25 × 利用サービス数の減少（2サービス減で成分1.0に飽和）
+      + 0.20 × 直近利用からの経過日数（90日以上で成分1.0に飽和）
+      - 0.07 × 直近施策への反応が「反応あり」の場合
+      + 0.03 × 「退会・解約に関する相談」の問い合わせがある場合
+  ```
+
+  ラベル自体はロジスティック回帰の入力特徴量には含めず、上記スコアの元になった生の特徴量（EC/QR・カードの累積低下率、サービス数減少、経過日数、施策反応、問い合わせ有無）から再構成させることで、単純な恒等学習にならないようにしている。
+- **モデル**：scikit-learnの `LogisticRegression`（標準化した数値特徴量、`class_weight="balanced"`）。60件中45件で学習し、15件のホールドアウトで評価する。評価値（accuracy / precision / recall / roc_auc）は `artifacts/model_metadata.json` に記録するが、**小規模な合成データ上の参考値であり、本番精度を示すものではない**（画面の主役にもしない）。
+- **リスク帯**：休眠確率 0.66以上を「高」、0.34未満を「低」、その間を「中」とする。生成時点の実測分布は高16人・中9人・低35人で、3帯すべてが常識的な人数で存在することを自動チェックしている。
+- **理由生成**：`compute_dormancy_score` と同じ重みで各要因の寄与度を計算し、寄与が大きい順に最大3件を表示用の日本語文へ変換する（例：「ECの直近期間の購入額が前期比-29%低下しています」）。これにより、画面のグラフの数値と表示される理由が食い違わないようにしている。低リスク顧客など減少要因がない場合は、増加傾向や施策への反応など安定・良好を示す理由で補う。
+- **フォールバック**：モデル学習・推論はこのスクリプトの実行時（オフライン）にのみ行い、backendは常に事前計算済みの `artifacts/predictions.json` を読むだけなので、`model_mode` はAPI上つねに `precomputed` として返す（`trained` は将来Databricksモデルサービング等に接続した場合の値として予約している）。
+
+### 再現性とデータ品質
+
+- `generate_demo_data.py` は同一シード・同一コードであれば何度実行しても同一の `data/` を生成する（wall-clockに依存する値を持たない）。実行結果は差分なしで確認済み。
+- `prepare_customer360.py` と `train_model.py` の出力も、タイムスタンプ系フィールド（`generated_at`, `trained_at`, `inference_at`, `checked_at`）を除けば再実行時に完全一致することを確認済み。
+- DEMO_SPEC.mdの「データ品質の必須検証」は、生成スクリプト内の即時チェック（違反時は非0終了）と `backend/tests/test_data_quality.py` の両方でカバーしている（本README 17節「データ品質」参照）。
+
+## 6. ローカル開発
 
 Phase 1〜2の開発中は、フロントエンドをビルドせずにAPIとVite開発サーバーを別々に起動して作業できます（development モード、既定）。
 
@@ -125,7 +212,7 @@ npm run typecheck
 
 developmentモードでは `frontend/dist` の有無にかかわらずPython APIが起動するため、`npm run dev` の開発サーバーと `python -m backend.main` を並行起動して開発できます。
 
-## 6. デプロイ前ビルド（Production Build）
+## 7. デプロイ前ビルド（Production Build）
 
 このデモは **デプロイ前ビルド方式** を採用しています。Databricks Apps起動時にNode.js/npm buildを実行することはありません。本番のアプリプロセスは常にPythonのみです。デプロイ前に、ローカル環境またはCI環境でReactをProduction Buildし、生成された `frontend/dist` をデプロイ対象フォルダーへ含めます。
 
@@ -165,7 +252,7 @@ frontend/dist/index.html
 
 `frontend/dist/assets/` 配下にJS・CSSが生成されていることも確認してください。
 
-## 7. Databricks Appsへの配置方法
+## 8. Databricks Appsへの配置方法
 
 `frontend/dist` は通常の開発コミットでは引き続きGit管理外（`.gitignore`）とします。ただし、**Databricks Appsへ配置する際は、ビルド済みの `frontend/dist` を必ず含めてください。**
 
@@ -184,7 +271,7 @@ GitリポジトリのURLから直接デプロイする方式は、`frontend/dist
 
 フロントエンドのコードを変更した場合は、**必ず `scripts/prepare_deploy.sh`（または手動ビルド）を再実行してから**、ビルド済みフォルダーを同期・再デプロイしてください。古い `frontend/dist` のまま再デプロイすると、変更が反映されません。
 
-## 8. 起動モード（development / production）
+## 9. 起動モード（development / production）
 
 `backend/config.py` の `resolve_app_env()` が `APP_ENV` 環境変数を読み、`production`（大文字小文字を区別しない）の場合のみproductionモードとして扱い、それ以外（未設定を含む）はdevelopmentモードとして扱います。
 
@@ -204,7 +291,7 @@ scripts/prepare_deploy.sh を実行してから再デプロイしてください
 
 既存のAPIパス・ポート解決優先順位（`DATABRICKS_APP_PORT` → `UVICORN_PORT` → `PORT` → `8000`）は変更していません。
 
-## 9. ポート・ホスト解決
+## 10. ポート・ホスト解決
 
 Pythonサーバーは次の優先順位で起動設定を解決します（`backend/config.py`）。
 
@@ -218,7 +305,7 @@ Port: DATABRICKS_APP_PORT → UVICORN_PORT → PORT → 8000
 - `app.yaml` 側では固定ポートを指定しません（起動コマンドと `APP_ENV` のみ定義）。
 - 優先順位はホスト・ポートとも `backend/tests/test_config.py` で単体テスト済みです。
 
-## 10. データモードの解決
+## 11. データモードの解決
 
 `backend/config.py` の `resolve_data_mode()` が、以下3つのDatabricks SQL接続用環境変数がすべて設定されている場合のみ `databricks` モードを返し、それ以外は `demo` モードにフォールバックします。
 
@@ -228,14 +315,14 @@ Port: DATABRICKS_APP_PORT → UVICORN_PORT → PORT → 8000
 
 Phase 1では実際のDatabricks SQL接続は行わず、モード判定のみを実装しています。実データ接続はPhase 2以降で追加します。
 
-## 11. Databricks Appsへのデプロイ手順
+## 12. Databricks Appsへのデプロイ手順
 
 正確な操作はワークスペースUIと利用可能な機能に合わせて確認してください。完成条件は、ローカル起動ではなくDatabricks Apps上で表示できることです。
 
 基本手順：
 
-1. `bash scripts/prepare_deploy.sh` を実行し、`frontend/dist` を生成する（本README 6節）。
-2. ビルド済みの `frontend/dist` を含むフォルダーを、Databricksワークスペースのフォルダーまたは同期先へ配置する（本README 7節。GitリポジトリのURLから直接デプロイする方式は `frontend/dist` が欠落するため避ける）。
+1. `bash scripts/prepare_deploy.sh` を実行し、`frontend/dist` を生成する（本README 7節）。
+2. ビルド済みの `frontend/dist` を含むフォルダーを、Databricksワークスペースのフォルダーまたは同期先へ配置する（本README 8節。GitリポジトリのURLから直接デプロイする方式は `frontend/dist` が欠落するため避ける）。
 3. Databricks Appsでカスタムアプリを作成する。
 4. アプリのソースとして、ビルド済みフォルダーを選ぶ。
 5. Databricks SQLに接続する場合は、必要なDatabricksリソース（SQLウェアハウス等）をアプリへ追加し、`DATABRICKS_SERVER_HOSTNAME` / `DATABRICKS_HTTP_PATH` / `DATABRICKS_TOKEN` に相当する接続情報を設定する。未設定の場合はdemoモードで起動する。
@@ -246,17 +333,31 @@ Phase 1では実際のDatabricks SQL接続は行わず、モード判定のみ�
 10. `/api/metadata` で `data_mode` が想定通り（`demo` または `databricks`）であることを確認する。
 11. **`/api/health` だけでなく、ブラウザでアプリを開いてUI（日本語ヘッダーと3カラムの空状態レイアウト）が実際に表示されることを確認する。**
 
-## 12. アプリの使い方（Phase 1時点）
+## 13. API一覧
 
-Phase 1では業務フローの土台のみが完成しています。画面を開くと以下が表示されます。
+| メソッド・パス | 内容 | 備考 |
+| --- | --- | --- |
+| `GET /api/health` | 疎通確認 | `{"status": "ok"}` を返す |
+| `GET /api/metadata` | アプリ全体のメタ情報 | `data_mode`, `model_mode`, `customer_count`, `updated_at` を含む |
+| `GET /api/customers` | 本日の優先顧客一覧 | 顧客360と予測をcustomer_idで結合し、休眠確率の降順で返す |
+| `GET /api/customers/{customer_id}` | 顧客360＋休眠予測の詳細 | 該当顧客が無ければ404（Japanese `detail` メッセージ） |
+
+`/api/customers` と `/api/customers/{customer_id}` は共通のレスポンス envelope（`data_mode`, `model_mode`, `updated_at`）を持つ。合成データ・予測結果が未生成の場合は503を返し、`scripts/generate_demo_data.py` → `scripts/prepare_customer360.py` → `scripts/train_model.py` の実行を促すメッセージを含む。
+
+推奨アクション（`GET /api/customers/{customer_id}/recommendation`）、判断保存（`POST /api/customers/{customer_id}/decision`）、フィードバック概要（`GET /api/feedback-summary`）はLayer 3（Phase 3）以降で追加する。
+
+## 14. アプリの使い方（Phase 1 + Phase 2時点）
+
+Phase 2までで、Layer 1（データ基盤）・Layer 2（予測型ML）を含む業務フローの前半が完成しています。画面を開くと以下が表示されます。
 
 - ヘッダー：アプリ名、データモード（`合成データ（demo）` / `Databricks接続`）、最終更新時刻
-- 左：「本日の優先顧客」の空状態（Phase 2でデータ接続予定）
-- 中央：「顧客360」「休眠リスク」の空状態（Phase 2・Layer 2実装後に表示予定）
+- 左：「本日の優先顧客」リスト（休眠確率降順、リスク帯ラベル付き、クリックで選択）
+- 中央上：選択顧客の「顧客360」（EC・QR・カードの利用推移グラフ、利用サービス数、最終利用日、問い合わせ概要、データソース）
+- 中央下：「休眠リスク」（リスク帯、休眠確率、主要理由、モデルバージョン・推論日時・生成方式）
 - 右：「次のアクション」の空状態（Layer 3実装後に表示予定）
 - 下部：フィードバックループと本番化時の追加事項を表示する予定の領域
 
-## 13. 実装上の仮定
+## 15. 実装上の仮定
 
 - 仮定：フロントエンドのビルド成果物（`frontend/dist`）は通常の開発コミットではGit管理対象外とし、デプロイ前に `scripts/prepare_deploy.sh`（または手動の `npm run build`）を実行して生成し、デプロイ時のみビルド済みフォルダーとして同期する。
 - 理由：ビルド成果物を常にリポジトリへコミットすると、ソースとの差分管理が煩雑になり、依存関係の更新時に不整合が生じやすいため。一方でGit URLから直接デプロイするとビルド成果物が欠落するため、デプロイ時は「ビルド済みフォルダーを配置」という別の同期方式を用いる。
@@ -274,7 +375,23 @@ Phase 1では業務フローの土台のみが完成しています。画面を�
 - 理由：Node.jsはフロントエンドのビルド専用であり、ルートにNodeパッケージを持つ必然性がないため（本番プロセスはPythonのみ）。
 - 本番で確認する事項：Databricksへのデプロイ手順で、ビルドを `frontend/` 配下で実行する運用が周知されているか確認する。
 
-## 14. 失敗時の対処
+- 仮定：合成データ生成の基準日（`AS_OF_DATE`）を `2026-07-16` に固定し、`datetime.now()` は使わない。
+- 理由：実行日に依存せず完全な再現性を保証するため。「未来日付にならない」というデータ品質要件も、この固定日付を基準に判定している。
+- 本番で確認する事項：デモ実施日と基準日が大きくかけ離れる場合、「最終利用日からの経過日数」の見え方に違和感が出る可能性があるため、デモ実施前に基準日を実行時点へ更新するかを検討する。
+
+- 仮定：休眠リスクの正解ラベルが存在しない合成データのため、EC/QR・カードの累積低下率、利用サービス数減少、直近利用からの経過日数、施策反応、問い合わせ有無を重み付け合成した決定論的スコアをもとに、教師ラベルをベルヌーイ試行でサンプリングして生成した。
+- 理由：DEMO_SPEC.mdは「経済的な休眠の兆候」を測る単純で説明可能なモデルを求めており、実データの解約フラグが存在しない以上、業務的に妥当なルールから疑似ラベルを作る以外に方法がないため。
+- 本番で確認する事項：実際の解約・休眠実績データが利用可能になった時点で、このルールベースのラベルを実績ラベルに置き換え、モデルを再学習する。
+
+- 仮定：リスク帯のしきい値（高0.66以上、低0.34未満）は固定値とし、パーセンタイルなど分布依存の動的しきい値は採用していない。
+- 理由：DEMO_SPEC.mdの例示（高0.72〜0.84、中0.40〜0.64、低0.08〜0.30）に近い固定範囲の方が、担当者にとって毎回の分布の揺れに影響されず一貫した目安になるため。
+- 本番で確認する事項：合成データの規模やモデル更新により、特定の帯に極端に偏る場合はしきい値の再調整、または分布ベースの動的しきい値への切り替えを検討する。
+
+- 仮定：休眠リスクのスコアリングは、EC・QR決済・カードの利用額と利用サービス数、直近利用からの経過日数、施策反応、問い合わせ有無のみを対象とし、銀行取引はスコアの入力に含めない（顧客360の表示・最終利用日の全体判定には含める）。
+- 理由：DEMO_SPEC.mdの必須データソースがEC・QR決済・カードであり、銀行は任意データソースであるため、モデルの説明可能性を優先し必須ソースに絞った。
+- 本番で確認する事項：銀行データの重要性が高いと判断された場合、スコアリング式へ銀行の特徴量を追加し、再学習・再検証する。
+
+## 16. 失敗時の対処
 
 `frontend/dist/index.html` が見つからずproductionモードで起動が失敗した場合：
 
@@ -283,7 +400,9 @@ Phase 1では業務フローの土台のみが完成しています。画面を�
 3. 生成された `frontend/dist` を含むフォルダーを、Databricksワークスペースの配置先へ再同期する。
 4. Databricks Appsを再デプロイし、アプリログと `/api/health`・画面表示の両方を再確認する。
 
-## 15. デモ前チェック（Phase 1時点で確認済みの項目）
+## 17. デモ前チェック・データ品質テスト結果（Phase 1 + Phase 2時点で確認済みの項目）
+
+### 起動・デプロイ関連（Phase 1）
 
 - [x] `python -m pytest backend/tests` が全件成功する（development/productionモードの起動挙動を含む）
 - [x] `npm run typecheck` がエラーなく完了する
@@ -296,7 +415,24 @@ Phase 1では業務フローの土台のみが完成しています。画面を�
 - [x] `/` への複数回のGETで、同じindex.htmlが返る（ページリロードを想定した確認）
 - [ ] Databricks Apps上での実デプロイ確認（この修正では未実施、ワークスペースアクセスが必要）
 
-## 16. 伝えること・伝えないこと
+### データ品質（Phase 2、`backend/tests/test_data_quality.py` で自動検証済み）
+
+- [x] 負の金額がない
+- [x] 全期間ゼロの主要顧客がいない
+- [x] 高リスク顧客は利用低下または利用サービス数減少のいずれかを示す
+- [x] 低リスク顧客の休眠確率が全員同一ではない
+- [x] 休眠確率が0または1に張り付かない（実測範囲 0.03〜0.926）
+- [x] リスク帯の分布に高・中・低がすべて含まれる（実測：高16／中9／低35）
+- [x] 予測理由のテキストが顧客360の実データ（前期比の数値）と一致する
+- [x] 日付が未来にならない（基準日2026-07-16を超える取引なし）
+- [x] 最終利用日と利用履歴が矛盾しない（生データから直接導出しているため構造的に保証）
+- [x] 同一customer_idが重複しない
+- [x] 金額が日本円として常識的な範囲（0〜500,000円）に収まる
+- [x] 合成データ生成を再実行しても同じ結果になる（タイムスタンプ以外が完全一致することを確認済み）
+- [x] `GET /api/customers`, `GET /api/customers/{customer_id}` の疎通・404応答（`backend/tests/test_customers_api.py`）
+- [x] Databricksモード設定時に未実装のためdemoへフォールバックすること（`backend/tests/test_data_source.py`）
+
+## 18. 伝えること・伝えないこと
 
 ### 伝えること
 - 部門別データを一人の顧客像へ統合する設計であること

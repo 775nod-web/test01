@@ -1,0 +1,691 @@
+{
+  "model_version": "logreg-v1-2026.07",
+  "generated_at": "2026-07-16T05:23:56.517310+00:00",
+  "predictions": {
+    "C001": {
+      "churn_probability": 0.03,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "退会・解約に関する問い合わせ履歴があります",
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C002": {
+      "churn_probability": 0.227,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-13%低下しています",
+        "ECの直近期間の購入額が前期比-13%低下しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C003": {
+      "churn_probability": 0.03,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C004": {
+      "churn_probability": 0.775,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-62%低下しています",
+        "ECの直近期間の購入額が前期比-29%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C005": {
+      "churn_probability": 0.664,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "ECの直近期間の購入額が前期比-11%低下しています",
+        "QR決済・カードの利用額が前期比-13%低下しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C006": {
+      "churn_probability": 0.592,
+      "risk_band": "medium",
+      "risk_band_label": "中",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-13%低下しています",
+        "ECの直近期間の購入額が前期比-15%低下しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C007": {
+      "churn_probability": 0.067,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C008": {
+      "churn_probability": 0.035,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C009": {
+      "churn_probability": 0.525,
+      "risk_band": "medium",
+      "risk_band_label": "中",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-14%低下しています",
+        "ECの直近期間の購入額が前期比-11%低下しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C010": {
+      "churn_probability": 0.315,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの直近期間の購入額が前期比-14%低下しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C011": {
+      "churn_probability": 0.67,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-64%低下しています",
+        "ECの直近期間の購入額が前期比-32%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C012": {
+      "churn_probability": 0.03,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "QR決済・カードの利用額が前期比で増加しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C013": {
+      "churn_probability": 0.529,
+      "risk_band": "medium",
+      "risk_band_label": "中",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-12%低下しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C014": {
+      "churn_probability": 0.03,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C015": {
+      "churn_probability": 0.652,
+      "risk_band": "medium",
+      "risk_band_label": "中",
+      "reasons": [
+        "ECの直近期間の購入額が前期比-16%低下しています",
+        "QR決済・カードの利用額が前期比-13%低下しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C016": {
+      "churn_probability": 0.069,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C017": {
+      "churn_probability": 0.92,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-63%低下しています",
+        "ECの直近期間の購入額が前期比-27%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C018": {
+      "churn_probability": 0.087,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-15%低下しています",
+        "ECの直近期間の購入額が前期比-15%低下しています",
+        "退会・解約に関する問い合わせ履歴があります"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C019": {
+      "churn_probability": 0.067,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C020": {
+      "churn_probability": 0.898,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-65%低下しています",
+        "ECの直近期間の購入額が前期比-27%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C021": {
+      "churn_probability": 0.53,
+      "risk_band": "medium",
+      "risk_band_label": "中",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-15%低下しています",
+        "ECの直近期間の購入額が前期比-10%低下しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C022": {
+      "churn_probability": 0.818,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-58%低下しています",
+        "ECの直近期間の購入額が前期比-27%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C023": {
+      "churn_probability": 0.03,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C024": {
+      "churn_probability": 0.267,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの直近期間の購入額が前期比-16%低下しています",
+        "QR決済・カードの利用額が前期比-13%低下しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C025": {
+      "churn_probability": 0.067,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C026": {
+      "churn_probability": 0.08,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの直近期間の購入額が前期比-13%低下しています",
+        "退会・解約に関する問い合わせ履歴があります"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C027": {
+      "churn_probability": 0.701,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-30%低下しています",
+        "ECの直近期間の購入額が前期比-32%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C028": {
+      "churn_probability": 0.03,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "退会・解約に関する問い合わせ履歴があります",
+        "QR決済・カードの利用額が前期比で増加しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C029": {
+      "churn_probability": 0.261,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの直近期間の購入額が前期比-12%低下しています",
+        "QR決済・カードの利用額が前期比-12%低下しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C030": {
+      "churn_probability": 0.067,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C031": {
+      "churn_probability": 0.29,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-12%低下しています",
+        "ECの直近期間の購入額が前期比-16%低下しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C032": {
+      "churn_probability": 0.212,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの直近期間の購入額が前期比-12%低下しています",
+        "QR決済・カードの利用額が前期比-12%低下しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C033": {
+      "churn_probability": 0.03,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C034": {
+      "churn_probability": 0.596,
+      "risk_band": "medium",
+      "risk_band_label": "中",
+      "reasons": [
+        "ECの直近期間の購入額が前期比-16%低下しています",
+        "QR決済・カードの利用額が前期比-12%低下しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C035": {
+      "churn_probability": 0.067,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C036": {
+      "churn_probability": 0.67,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-64%低下しています",
+        "ECの直近期間の購入額が前期比-24%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C037": {
+      "churn_probability": 0.03,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "QR決済・カードの利用額が前期比で増加しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C038": {
+      "churn_probability": 0.079,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C039": {
+      "churn_probability": 0.597,
+      "risk_band": "medium",
+      "risk_band_label": "中",
+      "reasons": [
+        "ECの直近期間の購入額が前期比-15%低下しています",
+        "QR決済・カードの利用額が前期比-12%低下しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C040": {
+      "churn_probability": 0.03,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "退会・解約に関する問い合わせ履歴があります",
+        "QR決済・カードの利用額が前期比で増加しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C041": {
+      "churn_probability": 0.67,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-100%低下しています",
+        "ECの直近期間の購入額が前期比-30%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C042": {
+      "churn_probability": 0.03,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "退会・解約に関する問い合わせ履歴があります",
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C043": {
+      "churn_probability": 0.03,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C044": {
+      "churn_probability": 0.67,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-58%低下しています",
+        "ECの直近期間の購入額が前期比-26%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C045": {
+      "churn_probability": 0.621,
+      "risk_band": "medium",
+      "risk_band_label": "中",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-16%低下しています",
+        "ECの直近期間の購入額が前期比-14%低下しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C046": {
+      "churn_probability": 0.067,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C047": {
+      "churn_probability": 0.913,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-66%低下しています",
+        "ECの直近期間の購入額が前期比-23%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C048": {
+      "churn_probability": 0.586,
+      "risk_band": "medium",
+      "risk_band_label": "中",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-16%低下しています",
+        "ECの直近期間の購入額が前期比-12%低下しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C049": {
+      "churn_probability": 0.03,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C050": {
+      "churn_probability": 0.073,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C051": {
+      "churn_probability": 0.775,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-60%低下しています",
+        "ECの直近期間の購入額が前期比-24%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C052": {
+      "churn_probability": 0.067,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "QR決済・カードの利用額が前期比で増加しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C053": {
+      "churn_probability": 0.743,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-100%低下しています",
+        "ECの直近期間の購入額が前期比-22%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C054": {
+      "churn_probability": 0.689,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-58%低下しています",
+        "ECの直近期間の購入額が前期比-26%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C055": {
+      "churn_probability": 0.24,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの直近期間の購入額が前期比-11%低下しています",
+        "QR決済・カードの利用額が前期比-13%低下しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C056": {
+      "churn_probability": 0.219,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-16%低下しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C057": {
+      "churn_probability": 0.073,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C058": {
+      "churn_probability": 0.92,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-60%低下しています",
+        "ECの直近期間の購入額が前期比-24%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C059": {
+      "churn_probability": 0.926,
+      "risk_band": "high",
+      "risk_band_label": "高",
+      "reasons": [
+        "QR決済・カードの利用額が前期比-61%低下しています",
+        "ECの直近期間の購入額が前期比-29%低下しています",
+        "利用サービス数が減少しています（1サービス減）"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    },
+    "C060": {
+      "churn_probability": 0.03,
+      "risk_band": "low",
+      "risk_band_label": "低",
+      "reasons": [
+        "ECの購入額が前期比で増加しており、利用は安定しています",
+        "直近の施策への反応が確認できています"
+      ],
+      "model_version": "logreg-v1-2026.07",
+      "inference_at": "2026-07-16T05:23:56.517310+00:00"
+    }
+  }
+}

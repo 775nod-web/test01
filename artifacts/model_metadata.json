@@ -1,0 +1,33 @@
+{
+  "model_version": "logreg-v1-2026.07",
+  "algorithm": "LogisticRegression（scikit-learn、標準化済み数値特徴量）",
+  "trained_at": "2026-07-16T05:23:56.517310+00:00",
+  "feature_list": [
+    "ec_decline",
+    "payment_decline",
+    "service_drop",
+    "recency",
+    "positive_campaign_response",
+    "cancellation_inquiry"
+  ],
+  "label_rule_summary": "EC/QR・カード利用額の前期比低下、利用サービス数の減少、直近利用からの経過日数を重み付け合成したスコアを成功確率としたベルヌーイ試行でラベルを生成し、そのラベルを特徴量から再構成するようロジスティック回帰を学習した。",
+  "train_size": 45,
+  "test_size": 15,
+  "risk_band_thresholds": {
+    "high": 0.66,
+    "low": 0.34
+  },
+  "risk_band_distribution": {
+    "high": 16,
+    "medium": 9,
+    "low": 35
+  },
+  "evaluation": {
+    "accuracy": 0.867,
+    "precision": 0.667,
+    "recall": 1.0,
+    "roc_auc": 1.0,
+    "note": "小規模な合成データ（PoC）上の参考値であり、本番精度を示すものではない。"
+  },
+  "model_mode": "precomputed"
+}
