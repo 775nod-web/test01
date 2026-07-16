@@ -1,4 +1,4 @@
-import type { FeedbackSummaryResponse, SampleOutcome } from "../types";
+import type { FeedbackSummaryResponse, ImprovementSummary, SampleOutcome } from "../types";
 
 const DECISION_LABEL: Record<string, string> = {
   approved: "承認",
@@ -33,6 +33,7 @@ function formatObservedAt(dateStr: string): string {
 
 function SampleOutcomeCard({ outcome }: { outcome: SampleOutcome }) {
   const decisionLabel = outcome.decision ? (DECISION_LABEL[outcome.decision] ?? outcome.decision) : "未対応（判断未保存）";
+  const nextAction = outcome.recommended_next_action;
   return (
     <li className="outcome-card">
       <p className="outcome-card__name">{outcome.display_name}</p>
@@ -57,7 +58,55 @@ function SampleOutcomeCard({ outcome }: { outcome: SampleOutcome }) {
         </span>
         <span className="outcome-card__observed-at">（確認日：{formatObservedAt(outcome.observed_at)}）</span>
       </p>
+      <p className="outcome-card__row">
+        <span className="outcome-card__row-label">次の推奨判断：</span>
+        <span className="outcome-badge outcome-badge--action">{nextAction.type}</span>
+      </p>
+      <p className="outcome-card__row outcome-card__row--reason">
+        <span className="outcome-card__row-label">理由：</span>
+        {nextAction.reason}
+      </p>
+      <p className="outcome-card__row">
+        <span className="outcome-card__row-label">次回確認：</span>
+        {nextAction.next_review_timing}
+      </p>
     </li>
+  );
+}
+
+function ImprovementSummarySection({ summary }: { summary: ImprovementSummary }) {
+  const hasAny = Boolean(summary.expand_candidates || summary.review_candidates || summary.next_hypothesis);
+
+  return (
+    <div className="feedback-summary__improvement">
+      <h3 className="feedback-summary__improvement-title">今回の改善ポイント</h3>
+      {hasAny ? (
+        <dl className="feedback-summary__improvement-list">
+          {summary.expand_candidates && (
+            <div className="feedback-summary__improvement-item">
+              <dt>継続・展開候補</dt>
+              <dd>{summary.expand_candidates}</dd>
+            </div>
+          )}
+          {summary.review_candidates && (
+            <div className="feedback-summary__improvement-item">
+              <dt>見直し候補</dt>
+              <dd>{summary.review_candidates}</dd>
+            </div>
+          )}
+          {summary.next_hypothesis && (
+            <div className="feedback-summary__improvement-item">
+              <dt>次回検証する仮説</dt>
+              <dd>{summary.next_hypothesis}</dd>
+            </div>
+          )}
+        </dl>
+      ) : (
+        <p className="feedback-summary__improvement-empty">
+          現時点では十分な結果がありません。追加の施策結果を確認後、改善候補を表示します。
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -101,13 +150,21 @@ export function FeedbackSummaryPanel({ summary }: { summary: FeedbackSummaryResp
       {summary.sample_outcomes.length > 0 && (
         <div className="feedback-summary__outcomes">
           <h3 className="feedback-summary__outcomes-title">施策後の反応と利用状況</h3>
+          <p className="feedback-summary__outcomes-note">
+            施策後の反応、利用状況、次の推奨判断は、改善ループを説明するためのデモ用サンプルです。
+          </p>
           <ul className="feedback-summary__outcomes-list">
             {summary.sample_outcomes.map((outcome) => (
               <SampleOutcomeCard key={outcome.customer_id} outcome={outcome} />
             ))}
           </ul>
+          <ImprovementSummarySection summary={summary.improvement_summary} />
         </div>
       )}
+
+      <p className="feedback-summary__closing">
+        担当者の判断と施策結果を基に、続ける施策、見直す施策、次に検証する内容を決定します。
+      </p>
     </div>
   );
 }

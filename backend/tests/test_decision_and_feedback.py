@@ -166,3 +166,35 @@ def test_sample_outcomes_do_not_break_existing_feedback_summary_fields() -> None
         "persisted",
     ):
         assert key in body
+
+
+def test_sample_outcomes_include_recommended_next_action() -> None:
+    outcomes = client.get("/api/feedback-summary").json()["sample_outcomes"]
+    for outcome in outcomes:
+        action = outcome["recommended_next_action"]
+        assert action["type"]
+        assert action["label"]
+        assert action["reason"]
+        assert action["next_review_timing"]
+
+
+def test_skipped_decision_updates_recommended_next_action_to_review_targeting() -> None:
+    outcomes_before = client.get("/api/feedback-summary").json()["sample_outcomes"]
+    sample_customer_id = outcomes_before[0]["customer_id"]
+
+    client.post(
+        f"/api/customers/{sample_customer_id}/decision",
+        json={"decision": "skipped", "comment": "今回は対象外"},
+    )
+
+    outcomes_after = client.get("/api/feedback-summary").json()["sample_outcomes"]
+    matched = next(o for o in outcomes_after if o["customer_id"] == sample_customer_id)
+    assert matched["recommended_next_action"]["type"] == "対象顧客の条件を見直す"
+
+
+def test_feedback_summary_includes_improvement_summary_with_expected_keys() -> None:
+    body = client.get("/api/feedback-summary").json()
+    summary = body["improvement_summary"]
+    assert "expand_candidates" in summary
+    assert "review_candidates" in summary
+    assert "next_hypothesis" in summary

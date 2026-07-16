@@ -142,6 +142,13 @@ export interface RecentDecision {
   generation_mode_label: string;
 }
 
+export interface RecommendedNextAction {
+  type: string;
+  label: string;
+  reason: string;
+  next_review_timing: string;
+}
+
 export interface SampleOutcome {
   customer_id: string;
   display_name: string;
@@ -154,6 +161,13 @@ export interface SampleOutcome {
   selected_action: string | null;
   comment: string | null;
   decided_at: string | null;
+  recommended_next_action: RecommendedNextAction;
+}
+
+export interface ImprovementSummary {
+  expand_candidates: string | null;
+  review_candidates: string | null;
+  next_hypothesis: string | null;
 }
 
 export interface FeedbackSummaryResponse {
@@ -164,6 +178,7 @@ export interface FeedbackSummaryResponse {
   by_generation_mode: Record<string, number>;
   recent_decisions: RecentDecision[];
   sample_outcomes: SampleOutcome[];
+  improvement_summary: ImprovementSummary;
   updated_at: string;
   storage_mode: string;
   persisted: boolean;

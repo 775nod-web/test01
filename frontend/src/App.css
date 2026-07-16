@@ -561,6 +561,12 @@
   font-weight: 600;
 }
 
+.feedback-summary__outcomes-note {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+}
+
 .feedback-summary__outcomes-list {
   margin: 0;
   padding: 0;
@@ -592,6 +598,11 @@
   font-size: 0.78rem;
   color: var(--color-text-secondary);
   overflow-wrap: break-word;
+}
+
+.outcome-card__row--reason {
+  color: var(--color-text-disabled);
+  font-size: 0.74rem;
 }
 
 .outcome-card__row-label {
@@ -626,6 +637,55 @@
   background: var(--color-bg-elevated);
   color: var(--color-text-secondary);
   border: 1px solid var(--color-border-subtle);
+}
+
+.outcome-badge--action {
+  background: var(--color-blue-50);
+  color: var(--color-blue-700);
+}
+
+.feedback-summary__improvement {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.feedback-summary__improvement-title {
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.feedback-summary__improvement-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.feedback-summary__improvement-item dt {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.feedback-summary__improvement-item dd {
+  margin: 2px 0 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  overflow-wrap: break-word;
+}
+
+.feedback-summary__improvement-empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.feedback-summary__closing {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
 }
 
 .badge--model-mode {

@@ -92,6 +92,7 @@ class FeedbackSummaryResponse(BaseModel):
     by_generation_mode: dict[str, int]
     recent_decisions: list[dict[str, Any]]
     sample_outcomes: list[dict[str, Any]]
+    improvement_summary: dict[str, Any]
     updated_at: str
     storage_mode: str
     persisted: bool

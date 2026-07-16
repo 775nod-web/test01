@@ -72,6 +72,7 @@ Databricks Free EditionとDatabricks Appsを使い、次の一連の業務を日
 - Databricks Repos経由のデプロイでは`frontend/dist`がGit管理外だと反映されないことが実機で判明し、ビルド成果物をGit管理下に含める方式へ変更（本README 9節・18節）
 - 利用者の依頼により、画面下部の「デモ構成／本番化時に追加する事項」パネル、フッターの一文、「⑥ フィードバック概要」内の本番化注記（APIの`note`フィールドを含む）を削除。この時点でUI・APIのいずれにも本番化境界の明示は残っていない（本README 17節「本番化境界パネルの削除について」参照）
 - Step 6「フィードバック概要」に、施策後の反応・利用再開のデモ用サンプル表示を追加し、改善ループ（判断→施策→反応→利用再開→次の分析・モデル・施策改善）を画面上で完結させた（`artifacts/sample_campaign_outcomes.json`、`backend/services/sample_outcomes.py`、`GET /api/feedback-summary`の`sample_outcomes`フィールド、本README 6節）
+- Step 6に、施策後の反応・利用状況から次の推奨アクション（固定8カテゴリのルールベース判定）と、全顧客を集計した「今回の改善ポイント」を追加し、結果確認だけで終わらない画面にした（`backend/services/feedback_action_service.py`、`recommended_next_action`/`improvement_summary`フィールド、本README 6節「次の改善アクション」）
 
 ## 3. 技術構成
 
@@ -341,13 +342,28 @@ DEMO_SPEC.mdのStep 6「改善ループを確認する」を画面上で完結�
 - UIでは「施策後の反応と利用状況」という見出しの下にカード一覧を表示する（`frontend/src/components/FeedbackSummaryPanel.tsx`）。
 - 実際のメール・クーポン配信、CRM/キャンペーンシステムとの接続、実顧客の施策結果取り込みは行っていない（本README 24節）。
 
-### サンプルである旨の画面表示を削除した経緯
+### サンプルである旨の画面表示の変遷
 
-追加当初は、見出しを「施策後の反応と利用状況（デモ用サンプル）」とし、「以下の『施策後の反応』『利用状況』はデモ用の固定サンプルであり、実際の顧客の反応ではありません。『担当者判断』欄のみ、実際にこの画面で保存した判断です。」という注記、および「承認・修正・見送りの判断は、次の顧客選定や施策改善、モデルの見直しへ活用する想定のデータとして記録されます。」という説明文を表示していた。
+追加当初は、見出し「施策後の反応と利用状況（デモ用サンプル）」・サンプルである旨の注記・判断の活用目的を説明する文の3箇所でサンプルであることを明示していたが、その後利用者の依頼によりいずれも一度削除した（画面上にはサンプルである旨の明示が一切ない状態になった）。その後、次の推奨判断機能を追加するにあたり、利用者から改めてサンプルである旨の注記を追加する依頼があり、`frontend/src/components/FeedbackSummaryPanel.tsx`に「施策後の反応、利用状況、次の推奨判断は、改善ループを説明するためのデモ用サンプルです。」という注記を再度表示するようにした。現時点ではこの注記が画面上に表示されている。
 
-その後、利用者からこの3箇所すべてを削除する依頼があった。この依頼は、本機能自体の受け入れ条件（「施策反応と利用再開がサンプルデータであると明示される」）およびCLAUDE.mdの「実装していない本番機能を、実装済みに見せない」という方針と衝突する可能性がある旨を提示したうえで、利用者がそれを承知の上で削除を希望したため実施した。**この時点で、「施策後の反応」「利用状況」の各値が実際の顧客の反応ではなくデモ用の固定サンプルであることを示す表示は、画面上に一切残っていない。** 担当者判断（`decision`/`selected_action`/`comment`/`decided_at`）のみが実際にこの画面で保存されたデータであるという区別も、画面上では説明されなくなった。この区別を口頭で補足するかどうかは、デモ実演者の判断に委ねられる（本README 22節の操作手順を参照）。
+バックエンドの`sample_outcomes`レスポンスには引き続き`is_sample: true`が含まれており、API上でも常にサンプルであることを判別できる。
 
-バックエンドの`sample_outcomes`レスポンスには引き続き`is_sample: true`が含まれており、API上ではサンプルであることを判別できる。
+### 次の改善アクション（Step 6：推奨アクションと全体改善サマリー）
+
+Step 6を結果確認だけで終わらせず、「続ける施策・見直す施策・次に検証する内容」を判断できる画面にするため、施策後の反応・利用状況から次の推奨アクションをデモ用の説明可能なルールベースで導出し、あわせて全体の改善サマリーを表示する。
+
+- `backend/services/feedback_action_service.py`の`determine_next_action()`が、担当者判断・施策実施状況・顧客の反応・利用再開状況を入力に、固定8カテゴリ（類似顧客へ展開／オファー内容を変更／接触チャネルを変更／接触タイミングを変更／対象顧客の条件を見直す／継続観測／施策効果を再検証／今回の施策を停止）から1つを決定論的に選び、`type`・`label`・`reason`・`next_review_timing`を返す。外部LLMや機械学習モデルは使用しない。判定の優先順位は次の通り。
+  1. 担当者判断が「見送り」の場合、反応・利用再開の内容に関わらず「対象顧客の条件を見直す」
+  2. 利用状況が「観測期間中」の場合、「継続観測」
+  3. 施策自体が未実施の場合、「継続観測」
+  4. それ以外は、施策後の反応（メール開封／案内ページ閲覧／クーポン利用／問い合わせ＝反応あり、反応なし＝反応なし）と利用再開の有無を組み合わせて、類似顧客へ展開／オファー内容を変更／接触チャネルを変更／施策効果を再検証のいずれかを決定する
+  - 担当者判断が「修正して承認」の場合は理由文に修正内容を、「承認」の場合は次回の施策評価へ活用する旨を追記する
+- 同じ入力に対しては常に同じ結果を返す（乱数・外部呼び出しなし）。未知の値・欠損値が渡された場合も例外を送出せず、安全な既定値へフォールバックする。
+- `backend/services/feedback_action_service.py`の`build_improvement_summary()`が、全顧客の推奨アクション種別を「継続・展開候補」「見直し候補」「次回検証する仮説」の3つに集計し、代表例をもとに1文ずつ生成する。対象が0件の場合は無理に文章を作らずNoneのまま返す。
+- `GET /api/feedback-summary`のレスポンスへ、各`sample_outcomes`要素に`recommended_next_action`（`type`/`label`/`reason`/`next_review_timing`）を追加し、`improvement_summary`（`expand_candidates`/`review_candidates`/`next_hypothesis`、いずれもデータが無ければ`null`）フィールドを新設した。既存フィールドは変更していない（後方互換）。
+- UIでは各サンプルカードに「次の推奨判断」（色だけでなく文字で表示する青系バッジ）・「理由」・「次回確認」を追加し、カード一覧の下に「今回の改善ポイント」ブロックを表示する。改善ポイントが無い場合は「現時点では十分な結果がありません。追加の施策結果を確認後、改善候補を表示します。」と表示する。
+- Step 6の最後に「担当者の判断と施策結果を基に、続ける施策、見直す施策、次に検証する内容を決定します。」という文章を一度だけ表示する。
+- 施策の自動配信、次の施策の自動実行、モデルの自動再学習、自動的な顧客セグメント変更、因果推論による施策効果測定、A/Bテストの自動作成、CRM/MAツールへの自動連携、実顧客データによる効果判定、LLMによる自由生成の改善提案は、いずれも実装していない（本README 24節）。
 
 ## 7. ローカル開発
 
@@ -577,7 +593,7 @@ Databricks Free Edition／Databricks Apps環境で確実に動かすため、以
 
 `recommendation` エンドポイントは `generation_mode` / `generation_mode_label`（本README 6節）を必ず含む。`decision` エンドポイントのリクエストボディは `decision`（`approved` / `modified` / `skipped`）、`selected_action`、`modified_text`、`comment`、`generation_mode`、`model_version` を受け付ける（いずれも `selected_action` 以降は任意）。
 
-`feedback-summary` エンドポイントの `sample_outcomes` は、代表顧客6名分の`customer_id`・`display_name`・`campaign_status`・`customer_response`・`usage_recovery_status`・`observed_at`・`is_sample: true`に加え、該当顧客の実際の最新判断があれば`decision`・`selected_action`・`comment`・`decided_at`（無ければ全てnull）を含む（本README 6節「フィードバックループ」参照）。
+`feedback-summary` エンドポイントの `sample_outcomes` は、代表顧客6名分の`customer_id`・`display_name`・`campaign_status`・`customer_response`・`usage_recovery_status`・`observed_at`・`is_sample: true`・`recommended_next_action`（`type`/`label`/`reason`/`next_review_timing`）に加え、該当顧客の実際の最新判断があれば`decision`・`selected_action`・`comment`・`decided_at`（無ければ全てnull）を含む。レスポンス直下の`improvement_summary`（`expand_candidates`/`review_candidates`/`next_hypothesis`、対象が無ければ`null`）は全顧客の推奨アクションを集計した全体サマリーである（本README 6節「フィードバックループ」「次の改善アクション」参照）。
 
 ## 17. アプリの使い方（Phase 1〜6時点）
 
@@ -926,12 +942,31 @@ DEMO_SPEC.md「13. 説明のみとする本番機能」「15. 画面に表示す
 - [x] 判断記録が無い状態でもフィードバック概要が取得でき、`sample_outcomes`の`decision`は`null`になる（`test_feedback_summary_starts_empty`）
 - [x] サンプル対象顧客に実際の判断を保存すると、同じ顧客の行に担当者判断（`decision`/`selected_action`/`comment`/`decided_at`）が反映される。反応・利用再開自体は変化しない（`test_sample_outcome_reflects_saved_decision_for_same_customer`）
 - [x] 既存の`/api/feedback-summary`のフィールド（`total_decisions`等）が引き続き揃っており、後方互換性が保たれている（`test_sample_outcomes_do_not_break_existing_feedback_summary_fields`）
-- [ ] フロントエンドで「施策後の反応と利用状況」がサンプルである旨の画面表示：追加当初は見出し・注記で明示していたが、利用者の依頼によりいずれも削除済み（本README 6節「サンプルである旨の画面表示を削除した経緯」参照）。現時点では画面上にサンプルである旨の明示はなく、この条件は満たされていない。APIレスポンスの`is_sample: true`では判別可能
+- [x] フロントエンドで「施策後の反応と利用状況」がサンプルである旨の画面表示：追加当初→利用者の依頼で削除→次の推奨判断機能の追加時に利用者の依頼で再度表示、という経緯を経て、現時点では「施策後の反応、利用状況、次の推奨判断は、改善ループを説明するためのデモ用サンプルです。」という注記が画面に表示されている（本README 6節「サンプルである旨の画面表示の変遷」参照）
 - [x] `反応なし`・`利用再開なし`・`観測期間中`・`施策未実施`を含む全カテゴリの表示を確認
 - [x] 判断未保存時は「未対応（判断未保存）」、保存済みの場合は判断内容（選択アクション・コメント含む）を表示することを確認
 - [x] サンプルデータが空でもレイアウトが崩れないことを確認
 - [x] Playwrightで、顧客選択→承認保存→フィードバック概要反映→サンプル行への反映→サンプル注記の表示、までの一連の流れを確認（幅375pxのモバイル表示でもカードが1列に収まり文字が重ならないことをスクリーンショットで確認）
-- [x] `python -m pytest backend/tests`（75件成功・1件スキップ）、`npm run typecheck`、`npm run test`（16件成功）、`npm run build`、`bash scripts/prepare_deploy.sh` が全件成功
+- [x] `python -m pytest backend/tests`、`npm run typecheck`、`npm run test`、`npm run build`、`bash scripts/prepare_deploy.sh` が全件成功
+
+### 次の改善アクション（推奨アクション・改善サマリー追加分）
+
+- [x] 反応あり・利用再開ありで「類似顧客へ展開」が返る（`test_engaged_and_recovered_returns_expand`）
+- [x] 反応あり・利用再開なしで「オファー内容を変更」が返る（`test_engaged_and_not_recovered_returns_change_offer`）
+- [x] 反応なし・利用再開なしで「接触チャネルを変更」が返る（`test_not_engaged_and_not_recovered_returns_change_channel`）
+- [x] 見送りで、反応・利用再開の内容に関わらず「対象顧客の条件を見直す」が返る（`test_skipped_decision_returns_review_targeting_regardless_of_outcome`）
+- [x] 観測期間中で「継続観測」が返る（`test_observing_period_returns_continue_observation`）
+- [x] 未知の値・欠損値でもAPIが500にならず、安全な既定値を返す（`test_unknown_values_do_not_raise_and_return_fallback`、`test_missing_values_do_not_raise`）
+- [x] 同じ入力では毎回同じ推奨アクションになる（`test_same_input_returns_same_result_every_time`）
+- [x] 全体改善サマリーは対象0件の場合すべて`null`を返し、対象がある場合は3項目とも文章を生成する（`test_build_improvement_summary_returns_none_fields_when_no_outcomes`、`test_build_improvement_summary_populates_fields_when_outcomes_exist`）
+- [x] `GET /api/feedback-summary`の`sample_outcomes`各要素に`recommended_next_action`が含まれる（`test_sample_outcomes_include_recommended_next_action`）
+- [x] 判断保存後、対象顧客の`recommended_next_action`が更新される（`test_skipped_decision_updates_recommended_next_action_to_review_targeting`）
+- [x] `improvement_summary`フィールドが期待するキーを持つ（`test_feedback_summary_includes_improvement_summary_with_expected_keys`）
+- [x] フロントエンドで次の推奨判断・理由・次回確認が表示される（`FeedbackSummaryPanel.test.tsx`）
+- [x] 今回の改善ポイント（継続・展開候補／見直し候補／次回検証する仮説）が表示される。対象が無い場合は「現時点では十分な結果がありません。」の空状態文言を表示する
+- [x] サンプルである旨の注記、およびStep 6末尾の締めくくり文が重複なく1回ずつ表示される
+- [x] Playwrightで、顧客選択→承認保存→サンプル行への担当者判断反映→次の推奨判断・理由・次回確認の表示→今回の改善ポイントの表示、までの一連の流れを確認（幅375pxのモバイル表示でも崩れないことをスクリーンショットで確認）
+- [x] `python -m pytest backend/tests`（88件成功・1件スキップ）、`npm run typecheck`、`npm run test`（21件成功）、`npm run build`、`bash scripts/prepare_deploy.sh` が全件成功
 
 ## 27. 最終受け入れチェック（Phase 6）
 
