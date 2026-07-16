@@ -23,9 +23,10 @@ Phase 1では、以下のみを実装しています。詳細な業務ロジッ�
 - FastAPI + Uvicorn のPythonバックエンド骨格
 - `/api/health`、`/api/metadata` の実装
 - Databricks接続未設定でも起動する `demo` モードの設定層
-- PythonからReactビルド成果物を配信する仕組み
+- **デプロイ前ビルド方式**：Reactは事前にProduction Buildし、`frontend/dist` をPythonが配信する。Databricks Apps（`APP_ENV=production`）ではビルド成果物が無い場合に起動を失敗させ、UIが欠落したまま正常起動したように見せない
+- デプロイ前準備を一括実行する `scripts/prepare_deploy.sh`
 - Databricks Apps向け `app.yaml`
-- ホスト・ポート解決ロジックの単体テスト
+- ホスト・ポート解決、データモード判定、起動モード判定の単体テスト
 
 ## 3. 技術構成
 
@@ -46,7 +47,7 @@ Phase 1では、以下のみを実装しています。詳細な業務ロジッ�
 - Databricks Apps
 - Databricks Free Edition
 
-Node.jsはReactのビルドにのみ使用します。Expressをバックエンドには使用しません。Streamlitも使用しません。
+Node.jsはReactのビルドにのみ使用します。Databricks Apps起動時にNode.js/npmは実行しません（デプロイ前ビルド方式）。Expressをバックエンドには使用しません。Streamlitも使用しません。
 
 ## 4. ディレクトリ構成（現状）
 
@@ -58,19 +59,24 @@ Node.jsはReactのビルドにのみ使用します。Expressをバックエン�
 ├── app.yaml
 ├── requirements.txt
 ├── .gitignore
+├── scripts/
+│   └── prepare_deploy.sh     # デプロイ前ビルド・テストの一括実行スクリプト
 ├── backend/
-│   ├── main.py              # FastAPIエントリーポイント（Reactビルドの配信を含む）
-│   ├── config.py             # ホスト・ポート・データモード解決ロジック
+│   ├── main.py                # FastAPIエントリーポイント（起動モード判定・Reactビルドの配信を含む）
+│   ├── config.py               # ホスト・ポート・データモード・起動モード解決ロジック
 │   ├── api/
-│   │   └── routes.py         # /api/health, /api/metadata
+│   │   └── routes.py           # /api/health, /api/metadata
 │   └── tests/
 │       ├── test_config.py
-│       └── test_api.py
+│       ├── test_api.py
+│       └── test_deploy_modes.py  # development/productionモードの起動挙動テスト
 ├── frontend/
 │   ├── package.json
+│   ├── package-lock.json
 │   ├── tsconfig.json
 │   ├── vite.config.ts
 │   ├── index.html
+│   ├── dist/                   # npm run build で生成（Git管理外）
 │   └── src/
 │       ├── main.tsx
 │       ├── App.tsx
@@ -84,9 +90,11 @@ Node.jsはReactのビルドにのみ使用します。Expressをバックエン�
 └── save_bronze_delta_tables.py         # Databricksノートブック用（Phase 1以前から存在）
 ```
 
-`data/`、`scripts/`、`artifacts/` はPhase 2以降、合成データ生成・顧客360構築・モデル学習を実装する際に追加します。
+`data/`、`artifacts/` はPhase 2以降、合成データ生成・顧客360構築・モデル学習を実装する際に追加します。
 
-## 5. 開発コマンド
+## 5. ローカル開発
+
+Phase 1〜2の開発中は、フロントエンドをビルドせずにAPIとVite開発サーバーを別々に起動して作業できます（development モード、既定）。
 
 ### バックエンド（Python）
 
@@ -98,7 +106,7 @@ pip install -r requirements.txt
 # テスト実行
 python -m pytest backend/tests -v
 
-# 開発起動（既定ポート8000、環境変数未設定時）
+# 開発起動（APP_ENV未設定＝developmentモード。frontend/dist が無くてもAPIのみで起動する）
 python -m backend.main
 ```
 
@@ -113,28 +121,90 @@ npm run dev
 
 # 型チェックのみ
 npm run typecheck
-
-# 型チェック＋本番ビルド（frontend/dist に出力）
-npm run build
 ```
 
-### 結合確認（Pythonがフロントエンドを配信）
+developmentモードでは `frontend/dist` の有無にかかわらずPython APIが起動するため、`npm run dev` の開発サーバーと `python -m backend.main` を並行起動して開発できます。
+
+## 6. デプロイ前ビルド（Production Build）
+
+このデモは **デプロイ前ビルド方式** を採用しています。Databricks Apps起動時にNode.js/npm buildを実行することはありません。本番のアプリプロセスは常にPythonのみです。デプロイ前に、ローカル環境またはCI環境でReactをProduction Buildし、生成された `frontend/dist` をデプロイ対象フォルダーへ含めます。
+
+### 手動でビルドする場合
 
 ```bash
-# 1. フロントエンドをビルドする
-cd frontend && npm run build && cd ..
-
-# 2. Pythonサーバーを起動する（frontend/dist が存在すれば自動配信）
-source .venv/bin/activate
-python -m backend.main
-
-# 3. 別ターミナルで確認する
-curl http://127.0.0.1:8000/api/health
-curl http://127.0.0.1:8000/api/metadata
-# ブラウザで http://127.0.0.1:8000/ を開き、日本語ヘッダーと空状態を確認する
+cd frontend
+npm ci
+npm run typecheck
+npm run build
+cd ..
 ```
 
-## 6. ポート・ホスト解決
+### 一括スクリプトを使う場合
+
+```bash
+bash scripts/prepare_deploy.sh
+```
+
+`scripts/prepare_deploy.sh` は次を順番に実行し、いずれかが失敗した時点で処理を中断して非0の終了コードを返します。
+
+1. `node` / `npm` / `python3`（または `python`）／ `pytest` が利用可能か確認する
+2. `npm ci` でフロントエンド依存をインストールする
+3. `npm run typecheck` でTypeScript型チェックを実行する
+4. `npm run build` でProduction Buildを実行する
+5. `frontend/dist/index.html` が生成されたことを確認する
+6. `python -m pytest backend/tests -v` でPythonの主要テストを実行する
+7. デプロイ対象に含めるべきファイル構成を一覧表示する
+
+### ビルド確認
+
+ビルド完了後、少なくとも以下が存在することを確認してください。
+
+```text
+frontend/dist/index.html
+```
+
+`frontend/dist/assets/` 配下にJS・CSSが生成されていることも確認してください。
+
+## 7. Databricks Appsへの配置方法
+
+`frontend/dist` は通常の開発コミットでは引き続きGit管理外（`.gitignore`）とします。ただし、**Databricks Appsへ配置する際は、ビルド済みの `frontend/dist` を必ず含めてください。**
+
+### 推奨方式
+
+1. `bash scripts/prepare_deploy.sh` を実行する
+2. `frontend/dist/index.html` が生成されたことを確認する
+3. `.gitignore` の有無にかかわらず、ローカルのビルド済みリポジトリフォルダー（`frontend/dist` を含む）をDatabricksワークスペースへ同期またはアップロードする
+4. そのフォルダーをDatabricks Appsのソースとして指定する
+
+### 避けるべき方式
+
+GitリポジトリのURLから直接デプロイする方式は、`frontend/dist` がGit管理外であるため成果物が欠落し、UIが表示されないApp（APIのみ起動 or `APP_ENV=production` 設定時は起動失敗）になる可能性があります。Gitベースの自動デプロイを将来採用する場合は、**CIでビルド成果物を生成してからデプロイ対象へ配置する仕組み**（例：CIジョブが `scripts/prepare_deploy.sh` を実行し、`frontend/dist` を含んだ状態でワークスペースへ同期する）が必要です。この仕組みはPhase 1時点では未実装です。
+
+### 再デプロイ
+
+フロントエンドのコードを変更した場合は、**必ず `scripts/prepare_deploy.sh`（または手動ビルド）を再実行してから**、ビルド済みフォルダーを同期・再デプロイしてください。古い `frontend/dist` のまま再デプロイすると、変更が反映されません。
+
+## 8. 起動モード（development / production）
+
+`backend/config.py` の `resolve_app_env()` が `APP_ENV` 環境変数を読み、`production`（大文字小文字を区別しない）の場合のみproductionモードとして扱い、それ以外（未設定を含む）はdevelopmentモードとして扱います。
+
+| モード | `frontend/dist/index.html` が無い場合の挙動 |
+| --- | --- |
+| development（既定） | APIのみで起動する（Viteの開発サーバーと併用する想定） |
+| production（`APP_ENV=production`） | 起動を失敗させる（終了コード1、明確なエラーログを出力） |
+
+productionモードで `frontend/dist/index.html` が無い場合、以下のエラーで起動が失敗します。
+
+```text
+frontend/dist/index.html が見つかりません。
+scripts/prepare_deploy.sh を実行してから再デプロイしてください。
+```
+
+これにより、UIが欠落したままAPIだけが起動し「正常にデプロイされたように見える」状態を防ぎます。`app.yaml` はDatabricks Apps環境向けに `APP_ENV=production` を明示しています（詳細は本ファイル4節のディレクトリ構成、および `app.yaml` 本体を参照）。
+
+既存のAPIパス・ポート解決優先順位（`DATABRICKS_APP_PORT` → `UVICORN_PORT` → `PORT` → `8000`）は変更していません。
+
+## 9. ポート・ホスト解決
 
 Pythonサーバーは次の優先順位で起動設定を解決します（`backend/config.py`）。
 
@@ -145,10 +215,10 @@ Port: DATABRICKS_APP_PORT → UVICORN_PORT → PORT → 8000
 
 - Databricks Appsでは、プラットフォームが提供する `DATABRICKS_APP_PORT` を優先して使用します。
 - ローカル開発では `PORT` を設定でき、未設定の場合は8000を使用します。
-- `app.yaml` 側では固定ポートを指定しません（起動コマンドのみ定義）。
+- `app.yaml` 側では固定ポートを指定しません（起動コマンドと `APP_ENV` のみ定義）。
 - 優先順位はホスト・ポートとも `backend/tests/test_config.py` で単体テスト済みです。
 
-## 7. データモードの解決
+## 10. データモードの解決
 
 `backend/config.py` の `resolve_data_mode()` が、以下3つのDatabricks SQL接続用環境変数がすべて設定されている場合のみ `databricks` モードを返し、それ以外は `demo` モードにフォールバックします。
 
@@ -158,24 +228,25 @@ Port: DATABRICKS_APP_PORT → UVICORN_PORT → PORT → 8000
 
 Phase 1では実際のDatabricks SQL接続は行わず、モード判定のみを実装しています。実データ接続はPhase 2以降で追加します。
 
-## 8. Databricks Appsへのデプロイ
+## 11. Databricks Appsへのデプロイ手順
 
 正確な操作はワークスペースUIと利用可能な機能に合わせて確認してください。完成条件は、ローカル起動ではなくDatabricks Apps上で表示できることです。
 
 基本手順：
 
-1. フロントエンドをローカルまたはCI環境でビルドする（`cd frontend && npm install && npm run build`）。`frontend/dist` はGit管理対象外（`.gitignore`）のため、デプロイ元にはビルド成果物を含めるか、デプロイ直前にビルドを実行する。
-2. リポジトリ（`backend/`、`frontend/dist`、`app.yaml`、`requirements.txt` を含む）をDatabricksワークスペースのフォルダーまたはGit連携先へ配置する。
+1. `bash scripts/prepare_deploy.sh` を実行し、`frontend/dist` を生成する（本README 6節）。
+2. ビルド済みの `frontend/dist` を含むフォルダーを、Databricksワークスペースのフォルダーまたは同期先へ配置する（本README 7節。GitリポジトリのURLから直接デプロイする方式は `frontend/dist` が欠落するため避ける）。
 3. Databricks Appsでカスタムアプリを作成する。
-4. アプリのソースとして対象フォルダーまたはGitリポジトリを選ぶ。
+4. アプリのソースとして、ビルド済みフォルダーを選ぶ。
 5. Databricks SQLに接続する場合は、必要なDatabricksリソース（SQLウェアハウス等）をアプリへ追加し、`DATABRICKS_SERVER_HOSTNAME` / `DATABRICKS_HTTP_PATH` / `DATABRICKS_TOKEN` に相当する接続情報を設定する。未設定の場合はdemoモードで起動する。
-6. Python起動処理が `DATABRICKS_APP_PORT` → `UVICORN_PORT` → `PORT` → `8000` の順でポートを解決し、ホストは `UVICORN_HOST` または `0.0.0.0` を使用することを確認する（`app.yaml` の起動コマンドは `python -m backend.main`）。
-7. デプロイする。
-8. アプリログと `/api/health` を確認する（200が返ること）。
-9. `/api/metadata` で `data_mode` が想定通り（`demo` または `databricks`）であることを確認する。
-10. ブラウザでアプリを開き、日本語ヘッダーと3カラムの空状態レイアウトが表示されることを確認する。
+6. `app.yaml` の `APP_ENV=production` 設定により、Python起動処理がproductionモードで動作することを確認する（`frontend/dist/index.html` が無い場合はここで起動失敗する）。
+7. Python起動処理が `DATABRICKS_APP_PORT` → `UVICORN_PORT` → `PORT` → `8000` の順でポートを解決し、ホストは `UVICORN_HOST` または `0.0.0.0` を使用することを確認する（`app.yaml` の起動コマンドは `python -m backend.main`）。
+8. デプロイする。
+9. アプリログと `/api/health` を確認する（200が返ること）。
+10. `/api/metadata` で `data_mode` が想定通り（`demo` または `databricks`）であることを確認する。
+11. **`/api/health` だけでなく、ブラウザでアプリを開いてUI（日本語ヘッダーと3カラムの空状態レイアウト）が実際に表示されることを確認する。**
 
-## 9. アプリの使い方（Phase 1時点）
+## 12. アプリの使い方（Phase 1時点）
 
 Phase 1では業務フローの土台のみが完成しています。画面を開くと以下が表示されます。
 
@@ -185,11 +256,15 @@ Phase 1では業務フローの土台のみが完成しています。画面を�
 - 右：「次のアクション」の空状態（Layer 3実装後に表示予定）
 - 下部：フィードバックループと本番化時の追加事項を表示する予定の領域
 
-## 10. 実装上の仮定
+## 13. 実装上の仮定
 
-- 仮定：フロントエンドのビルド成果物（`frontend/dist`）はGit管理対象外とし、デプロイ前に `npm run build` を実行して生成する。
-- 理由：ビルド成果物をリポジトリにコミットすると、ソースとの差分管理が煩雑になり、依存関係の更新時に不整合が生じやすいため。
-- 本番で確認する事項：Databricksワークスペースへのデプロイ手順（Git連携またはフォルダー同期）において、`npm run build` を含むビルドステップを確実に実行できるか確認する。CI/CDパイプラインがない場合は、デプロイ前に手動でビルドしてから同期する運用にする。
+- 仮定：フロントエンドのビルド成果物（`frontend/dist`）は通常の開発コミットではGit管理対象外とし、デプロイ前に `scripts/prepare_deploy.sh`（または手動の `npm run build`）を実行して生成し、デプロイ時のみビルド済みフォルダーとして同期する。
+- 理由：ビルド成果物を常にリポジトリへコミットすると、ソースとの差分管理が煩雑になり、依存関係の更新時に不整合が生じやすいため。一方でGit URLから直接デプロイするとビルド成果物が欠落するため、デプロイ時は「ビルド済みフォルダーを配置」という別の同期方式を用いる。
+- 本番で確認する事項：Databricksワークスペースへの同期方法（Databricks CLIのsync、Reposのファイルアップロード等）が、`frontend/dist` を含むフォルダー全体を正しく反映できるか確認する。CI/CDパイプラインを導入する場合は、CIが `scripts/prepare_deploy.sh` を実行してから同期する運用にする。
+
+- 仮定：`app.yaml` の `env` セクションで `APP_ENV=production` をキーバリュー形式（`name`/`value`）で指定できると仮定している。
+- 理由：Databricks Appsのapp.yaml仕様のうち、非シークレットな環境変数を設定する一般的な記法として妥当と判断したため。
+- 本番で確認する事項：実際のDatabricksワークスペースにデプロイする際、`app.yaml` の `env` セクションの記法がワークスペースのDatabricks Appsバージョンで有効か確認する。無効な場合は、Databricks Appsのアプリ設定UIから環境変数 `APP_ENV=production` を追加する。
 
 - 仮定：Phase 1では `requirements.txt` にDatabricks SQL接続用ライブラリ（`databricks-sql-connector` 等）を含めていない。
 - 理由：Phase 1の受け入れ条件は起動・ヘルスチェック・メタデータ・モード判定のみであり、実データ接続はPhase 2以降のスコープのため。
@@ -199,17 +274,29 @@ Phase 1では業務フローの土台のみが完成しています。画面を�
 - 理由：Node.jsはフロントエンドのビルド専用であり、ルートにNodeパッケージを持つ必然性がないため（本番プロセスはPythonのみ）。
 - 本番で確認する事項：Databricksへのデプロイ手順で、ビルドを `frontend/` 配下で実行する運用が周知されているか確認する。
 
-## 11. デモ前チェック（Phase 1時点で確認済みの項目）
+## 14. 失敗時の対処
 
-- [x] `python -m pytest backend/tests` が全件成功する
+`frontend/dist/index.html` が見つからずproductionモードで起動が失敗した場合：
+
+1. ログに出力された `frontend/dist/index.html が見つかりません。scripts/prepare_deploy.sh を実行してから再デプロイしてください。` を確認する。
+2. ローカルで `bash scripts/prepare_deploy.sh` を実行し、型チェック・ビルド・テストがすべて成功することを確認する。
+3. 生成された `frontend/dist` を含むフォルダーを、Databricksワークスペースの配置先へ再同期する。
+4. Databricks Appsを再デプロイし、アプリログと `/api/health`・画面表示の両方を再確認する。
+
+## 15. デモ前チェック（Phase 1時点で確認済みの項目）
+
+- [x] `python -m pytest backend/tests` が全件成功する（development/productionモードの起動挙動を含む）
 - [x] `npm run typecheck` がエラーなく完了する
-- [x] `npm run build` が成功し `frontend/dist` が生成される
-- [x] ローカルで `python -m backend.main` を起動し、`/api/health` が200を返す
-- [x] `/api/metadata` がDatabricks接続情報の有無に応じて `demo` / `databricks` を正しく返す
-- [x] ビルド後、Pythonサーバーが `frontend/dist/index.html` を配信し、日本語タイトルが表示される
-- [ ] Databricks Apps上での実デプロイ確認（Phase 1では未実施、ワークスペースアクセスが必要）
+- [x] `npm run build` が成功し `frontend/dist/index.html` を含む成果物が生成される
+- [x] `bash scripts/prepare_deploy.sh` が最後まで成功し、終了コード0を返す
+- [x] `bash scripts/prepare_deploy.sh` は型チェック失敗時に後続処理を実行せず、終了コード1で停止する
+- [x] developmentモード（`APP_ENV`未設定）では `frontend/dist` が無くても `python -m backend.main` が起動し、`/api/health` が200を返す
+- [x] productionモード（`APP_ENV=production`）で `frontend/dist/index.html` が無い場合、`python -m backend.main` が明確なエラーで起動失敗する（終了コード1）
+- [x] productionモードで `frontend/dist` が存在する場合、`/api/health` ・`/api/metadata` ・`/`（index.html）がいずれも200を返す
+- [x] `/` への複数回のGETで、同じindex.htmlが返る（ページリロードを想定した確認）
+- [ ] Databricks Apps上での実デプロイ確認（この修正では未実施、ワークスペースアクセスが必要）
 
-## 12. 伝えること・伝えないこと
+## 16. 伝えること・伝えないこと
 
 ### 伝えること
 - 部門別データを一人の顧客像へ統合する設計であること

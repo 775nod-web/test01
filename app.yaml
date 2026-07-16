@@ -2,3 +2,10 @@ command:
   - "python"
   - "-m"
   - "backend.main"
+
+# Databricks Apps環境ではUIが欠落したまま正常起動したように見せないため、
+# productionモードを明示する。frontend/dist/index.htmlが無い場合は
+# backend/main.pyが明確なエラーを出して起動を失敗させる（README「デプロイ前ビルド」参照）。
+env:
+  - name: "APP_ENV"
+    value: "production"

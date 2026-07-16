@@ -3,6 +3,7 @@
 from backend.config import (
     DEFAULT_HOST,
     DEFAULT_PORT,
+    resolve_app_env,
     resolve_data_mode,
     resolve_host,
     resolve_port,
@@ -59,3 +60,19 @@ def test_resolve_data_mode_is_databricks_when_fully_configured() -> None:
         "DATABRICKS_TOKEN": "dummy-token",
     }
     assert resolve_data_mode(env=env) == "databricks"
+
+
+def test_resolve_app_env_defaults_to_development_when_unset() -> None:
+    assert resolve_app_env(env={}) == "development"
+
+
+def test_resolve_app_env_is_production_when_explicitly_set() -> None:
+    assert resolve_app_env(env={"APP_ENV": "production"}) == "production"
+
+
+def test_resolve_app_env_is_case_insensitive() -> None:
+    assert resolve_app_env(env={"APP_ENV": "Production"}) == "production"
+
+
+def test_resolve_app_env_falls_back_to_development_for_unknown_values() -> None:
+    assert resolve_app_env(env={"APP_ENV": "staging"}) == "development"

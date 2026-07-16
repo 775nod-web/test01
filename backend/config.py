@@ -26,6 +26,11 @@ DATABRICKS_SQL_ENV_VARS = (
 DATA_MODE_DEMO = "demo"
 DATA_MODE_DATABRICKS = "databricks"
 
+# APP_ENV=production の場合のみ本番（Databricks Apps）モードとして扱う。
+# 未設定または他の値はすべて development として扱う。
+APP_ENV_DEVELOPMENT = "development"
+APP_ENV_PRODUCTION = "production"
+
 
 def resolve_host(env: "os._Environ[str] | dict[str, str] | None" = None) -> str:
     """UVICORN_HOST が設定されていればそれを使い、なければ 0.0.0.0 を返す。"""
@@ -49,6 +54,15 @@ def resolve_data_mode(env: "os._Environ[str] | dict[str, str] | None" = None) ->
     if all(source.get(var_name) for var_name in DATABRICKS_SQL_ENV_VARS):
         return DATA_MODE_DATABRICKS
     return DATA_MODE_DEMO
+
+
+def resolve_app_env(env: "os._Environ[str] | dict[str, str] | None" = None) -> str:
+    """APP_ENVが'production'の場合のみproductionを返し、それ以外はdevelopmentを返す。"""
+    source = env if env is not None else os.environ
+    value = (source.get("APP_ENV") or "").strip().lower()
+    if value == APP_ENV_PRODUCTION:
+        return APP_ENV_PRODUCTION
+    return APP_ENV_DEVELOPMENT
 
 
 def current_timestamp() -> str:
