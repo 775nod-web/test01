@@ -6,7 +6,9 @@ __pycache__/
 
 # Node / フロントエンドビルド成果物
 frontend/node_modules/
-frontend/dist/
+# frontend/dist/ はGit管理対象とする（Databricks Reposでデプロイする場合、
+# Reposはgit管理下のファイルしか同期しないため、ビルド成果物を含める必要がある。
+# 本README 9節・18節「実装上の仮定」参照）
 
 # 環境変数・秘密情報
 .env

@@ -161,7 +161,7 @@ Node.jsはReactのビルドにのみ使用します。Databricks Apps起動時�
 │   ├── vite.config.ts
 │   ├── vitest.config.ts                # 単体テスト設定（jsdom環境）
 │   ├── index.html
-│   ├── dist/                           # npm run build で生成（Git管理外）
+│   ├── dist/                           # npm run build で生成。Git管理対象（Databricks Repos経由のデプロイに必要。本README 9節）
 │   └── src/
 │       ├── main.tsx
 │       ├── App.tsx
@@ -197,7 +197,7 @@ Databricks Appsへの配置観点で、上記構成を役割ごとに分類す�
 - `requirements.txt`：backendの実行時依存（fastapi, uvicorn, httpx, pytest）
 - `backend/`：FastAPIアプリ本体
 - `data/`・`artifacts/`：合成データと事前計算済み結果（バックアップ・フォールバック用、本README 23節）
-- `frontend/dist/`：ビルド済みReact成果物（`bash scripts/prepare_deploy.sh` で生成。Git管理外のため、デプロイ時にのみビルドしてフォルダーへ含める）
+- `frontend/dist/`：ビルド済みReact成果物（`bash scripts/prepare_deploy.sh` で生成。Databricks Repos経由のデプロイに対応するためGit管理対象としている。コードを変更するたびに再ビルド・再コミットが必要。本README 9節・18節）
 
 **開発・データ生成専用（Databricks Apps起動時には不要）**
 - `scripts/`：合成データ生成・顧客360統合・モデル学習・事前生成済み回答作成・デプロイ前ビルドスクリプト一式。`scripts/requirements-scripts.txt`（scikit-learn, numpy）はこれらのスクリプト実行時のみ必要で、backend実行時には読み込まれない。
@@ -403,22 +403,30 @@ frontend/dist/index.html
 
 ## 9. Databricks Appsへの配置方法
 
-`frontend/dist` は通常の開発コミットでは引き続きGit管理外（`.gitignore`）とします。ただし、**Databricks Appsへ配置する際は、ビルド済みの `frontend/dist` を必ず含めてください。**
+**Databricks Appsへ配置する際は、ビルド済みの `frontend/dist` を必ず含めてください。** 配置方法はワークスペースの同期方式によって2通りある。
 
-### 推奨方式
+### 方式A：手動同期・Databricks CLI（`frontend/dist` はGit管理外のまま）
 
 1. `bash scripts/prepare_deploy.sh` を実行する
 2. `frontend/dist/index.html` が生成されたことを確認する
-3. `.gitignore` の有無にかかわらず、ローカルのビルド済みリポジトリフォルダー（`frontend/dist` を含む）をDatabricksワークスペースへ同期またはアップロードする
+3. ローカルのビルド済みリポジトリフォルダー（`frontend/dist` を含む）を、`databricks sync` 等でDatabricksワークスペースへ同期する
 4. そのフォルダーをDatabricks Appsのソースとして指定する
 
-### 避けるべき方式
+### 方式B：GitHub連携のDatabricks Repos機能を使う場合（`frontend/dist` をGit管理下に含める）
 
-GitリポジトリのURLから直接デプロイする方式は、`frontend/dist` がGit管理外であるため成果物が欠落し、UIが表示されないApp（APIのみ起動 or `APP_ENV=production` 設定時は起動失敗）になる可能性があります。Gitベースの自動デプロイを将来採用する場合は、**CIでビルド成果物を生成してからデプロイ対象へ配置する仕組み**（例：CIジョブが `scripts/prepare_deploy.sh` を実行し、`frontend/dist` を含んだ状態でワークスペースへ同期する）が必要です。この仕組みはPhase 1時点では未実装です。
+**Databricks ReposはGit管理下のファイルしか同期しない。** `frontend/dist` を通常通り`.gitignore`対象のままにすると、Repos経由のデプロイでは成果物が欠落し、`FrontendBuildMissingError`で起動が失敗する（本リポジトリで実際に発生し確認済みの障害）。Repos経由でデプロイする場合は、次の手順を取る。
+
+1. `.gitignore` から `frontend/dist/` の除外を外す（本リポジトリは既にこの設定にしてある）
+2. `bash scripts/prepare_deploy.sh`（Windowsでbashが無い場合はGit Bash、または `cd frontend && npm ci && npm run typecheck && npm run test && npm run build`）を実行してビルドする
+3. `git add frontend/dist` でビルド成果物をコミットし、pushする
+4. Databricksワークスペースの該当Repoを最新コミットへ同期（Pull）する
+5. Databricks Appsを再デプロイする
+
+この方式は、ビルド成果物をリポジトリへコミットするという通常の開発慣行からは外れるが、Databricks Reposを使う場合に確実に動作させるための実務上の対応である（本README 18節「実装上の仮定」参照）。
 
 ### 再デプロイ
 
-フロントエンドのコードを変更した場合は、**必ず `scripts/prepare_deploy.sh`（または手動ビルド）を再実行してから**、ビルド済みフォルダーを同期・再デプロイしてください。古い `frontend/dist` のまま再デプロイすると、変更が反映されません。
+フロントエンドのコードを変更した場合は、**必ず `scripts/prepare_deploy.sh`（または手動ビルド）を再実行してから**、方式Aは同期、方式Bはコミット・push・Repoの同期を行ってください。古い `frontend/dist` のまま再デプロイすると、変更が反映されません。
 
 ## 10. 起動モード（development / production）
 
@@ -560,9 +568,9 @@ Phase 1〜4を通じて、Layer 1〜4の一連の業務フロー（Step①〜⑥
 
 ## 18. 実装上の仮定
 
-- 仮定：フロントエンドのビルド成果物（`frontend/dist`）は通常の開発コミットではGit管理対象外とし、デプロイ前に `scripts/prepare_deploy.sh`（または手動の `npm run build`）を実行して生成し、デプロイ時のみビルド済みフォルダーとして同期する。
-- 理由：ビルド成果物を常にリポジトリへコミットすると、ソースとの差分管理が煩雑になり、依存関係の更新時に不整合が生じやすいため。一方でGit URLから直接デプロイするとビルド成果物が欠落するため、デプロイ時は「ビルド済みフォルダーを配置」という別の同期方式を用いる。
-- 本番で確認する事項：Databricksワークスペースへの同期方法（Databricks CLIのsync、Reposのファイルアップロード等）が、`frontend/dist` を含むフォルダー全体を正しく反映できるか確認する。CI/CDパイプラインを導入する場合は、CIが `scripts/prepare_deploy.sh` を実行してから同期する運用にする。
+- 仮定（Phase 6で変更）：当初はフロントエンドのビルド成果物（`frontend/dist`）を通常の開発コミットではGit管理対象外とし、デプロイ時のみビルド済みフォルダーとして同期する方針だったが、実際にDatabricks Reposと連携したDatabricks Appsへデプロイした際、`FrontendBuildMissingError`で起動が失敗することを確認した。Databricks ReposがGit管理下のファイルしか同期しないためである。この実機確認を受け、`frontend/dist` を`.gitignore`の除外対象から外し、Git管理下に含める方針へ変更した。
+- 理由：Databricks Reposを使ったデプロイ方式を実際に採用しているため、ビルド成果物をコミットしないと本番デプロイ自体が機能しない。ビルド成果物のコミットはソース差分管理上望ましくないが、確実に動作させることを優先した。Databricks CLIでの手動同期（`frontend/dist`をGit管理外のままにする方式A）を使う場合はこの限りではない（本README 9節）。
+- 本番で確認する事項：フロントエンドのコードを変更するたびに、`frontend/dist` を再ビルドしてコミットし忘れていないか確認する（`scripts/prepare_deploy.sh`実行後、`git status`で`frontend/dist`の差分有無を必ず確認する運用が望ましい）。CI/CDパイプラインを導入する場合、コミット前に自動でビルド・差分確認するフックを検討する。
 
 - 仮定：`app.yaml` の `env` セクションで `APP_ENV=production` をキーバリュー形式（`name`/`value`）で指定できると仮定している。
 - 理由：Databricks Appsのapp.yaml仕様のうち、非シークレットな環境変数を設定する一般的な記法として妥当と判断したため。
