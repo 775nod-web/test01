@@ -158,13 +158,6 @@ describe("FeedbackSummaryPanel", () => {
     expect(screen.getByText(/14日後に反応を再確認/)).toBeInTheDocument();
   });
 
-  it("サンプルである旨の注記を表示する", () => {
-    render(<FeedbackSummaryPanel summary={makeSummary({ sample_outcomes: [makeOutcome()] })} />);
-    expect(
-      screen.getByText("施策後の反応、利用状況、次の推奨判断は、改善ループを説明するためのデモ用サンプルです。"),
-    ).toBeInTheDocument();
-  });
-
   it("Step6の締めくくり文を一度だけ表示する", () => {
     render(<FeedbackSummaryPanel summary={makeSummary({ sample_outcomes: [makeOutcome()] })} />);
     expect(

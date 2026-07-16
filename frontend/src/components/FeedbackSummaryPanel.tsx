@@ -150,9 +150,6 @@ export function FeedbackSummaryPanel({ summary }: { summary: FeedbackSummaryResp
       {summary.sample_outcomes.length > 0 && (
         <div className="feedback-summary__outcomes">
           <h3 className="feedback-summary__outcomes-title">施策後の反応と利用状況</h3>
-          <p className="feedback-summary__outcomes-note">
-            施策後の反応、利用状況、次の推奨判断は、改善ループを説明するためのデモ用サンプルです。
-          </p>
           <ul className="feedback-summary__outcomes-list">
             {summary.sample_outcomes.map((outcome) => (
               <SampleOutcomeCard key={outcome.customer_id} outcome={outcome} />

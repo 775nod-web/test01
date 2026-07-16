@@ -561,12 +561,6 @@
   font-weight: 600;
 }
 
-.feedback-summary__outcomes-note {
-  margin: 0 0 var(--space-sm) 0;
-  font-size: 0.78rem;
-  color: var(--color-text-secondary);
-}
-
 .feedback-summary__outcomes-list {
   margin: 0;
   padding: 0;
